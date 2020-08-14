@@ -1,0 +1,5 @@
+﻿  win32_platform.cpp
+win32_platform.obj : error LNK2019: unresolved external symbol _glfwInit referenced in function _main
+win32_platform.obj : error LNK2019: unresolved external symbol _glfwWindowHint referenced in function _main
+D:\OpenGL\Lib\glfw3.lib : warning LNK4272: library machine type 'x64' conflicts with target machine type 'x86'
+C:\Users\User\source\repos\ThroughTheLookingGlass\Debug\ThroughTheLookingGlass.exe : fatal error LNK1120: 2 unresolved externals

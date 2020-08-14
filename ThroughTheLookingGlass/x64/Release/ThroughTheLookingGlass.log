@@ -1,0 +1,66 @@
+﻿  win32_platform.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
+D:\OpenGL\Include\glad\glad.h(32): message : see previous definition of 'APIENTRY'
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Clock.h(26,24): warning C4244: 'initializing': conversion from 'LONGLONG' to 'long', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\MainHelpers.h(40,31): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(497,97): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(497,92): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(497,64): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(632,39): warning C4244: '=': conversion from 'Sint32' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(703,17): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(704,18): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(705,17): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(706,15): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(750,21): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(751,22): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(753,21): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(754,23): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(806,17): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(807,18): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(808,17): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(809,15): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(824,89): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(824,57): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(831,19): warning C4553: '==': result of expression not used; did you intend '='?
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(854,6): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(853,6): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(852,34): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(851,61): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(902,18): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(912,18): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(932,25): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(933,25): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(935,32): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(936,32): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(991,160): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(991,141): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(991,122): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(991,103): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1008,19): warning C4244: 'initializing': conversion from 'Uint32' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1257,86): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1257,54): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1264,69): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1264,66): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1264,62): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1264,47): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1276,129): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1276,107): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1276,78): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1276,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1295,3): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1294,3): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1293,31): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1292,58): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1339,15): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1349,15): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1462,14): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1463,15): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1464,14): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1465,12): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+LINK : warning LNK4098: defaultlib 'LIBCMTD' conflicts with use of other libs; use /NODEFAULTLIB:library
+  Generating code
+  1 of 1180 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    9 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  ThroughTheLookingGlass.vcxproj -> C:\Users\User\source\repos\ThroughTheLookingGlass\x64\Release\ThroughTheLookingGlass.exe
