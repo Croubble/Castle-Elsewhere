@@ -49,7 +49,7 @@ static inline IntPair move_pos_wrapped_2d(IntPair pos, Direction direction, int 
 	}
 	return pos;
 }
-static void apply_moves_to_layer_SLOW(Memory* temp_memory, char* is_moving, int* layer, int w, int h, Direction action)
+static void apply_moves_to_layer_SLOW(Memory* temp_memory, bool* is_moving, int* layer, int w, int h, Direction action)
 {
 	//TODO: No longer need to call this, replace call with faster code, holy moly this is slow.
 	int length = w * h;
@@ -86,7 +86,7 @@ static void apply_moves_to_layer_SLOW(Memory* temp_memory, char* is_moving, int*
 		layer[z] = next_layer[z];
 	}
 }
-static void apply_left_moves_to_layer(Memory* memory, char* is_moving, int* layer, int w, int h)
+static void apply_left_moves_to_layer(Memory* memory, bool* is_moving, int* layer, int w, int h)
 {
 	int length = w * h;
 	for (int j = 0; j < h; j++)
@@ -106,7 +106,7 @@ static void apply_left_moves_to_layer(Memory* memory, char* is_moving, int* laye
 		layer[next_final_1d] = (stored_value * is_moving[final_i]) + (layer[next_final_1d] * (1 - is_moving[final_i]));
 	}
 }
-static void apply_right_moves_to_layer(Memory* memory, char* is_moving, int* layer, int w, int h)
+static void apply_right_moves_to_layer(Memory* memory, bool* is_moving, int* layer, int w, int h)
 {
 	int length = w * h;
 	int z = 0;
@@ -128,7 +128,7 @@ static void apply_right_moves_to_layer(Memory* memory, char* is_moving, int* lay
 		layer[next_final_1d] = (stored_value * is_moving[final_i]) + (layer[next_final_1d] * (1 - is_moving[final_i]));
 	}
 }
-static void apply_up_moves_to_layer(Memory* memory, char* is_moving, int* layer, int w, int h)
+static void apply_up_moves_to_layer(Memory* memory, bool* is_moving, int* layer, int w, int h)
 {
 	int length = w * h;
 	for (int i = 0; i < w; i++)
@@ -149,7 +149,7 @@ static void apply_up_moves_to_layer(Memory* memory, char* is_moving, int* layer,
 		layer[next_final_1d] = (stored_value * is_moving[final_i]) + (layer[next_final_1d] * (1 - is_moving[final_i]));
 	}
 }
-static void apply_down_moves_to_layer(Memory* memory, char* is_moving, int* layer, int w, int h)
+static void apply_down_moves_to_layer(Memory* memory, bool* is_moving, int* layer, int w, int h)
 {
 	int length = w * h;
 	for (int i = 0; i < w; i++)
@@ -213,9 +213,11 @@ Direction direction_reverse(Direction dir)
 		return R;
 	if (dir == R)
 		return L;
-	return U;
+	if (dir == D)
+		return U;
+	return Direction::NO_DIRECTION;
 }
-static void cancel_blocked_moves(char* is_moving, int* layer, Direction d, int w, int h)
+static void cancel_blocked_moves(bool* is_moving, int* layer, Direction d, int w, int h)
 {
 	bool done = false;
 	while (!done)
@@ -268,15 +270,20 @@ void gamestate_timemachine_undo(GamestateTimeMachine* timeMachine)
 	if (timeMachine->num_gamestates_stored > 1)
 		timeMachine->num_gamestates_stored--;
 }
-void gamestate_timemachine_take_action(GamestateTimeMachine* timeMachine, Direction action, Memory* scope_memory, Memory* temp_memory)
+GameState* gamestate_timemachine_get_latest_gamestate(GamestateTimeMachine* timeMachine)
+{
+	return &timeMachine->state_array[timeMachine->num_gamestates_stored - 1];
+}
+GameStateAnimation* gamestate_timemachine_take_action(GamestateTimeMachine* timeMachine, Direction action, Memory* scope_memory, Memory* temp_memory)
 {
 	int next_pos = timeMachine->num_gamestates_stored;
 	int old_pos = next_pos - 1;
 	GameState* old = &timeMachine->state_array[old_pos];
 	GameState* next = &timeMachine->state_array[next_pos];
 	gamestate_clone_to_unitialized(old, next, scope_memory);
-	gamestate_action(next, action, temp_memory);
+	GameStateAnimation* result = gamestate_action(next, action, temp_memory);
 	timeMachine->num_gamestates_stored++;
+	return result;
 }
 
 void gamestate_allocate_layers(GameState* result, Memory* memory, int w, int h)
@@ -357,7 +364,6 @@ bool gamestate_is_in_win_condition(GameState* state)
 	{
 		if (state->layers[LN_FLOOR][i] == F_START && !is_player(state->layers[LN_PIECE][i]))
 		{
-			std::cout << "floor unsatisfied" << std::endl;
 			return false;
 		}
 
@@ -715,13 +721,74 @@ void curse_gamestate(GameState* state)
 				state->layers[LN_PIECE][i] = curse_entity(state->layers[LN_PIECE][i],CursedDirection::CURSED);
 	}
 }
-void gamestate_action(GameState* state, Direction action, Memory* temp_memory)
+
+AnimationMoveInfo* gamestate_animationmoveinfo_create_internal(int num_elements, Memory* temp_memory)
+{
+	AnimationMoveInfo* result = (AnimationMoveInfo*)memory_alloc(temp_memory, sizeof(AnimationMoveInfo));
+	result->pos = (IntPair*)memory_alloc(temp_memory, sizeof(IntPair) * num_elements);
+	result->to_move = (Direction*)memory_alloc(temp_memory, sizeof(Direction) * num_elements);
+	result->start_value = (int*)memory_alloc(temp_memory, sizeof(int) * num_elements);
+	for (int i = 0; i < num_elements; i++)
+	{
+		result->pos[i] = math_intpair_create(0, 0);
+		result->to_move[i] = Direction::NO_DIRECTION;
+		result->start_value[i] = 0;
+	}
+	return result;
+}
+void animationmoveinfo_set_default_positions(AnimationMoveInfo* info, GameState* state)
 {
 	int w = state->w;
 	int h = state->h;
-	int num_elements = w * h;
+	int z = 0;
+	for(int i = 0; i < w;i++)
+		for (int j = 0; j < h; j++, z++)
+		{
+			info->pos[z] = math_intpair_create(i, j);
+		}
+}
+void animationmoveinfo_copy_from_gamestate_internal(AnimationMoveInfo* info, GameState* state)
+{
+	int num_to_draw = state->w * state->h;
+	for (int i = 0; i < num_to_draw; i++)
+	{
+		int next_val = state->layers[LN_PIECE][i];
+		info->start_value[i] = next_val;
+	}
+
+}
+void animationmoveinfo_apply_movements(GameState* state, AnimationMoveInfo* start,AnimationMoveInfo* end, bool* moves, Direction movement, int num_to_draw)
+{
+	int z = 0;
+	for(int i = 0; i < state->w;i++)
+		for(int j = 0;j < state->h;j++,z++)
+		if (moves[z])
+		{
+			start->to_move[z] = movement;
+			end->to_move[z] = movement;
+			IntPair next_goal = move_pos_wrapped_2d(math_intpair_create(i,j),movement, state->w, state->h);
+			end->pos[z] = next_goal;
+		}
+}
+GameStateAnimation* gamestate_action(GameState* state, Direction action, Memory* temp_memory)
+{
+
+	const int w = state->w;
+	const int h = state->h;
+	const int num_elements = w * h;
 	int* pieces = state->layers[LN_PIECE];
 
+	//build the gamestate animation, then set the results to default values.
+	GameStateAnimation* animation;
+	{
+		animation = (GameStateAnimation*) memory_alloc(temp_memory, sizeof(GameStateAnimation));
+		animation->starts = *gamestate_animationmoveinfo_create_internal(w * h, temp_memory);
+		animation->ends = *gamestate_animationmoveinfo_create_internal(w * h, temp_memory);
+		animation->num_to_draw = w * h;
+		animationmoveinfo_copy_from_gamestate_internal(&animation->starts, state);
+		animationmoveinfo_set_default_positions(&animation->starts, state);
+		animationmoveinfo_set_default_positions(&animation->ends, state);
+	}
 	//find the player.
 	int player_1d = 0;
 	IntPair player_2d = math_intpair_create(0,0);
@@ -733,7 +800,7 @@ void gamestate_action(GameState* state, Direction action, Memory* temp_memory)
 			{
 				//if we found a cursed player, cancel the action.
 				if (get_entities_cursed_direction(pieces[i]) == action)
-					return;
+					return NULL;
 				player_1d = i;
 				player_2d = t2D(i,state->w,state->h);
 				break;
@@ -742,7 +809,7 @@ void gamestate_action(GameState* state, Direction action, Memory* temp_memory)
 	}
 
 	//build an array of moving for the "pieces" layer.
-	char* square_moving = (char*)memory_alloc(temp_memory, sizeof(char) * num_elements);
+	bool* square_moving = (bool*)memory_alloc(temp_memory, sizeof(bool) * num_elements);
 	{
 		memset(square_moving, false, sizeof(char) * num_elements);
 		square_moving[player_1d] = true;
@@ -795,8 +862,17 @@ void gamestate_action(GameState* state, Direction action, Memory* temp_memory)
 		}
 	}
 
+	//get final values (e.g. after curses)
+	animationmoveinfo_copy_from_gamestate_internal(&animation->ends, state);
+
+	//calculate animation
+	animationmoveinfo_apply_movements(state,&animation->starts, &animation->ends, square_moving, action, w * h);
+
 	//apply moves.
 	apply_moves_to_layer_SLOW(temp_memory, square_moving, pieces, w, h, action);
+	
+	//fin.
+	return animation;
 }
 
 void gamestate_crumble(GameState* state)

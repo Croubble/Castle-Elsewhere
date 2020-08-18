@@ -198,6 +198,8 @@
     <None Include="fullsprite.vs" />
     <None Include="gl_text.fs" />
     <None Include="gl_text.vs" />
+    <None Include="movesprite.f" />
+    <None Include="movesprite.vs" />
     <None Include="sprite.f" />
     <None Include="sprite.vs" />
     <None Include="string.f" />
@@ -205,6 +207,7 @@
     <None Include="text.vs" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Animation.h" />
     <ClInclude Include="Click.h" />
     <ClInclude Include="Clock.h" />
     <ClInclude Include="Editor.h" />

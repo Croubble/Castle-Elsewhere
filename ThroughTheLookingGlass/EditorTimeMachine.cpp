@@ -34,21 +34,21 @@ void gamestate_timemachine_startstate_empty_init(TimeMachineEditorStartState* st
 	for (int i = 0; i < MAX_NUMBER_GAMESTATES * GAME_LEVEL_NAME_MAX_SIZE; i++)
 		start_state->names[i] = '\0';
 }
-void gamestate_timemachine_editor_initialise_from_start(TimeMachineEditor* editor, TimeMachineEditorStartState* start)
+void gamestate_timemachine_editor_initialise_from_start(TimeMachineEditor* editor, TimeMachineEditorStartState* pos)
 {
 	memory_clear(editor->gamestate_memory);
 	//editor->current_number_of_actions = 0; //removed for now, think inits to 0 anyway first time.
-	editor->current_number_of_gamestates = start->number_of_gamestates;
+	editor->current_number_of_gamestates = pos->number_of_gamestates;
 	for (int i = 0; i < GAME_LEVEL_NAME_MAX_SIZE * MAX_NUMBER_GAMESTATES; i++)
-		editor->names[i] = start->names[i];
-	for (int i = 0; i < start->number_of_gamestates; i++)
+		editor->names[i] = pos->names[i];
+	for (int i = 0; i < pos->number_of_gamestates; i++)
 	{
-		editor->gamestates[i] = gamestate_clone(start->gamestates[i], editor->gamestate_memory);
+		editor->gamestates[i] = gamestate_clone(pos->gamestates[i], editor->gamestate_memory);
 	}
-	for (int i = 0; i < start->number_of_gamestates; i++)
+	for (int i = 0; i < pos->number_of_gamestates; i++)
 	{
-		editor->gamestates_positions[i].x = start->gamestates_positions[i].x;
-		editor->gamestates_positions[i].y = start->gamestates_positions[i].y;
+		editor->gamestates_positions[i].x = pos->gamestates_positions[i].x;
+		editor->gamestates_positions[i].y = pos->gamestates_positions[i].y;
 	}
 }
 bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction action)
@@ -176,7 +176,7 @@ void gamestate_timemachine_editor_take_action(TimeMachineEditor* editor, TimeMac
 		//reset the whole state to the beginning.
 		if (!maybe_start_state)
 		{
-			std::cout << "hmm, when doing an undo action, we passed, a NULL when we should have given a start state. Fix it!" << std::endl;
+			std::cout << "hmm, when doing an undo action, we passed, a NULL when we should have given a pos state. Fix it!" << std::endl;
 			abort();
 		}
 		gamestate_timemachine_editor_initialise_from_start(editor, maybe_start_state);

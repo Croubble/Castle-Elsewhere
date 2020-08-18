@@ -2,6 +2,7 @@
 #include "Math.h"
 #include "GameState.h"
 #include "GenericGamestate.h"
+#include "Animation.h"
 #include <iostream>
 
 struct WorldScene
@@ -13,8 +14,21 @@ struct WorldScene
 	IntPair level_position[MAX_NUMBER_GAMESTATES];
 	bool level_solved[MAX_NUMBER_GAMESTATES];
 	GamestateTimeMachine* maybe_time_machine;
+	Animation* maybe_animation;
 };
 
+Animation* animation_build_from_world(GameStateAnimation* animation, WorldScene* world, Memory* animation_memory)
+{
+	if (world->maybe_time_machine == NULL)
+	{
+		std::cout << "calling animation_build_from_world when there is no time machine" << std::endl;
+		abort();
+	}
+	if (animation == NULL)
+		return NULL;
+	GameState* to_draw = gamestate_timemachine_get_latest_gamestate(world->maybe_time_machine);
+	return animation_build(animation, to_draw, world->level_position[world->current_level], animation_memory, Z_POSITION_STARTING_LAYER + LN_PIECE);
+}
 void world_player_action(WorldScene* scene, Direction action, Memory* level_memory)
 {
 	//grab some useful information that we will reuse.
@@ -106,7 +120,7 @@ void world_player_action(WorldScene* scene, Direction action, Memory* level_memo
 			next_state->layers[LN_PIECE][next_square_position_1d] = current_player_value;
 			scene->current_level = next_square_level;
 		}
-		//if the player is standing on a "start level" tile, initiate a new time_machine.
+		//if the player is standing on a "pos level" tile, initiate a new time_machine.
 		{
 			bool standing_on_start_tile = next_state->layers[LN_FLOOR][next_square_position_1d] == F_START;
 			if (standing_on_start_tile)
@@ -127,6 +141,7 @@ WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene
 	const int num_gamestates = build_from->current_number_of_gamestates;
 	result->num_levels = num_gamestates;
 	result->maybe_time_machine = NULL;
+	result->maybe_animation = NULL;
 	for (int i = 0; i < num_gamestates; i++)
 	{
 		result->level_position[i] = build_from->gamestates_positions[i];
@@ -161,7 +176,7 @@ WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene
 		}
 		if (!done_finding_player)
 		{
-			std::cout << "You tried to instantiate a world that didn't contain a player, so we can't start the world. For now, this is a crash." << std::endl;
+			std::cout << "You tried to instantiate a world that didn't contain a player, so we can't pos the world. For now, this is a crash." << std::endl;
 			abort();
 		}
 	}

@@ -14,22 +14,22 @@ float camera_ratio(ViewPortCamera viewport)
 	int width = viewport.right - viewport.left;
 	return (float) width / (float) height;
 }
-float move_capped_distance(float start, float goal, float cap)
+float move_capped_distance(float pos, float goal, float cap)
 {
-	float dist = goal - start;
+	float dist = goal - pos;
 	if (dist < 0)
 	{
 		if (dist >= -cap)
 			return goal;
-		return start - cap;
+		return pos - cap;
 	}
 	if (dist > 0)
 	{
 		if (dist <= cap)
 			return goal;
-		return start + cap;
+		return pos + cap;
 	}
-	return start;
+	return pos;
 }
 GameSpaceCamera math_camera_reposition_towards_internal(GameSpaceCamera moving, GameSpaceCamera goal, float max_distance)
 {

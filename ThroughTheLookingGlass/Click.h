@@ -52,9 +52,11 @@ struct button_click_state
 struct EditorUIState
 {
 	float time_since_scene_started;
-	float time_since_last_player_move;
+	float time_till_player_can_move;
+	float time_since_last_player_action;
 	float game_height_current;
 
+	char most_recently_pressed_direction;
 	button_click_state* letters;
 
 	button_click_state left;
@@ -105,7 +107,10 @@ EditorUIState click_ui_init(Memory* permanent_memory)
 	EditorUIState result;
 
 	result.time_since_scene_started = 0;
-	result.time_since_last_player_move = 0;
+	result.time_till_player_can_move = 0;
+	result.time_since_last_player_action = 0;
+
+	result.most_recently_pressed_direction = ' ';
 	result.letters = (button_click_state*) memory_alloc(permanent_memory, sizeof(button_click_state) * NUM_LETTERS_ON_KEYBOARD);
 	for (int i = 0; i < NUM_LETTERS_ON_KEYBOARD;i++)
 	{

@@ -67,9 +67,9 @@ Side math_direction_to_side(IntPair pair);
 /******************************** GRID LOGIC ************************************/
 /********************************************************************************/
 
-IntPair math_grid_move_direction(IntPair start, IntPair move, IntPair dimensions);
+IntPair math_grid_move_direction(IntPair pos, IntPair move, IntPair dimensions);
 IntPair math_grid_move_direction(int xStart, int yStart, int xMove, int yMove, int w, int h);
-IntPair math_grid_move_direction_wrapped(IntPair start, IntPair move, IntPair dimensions);
+IntPair math_grid_move_direction_wrapped(IntPair pos, IntPair move, IntPair dimensions);
 IntPair math_grid_move_direction_wrapped(int xStart, int yStart, int xMove, int yMove, int w, int h);
 
 bool* math_grid_walk_adjacent(Memory* result_memory, Memory* temp_memory, int* input_grid, int start_x, int start_y, int w, int h);

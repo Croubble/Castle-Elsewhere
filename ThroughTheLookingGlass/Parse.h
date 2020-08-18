@@ -12,7 +12,7 @@
 */
 struct StringSegment
 {
-	char* start;
+	char* pos;
 	int length;
 };
 
@@ -27,9 +27,9 @@ struct Tokenizer
 {
 	char* at;
 };
-int distance_to_char(const char* start, const char match);
-int parse_number(const char* start);
-bool parse_strings_match(const char* start, const char* match, int max_length);
+int distance_to_char(const char* pos, const char match);
+int parse_number(const char* pos);
+bool parse_strings_match(const char* pos, const char* match, int max_length);
 
 int to_num(char c);
 bool is_num_nonzero(char c);

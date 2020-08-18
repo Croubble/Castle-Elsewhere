@@ -1,9 +1,9 @@
 #include "Math.h"
 
-IntPair math_grid_move_direction(IntPair start, IntPair move, IntPair dimensions)
+IntPair math_grid_move_direction(IntPair pos, IntPair move, IntPair dimensions)
 {
-	int x = start.x + move.x;
-	int y = start.y + move.y;
+	int x = pos.x + move.x;
+	int y = pos.y + move.y;
 	if (x >= dimensions.x)
 		x = dimensions.x - 1;
 	if (y >= dimensions.y)
@@ -28,10 +28,10 @@ IntPair math_grid_move_direction(int xStart, int yStart, int xMove, int yMove, i
 		y = 0;
 	return math_intpair_create(x, y);
 }
-IntPair math_grid_move_direction_wrapped(IntPair start, IntPair move, IntPair dimensions)
+IntPair math_grid_move_direction_wrapped(IntPair pos, IntPair move, IntPair dimensions)
 {
-	int x = start.x + move.x;
-	int y = start.y + move.y;
+	int x = pos.x + move.x;
+	int y = pos.y + move.y;
 	x = x % dimensions.x;
 	y = y % dimensions.y;
 	if (x < 0)

@@ -76,13 +76,12 @@ int main(int argc, char *argv[])
 	}
 #pragma endregion
 #pragma region Memory_AND_TimeMachine_AND_Clock_Setup
-
-
 	Memory* frame_memory = memory_create(1000000);
 	Memory* permanent_memory = memory_create(10000000);
 	Memory* play_memory = memory_create(3000000);
 	Memory* world_memory = memory_create(10000000);
 	Memory* level_memory = memory_create(10000000);
+	Memory* animation_memory = memory_create(1000000);
 	Clock* clock = clock_create(permanent_memory);
 #pragma endregion
 #pragma region Nested GPU Setup
@@ -120,7 +119,7 @@ int main(int argc, char *argv[])
 		glEnable(GL_BLEND); 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		Shader spriteShader = shader_compile_program("sprite.vs", "sprite.f");
+		Shader spriteShader = shader_compile_program("movesprite.vs", "movesprite.f");
 		Shader fullSpriteShader = shader_compile_program("fullsprite.vs", "sprite.f");
 		Shader dottedShader = shader_compile_program("dottedlines.vs","dottedlines.f");
 		Shader textShader = shader_compile_program("text.vs", "sprite.f");
@@ -155,7 +154,7 @@ int main(int argc, char *argv[])
 				layer_draw[i].total_drawn = 0;
 				layer_draw[i].positions_cpu = (glm::vec3*) memory_alloc(permanent_memory, MAX_NUM_FLOOR_SPRITES * sizeof(glm::vec3));
 				layer_draw[i].atlas_cpu = (glm::vec4*) memory_alloc(permanent_memory, MAX_NUM_FLOOR_SPRITES * sizeof(glm::vec4));
-
+				layer_draw[i].movement_cpu = (glm::vec2*) memory_alloc(permanent_memory, MAX_NUM_FLOOR_SPRITES * sizeof(glm::vec2));
 				glUseProgram(spriteShader);
 				std::cout << "Layer DRAW AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH" << std::endl;
 				glGenVertexArrays(1, &layer_draw[i].VAO);
@@ -175,6 +174,7 @@ int main(int argc, char *argv[])
 
 				//TODO:
 
+				//build positions.
 				glGenBuffers(1, &layer_draw[i].positions_VBO);
 				std::cout << glGetError() << std::endl;
 				glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].positions_VBO);
@@ -188,23 +188,31 @@ int main(int argc, char *argv[])
 				glEnableVertexAttribArray(positionOffset);
 				glVertexAttribDivisor(positionOffset, 1);
 
-
+				//build atlas.
 				glGenBuffers(1, &layer_draw[i].atlas_VBO);
-				std::cout << glGetError() << std::endl;
 				glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].atlas_VBO);
-				std::cout << glGetError() << std::endl;
 				glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * MAX_NUM_FLOOR_SPRITES, NULL, GL_DYNAMIC_DRAW);
-				std::cout << glGetError() << std::endl;
-
 
 				GLint atlasOffset = 3;
-				std::cout << glGetError() << std::endl;
 				glVertexAttribPointer(atlasOffset, 4, GL_FLOAT, false, 4 * sizeof(float), (void*)(0));
-				std::cout << glGetError() << std::endl;
 				glEnableVertexAttribArray(atlasOffset);
-				std::cout << glGetError() << std::endl;
 				glVertexAttribDivisor(atlasOffset, 1);
+
+				//build movement.
+				GLint movementOffset = 4;
+				glGenBuffers(1, &layer_draw[i].movement_VBO);
 				std::cout << glGetError() << std::endl;
+				glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].movement_VBO);
+				std::cout << glGetError() << std::endl;
+				glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2)* MAX_NUM_FLOOR_SPRITES, NULL, GL_DYNAMIC_DRAW);
+				std::cout << glGetError() << std::endl;
+				glVertexAttribPointer(movementOffset, 2, GL_FLOAT, false, 2 * sizeof(float), (void*)(0));
+				std::cout << glGetError() << std::endl;
+				glEnableVertexAttribArray(movementOffset);
+				std::cout << glGetError() << std::endl;
+				glVertexAttribDivisor(movementOffset, 1);
+				std::cout << glGetError() << std::endl;
+
 			}
 	#pragma endregion
 	#pragma region Floor GPU setup
@@ -387,7 +395,7 @@ int main(int argc, char *argv[])
 			glVertexAttribPointer(position_offset, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 			glEnableVertexAttribArray(position_offset);
 			glVertexAttribDivisor(position_offset, 1);
-			std::cout << "start new stuff" << std::endl;
+			std::cout << "pos new stuff" << std::endl;
 			glGenBuffers(1, &dotted_scale_buffer);
 			std::cout << glGetError() << std::endl;
 			glBindBuffer(GL_ARRAY_BUFFER, dotted_scale_buffer);
@@ -936,7 +944,8 @@ int main(int argc, char *argv[])
 							total_time = (current_time_ms - start_time_ms) / 1000.0f;
 						}
 						camera = camera_make_matrix(camera_game);
-						ui_state.time_since_last_player_move = maxf(0,ui_state.time_since_last_player_move - delta);
+						ui_state.time_till_player_can_move = maxf(0,ui_state.time_till_player_can_move - delta);
+						ui_state.time_since_last_player_action += delta;
 						ui_state.time_since_scene_started += delta;
 			#pragma endregion
 
@@ -1457,31 +1466,31 @@ int main(int argc, char *argv[])
 			else if (ui_state.type == ECS_NEUTRAL)
 			{
 				if (ui_state.letters['a' - 'a'].pressed_this_frame ||
-					(ui_state.time_since_last_player_move <= 0 && ui_state.left.pressed))
+					(ui_state.time_till_player_can_move <= 0 && ui_state.left.pressed))
 				{
 					gamestate_timemachine_take_action(play_scene_state.timeMachine, L, play_memory, frame_memory);
-					ui_state.time_since_last_player_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+					ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
 				}
 
 				if (ui_state.letters['d' - 'a'].pressed_this_frame ||
-					(ui_state.time_since_last_player_move <= 0 && ui_state.right.pressed))
+					(ui_state.time_till_player_can_move <= 0 && ui_state.right.pressed))
 				{
 					gamestate_timemachine_take_action(play_scene_state.timeMachine, R, play_memory, frame_memory);
-					ui_state.time_since_last_player_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+					ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
 				}
 
 				if (ui_state.letters['w' - 'a'].pressed_this_frame ||
-					(ui_state.time_since_last_player_move <= 0 && ui_state.up.pressed))
+					(ui_state.time_till_player_can_move <= 0 && ui_state.up.pressed))
 				{
 					gamestate_timemachine_take_action(play_scene_state.timeMachine, U, play_memory, frame_memory);
-					ui_state.time_since_last_player_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+					ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
 				}
 
 				if (ui_state.letters['s' - 'a'].pressed_this_frame ||
-					(ui_state.time_since_last_player_move <= 0 && ui_state.down.pressed))
+					(ui_state.time_till_player_can_move <= 0 && ui_state.down.pressed))
 				{
 					gamestate_timemachine_take_action(play_scene_state.timeMachine, D, play_memory, frame_memory);
-					ui_state.time_since_last_player_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+					ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
 				}
 
 				if (ui_state.spacebar.pressed_this_frame)
@@ -1587,33 +1596,38 @@ int main(int argc, char *argv[])
 				#pragma region handle_events
 							bool world_action_taken = false;
 							if (ui_state.letters['w' - 'a'].pressed_this_frame ||
-								(ui_state.letters['w' - 'a'].pressed && ui_state.time_since_last_player_move <= 0))
+								(ui_state.letters['w' - 'a'].pressed && ui_state.time_till_player_can_move <= 0))
 							{
 								world_player_action(world_scene_state, U, level_memory);
-								ui_state.time_since_last_player_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+								ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+								ui_state.time_since_last_player_action = 0;
 							}
 							if (ui_state.letters['a' - 'a'].pressed_this_frame ||
-								(ui_state.letters['a' - 'a'].pressed && ui_state.time_since_last_player_move <= 0))
+								(ui_state.letters['a' - 'a'].pressed && ui_state.time_till_player_can_move <= 0))
 							{
 								world_player_action(world_scene_state, L, level_memory);
-								ui_state.time_since_last_player_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+								ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+								ui_state.time_since_last_player_action = 0;
 							}
 							if (ui_state.letters['d' - 'a'].pressed_this_frame ||
-								(ui_state.letters['d' - 'a'].pressed && ui_state.time_since_last_player_move <= 0))
+								(ui_state.letters['d' - 'a'].pressed && ui_state.time_till_player_can_move <= 0))
 							{
 								world_player_action(world_scene_state, R, level_memory);
-								ui_state.time_since_last_player_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+								ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+								ui_state.time_since_last_player_action = 0;
 							}
 							if (ui_state.letters['s' - 'a'].pressed_this_frame ||
-								(ui_state.letters['s' - 'a'].pressed && ui_state.time_since_last_player_move <= 0))
+								(ui_state.letters['s' - 'a'].pressed && ui_state.time_till_player_can_move <= 0))
 							{
 								world_player_action(world_scene_state, D, level_memory);
-								ui_state.time_since_last_player_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+								ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+								ui_state.time_since_last_player_action = 0;
 							}
 							if (ui_state.backspace_key_down_this_frame)
 							{
 								scene = ST_EDITOR;
 								ui_state.time_since_scene_started = 0;
+								ui_state.time_since_last_player_action = 0;
 							}
 
 							//after taking an action, if there's suddenly a time machine, that means its time to switch scenes!
@@ -1621,6 +1635,7 @@ int main(int argc, char *argv[])
 							{
 								scene = SCENE_TYPE::ST_PLAY_LEVEL;
 								ui_state.time_since_scene_started = 0;
+								ui_state.time_since_last_player_action = 0;
 							}
 
 				#pragma endregion	
@@ -1661,39 +1676,23 @@ int main(int argc, char *argv[])
 					//if we should be allowed to take actions:
 					if (ui_state.time_since_scene_started > DRAW_TITLE_TIME)
 					{
-						if (ui_state.letters['w' - 'a'].pressed_this_frame ||
-							(ui_state.letters['w' - 'a'].pressed && ui_state.time_since_last_player_move <= 0))
-						{
-							gamestate_timemachine_take_action(world_scene_state->maybe_time_machine, U, level_memory, frame_memory);
-							ui_state.time_since_last_player_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-						}
-						if (ui_state.letters['a' - 'a'].pressed_this_frame ||
-							(ui_state.letters['a' - 'a'].pressed && ui_state.time_since_last_player_move <= 0))
-						{
-							gamestate_timemachine_take_action(world_scene_state->maybe_time_machine, L, level_memory, frame_memory);
-							ui_state.time_since_last_player_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-						}
-						if (ui_state.letters['d' - 'a'].pressed_this_frame ||
-							(ui_state.letters['d' - 'a'].pressed && ui_state.time_since_last_player_move <= 0))
-						{
-							gamestate_timemachine_take_action(world_scene_state->maybe_time_machine, R, level_memory, frame_memory);
-							ui_state.time_since_last_player_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-						}
-						if (ui_state.letters['s' - 'a'].pressed_this_frame ||
-							(ui_state.letters['s' - 'a'].pressed && ui_state.time_since_last_player_move <= 0))
-						{
-							gamestate_timemachine_take_action(world_scene_state->maybe_time_machine, D, level_memory, frame_memory);
-							ui_state.time_since_last_player_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-						}
+						char letter_priority = ui_state.most_recently_pressed_direction;
+						maybe_take_player_action(world_scene_state, &ui_state, 'w', U, level_memory, frame_memory,animation_memory);
+						maybe_take_player_action(world_scene_state, &ui_state, 'a', L, level_memory, frame_memory,animation_memory);
+						maybe_take_player_action(world_scene_state, &ui_state, 's', D, level_memory, frame_memory,animation_memory);
+						maybe_take_player_action(world_scene_state, &ui_state, 'd', R, level_memory, frame_memory,animation_memory);
 						if (ui_state.letters['z' - 'a'].pressed_this_frame ||
-							(ui_state.letters['z' - 'a'].pressed && ui_state.time_since_last_player_move <= 0))
+							(ui_state.letters['z' - 'a'].pressed && ui_state.time_till_player_can_move <= 0))
 						{
 							gamestate_timemachine_undo(world_scene_state->maybe_time_machine);
-							ui_state.time_since_last_player_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+							ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+							world_scene_state->maybe_animation = NULL;
+							
 						}
 						if (ui_state.letters['r' - 'a'].pressed_this_frame)
 						{
 							gamestate_timemachine_reset(world_scene_state->maybe_time_machine, level_memory);
+							world_scene_state->maybe_animation = NULL;
 						}
 					}
 
@@ -1745,15 +1744,29 @@ int main(int argc, char *argv[])
 				{
 					#pragma region send draw data to gpu
 					int world_index_to_draw = world_scene_state->current_level;
-					int gamestate_index_to_draw = world_scene_state->maybe_time_machine->num_gamestates_stored;
-					GameState* to_draw = &world_scene_state->maybe_time_machine->state_array[gamestate_index_to_draw - 1];
-					int current_level = world_scene_state->current_level;
-					IntPair* to_draw_position = &world_scene_state->level_position[current_level];
-					draw_layers_to_gamespace(
-						&to_draw,
-						to_draw_position,
-						1,
-						layer_draw);
+					//draw the static gamestate, or draw the gamestate animation.
+					{
+						int gamestate_index_to_draw = world_scene_state->maybe_time_machine->num_gamestates_stored;
+						GameState* to_draw = &world_scene_state->maybe_time_machine->state_array[gamestate_index_to_draw - 1];
+						int current_level = world_scene_state->current_level;
+						IntPair* to_draw_position = &world_scene_state->level_position[current_level];
+						if (world_scene_state->maybe_animation)
+						{
+							draw_layer_to_gamespace(&to_draw, to_draw_position, 1, layer_draw, LN_FLOOR);
+							draw_animation_to_gamespace(world_scene_state->maybe_animation, layer_draw, LN_PIECE,ui_state.time_since_last_player_action);
+							//draw each animation element.
+						}
+						else
+						{
+							draw_layers_to_gamespace(
+								&to_draw,
+								to_draw_position,
+								1,
+								layer_draw);
+						}
+
+					}
+
 
 					if (ui_state.time_since_scene_started <= DRAW_TITLE_TIME)
 					{
@@ -1810,6 +1823,8 @@ int main(int argc, char *argv[])
 				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4) * layer_draw[i].total_drawn,layer_draw[i].atlas_cpu);
 				glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].positions_VBO);
 				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4)* layer_draw[i].total_drawn, layer_draw[i].positions_cpu);
+				glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].movement_VBO);
+				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec2) * layer_draw[i].total_drawn, layer_draw[i].movement_cpu);
 				glBindTexture(GL_TEXTURE_2D, layer_draw[i].texture);
 				glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, layer_draw[i].total_drawn);
 			}
@@ -1902,6 +1917,17 @@ int main(int argc, char *argv[])
 	}
 }
 
+
+void maybe_take_player_action(WorldScene* world_scene_state, EditorUIState* ui_state, char letter_to_test, Direction action, Memory* level_memory, Memory* frame_memory, Memory* animation_memory)
+{
+	if (ui_state->letters[letter_to_test - 'a'].pressed && ui_state->time_till_player_can_move <= 0)
+	{
+		GameStateAnimation* animation = gamestate_timemachine_take_action(world_scene_state->maybe_time_machine, action, level_memory, frame_memory);
+		ui_state->time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+		ui_state->time_since_last_player_action = 0;
+		world_scene_state->maybe_animation = animation_build_from_world(animation, world_scene_state, animation_memory);
+	}
+}
 /*
 float draw_text_to_screen(glm::vec3 start_position, 
 	const char* c_string, 
@@ -2164,9 +2190,32 @@ void draw_gamestates_outlines_to_gamespace(GameState** gamestates,IntPair* offse
 		info->num_sprites_drawn++;
 	}
 }
-void draw_layers_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info)
+
+void draw_animation_to_gamespace(Animation* animation, LayerDrawGPUData* info_array, int layer_index, float time_since_last_action)
 {
-	for (int i = 0; i < GAME_NUM_LAYERS; i++)
+	float l = time_since_last_action / WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+
+	l = maxf(0, l);
+	l = minf(1, l);
+
+	LayerDrawGPUData* info = &info_array[layer_index];
+	int len = animation->num_elements;
+	for (int i = 0; i < len; i++)
+	{
+		int ele = resource_layer_value_to_layer_sprite_value(animation->sprite_value[i],layer_index);
+		if (ele == 0)
+			continue;
+		info->atlas_cpu[info->total_drawn] = info->atlas_mapper[ele];
+		info->positions_cpu[info->total_drawn] = animation->start_position[i];
+		info->movement_cpu[info->total_drawn] = animation->start_offset[i] * (1.0f - l) + animation->end_offset[i] * l;
+		if (info->movement_cpu[info->total_drawn].x > 1)
+			std::cout << " CHECK HERE" << std::endl;
+		info->total_drawn++;
+	}
+}
+void draw_layer_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index)
+{
+	int i = layer_index;
 	{
 		for (int z = 0; z < number_of_gamestates; z++)
 		{
@@ -2179,7 +2228,7 @@ void draw_layers_to_gamespace(GameState** gamestates, IntPair* offsets, int numb
 				int ele = gamestate->layers[i][k];
 				int ele_image = resource_layer_value_to_layer_sprite_value(ele, i);
 				info[i].atlas_cpu[info[i].total_drawn + k] = info[i].atlas_mapper[ele_image];
-
+				info[i].movement_cpu[info[i].total_drawn + k] = glm::vec2(0, 0);
 				IntPair p = t2D(k, gamestate->w, gamestate->h);
 				info[i].positions_cpu[info[i].total_drawn + k] = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i);
 			}
@@ -2203,6 +2252,7 @@ void draw_layers_to_gamespace(GameState** gamestates, IntPair* offsets, int numb
 						info[i].atlas_cpu[info[i].total_drawn] = info[i].atlas_mapper[curse_to_draw];
 						IntPair p = t2D(k, gamestate->w, gamestate->h);
 						info[i].positions_cpu[info[i].total_drawn] = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i + 0.2f);
+						info[i].movement_cpu[info[i].total_drawn] = glm::vec2(0, 0);
 						info[i].total_drawn++;
 					}
 
@@ -2211,6 +2261,14 @@ void draw_layers_to_gamespace(GameState** gamestates, IntPair* offsets, int numb
 		}
 	}
 }
+void draw_layers_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info)
+{
+	for (int i = 0; i < GAME_NUM_LAYERS; i++)
+	{
+		draw_layer_to_gamespace(gamestates, offsets, number_of_gamestates, info, i);
+	}
+}
+
 /*
 void draw_gamestates_to_gamespace(GameState** gamestates,IntPair* offsets,int number_of_gamestates,GamespriteDrawInfo info)
 {
@@ -2292,6 +2350,7 @@ void draw_palette(IntPair palete_screen_start,
 				LayerDrawGPUData* floor = &layer_draw[LN_FLOOR];
 				floor->atlas_cpu[floor->total_drawn] = floor->atlas_mapper[palete[i].floor];
 				floor->positions_cpu[floor->total_drawn] = glm::vec3(palete_true_start.x + i, palete_true_start.y, 4);
+				floor->movement_cpu[floor->total_drawn] = glm::vec2(0, 0);
 				floor->total_drawn++;
 			}
 			if (palete[i].applyPiece)
@@ -2299,6 +2358,7 @@ void draw_palette(IntPair palete_screen_start,
 				LayerDrawGPUData* piece = &layer_draw[LN_PIECE];
 				piece->atlas_cpu[piece->total_drawn] = piece->atlas_mapper[palete[i].piece];
 				piece->positions_cpu[piece->total_drawn] = glm::vec3(palete_true_start.x + i, palete_true_start.y, 5);
+				piece->movement_cpu[piece->total_drawn] = glm::vec2(0, 0);
 				piece->total_drawn++;
 			}
 		}

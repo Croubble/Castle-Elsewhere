@@ -15,6 +15,7 @@
 #include <ft2build.h>
 #include "Parse.h"
 #include "World.h"
+#include "Animation.h"
 #include FT_FREETYPE_H  
 
 enum SCENE_TYPE
@@ -88,13 +89,14 @@ const int FONT_NUM_CHARACTERS = 128;
 
 const int max_actions_in_puzzle = 1024;
 
-const float Z_POSITION_STARTING_LAYER = 2;
-
-const float WAIT_BETWEEN_PLAYER_MOVE_REPEAT = 0.11f;
+const float WAIT_BETWEEN_PLAYER_MOVE_REPEAT = 0.13f;
 const float DRAW_TITLE_TIME = 2.0f;
 //helper functions.
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
+
+void draw_animation_to_gamespace(Animation* animation, LayerDrawGPUData* info_array, int layer_index, float time_since_last_action);
+void draw_layer_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index);
 void draw_layers_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info);
 
 void draw_gamestates_outlines_to_gamespace(
@@ -116,6 +118,7 @@ float draw_text_to_screen(glm::vec3 start_position,
 	int* current_draw,
 	float num_pixels_per_gameunit);
 	*/
+void maybe_take_player_action(WorldScene* world_scene_state, EditorUIState* ui_state, char letter_to_test, Direction action, Memory* level_memory, Memory* frame_memory, Memory* animation_memory);
 float get_text_to_screen_size(glm::vec3 start_position, glm::vec2 scale, const char* c_string, TextDrawInfo* info);
 float draw_text_to_screen(glm::vec3 start_position, glm::vec2 scale, const char* c_string, TextDrawInfo* info);
 WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene_memory);

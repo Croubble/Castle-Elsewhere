@@ -2,7 +2,7 @@
 
 //TODO: Figure out how we are actually going to write fonts. 
 //remember to look at openGL fonts stuff, its pretty helpful.
-//maybe start by just using a standard gylph font model? Honestly, it could be a really excellent placeholder, last a long while and let us 
+//maybe pos by just using a standard gylph font model? Honestly, it could be a really excellent placeholder, last a long while and let us 
 //get a bunch of stuff out the way.
 
 //okay so lets think about the plan like this. 

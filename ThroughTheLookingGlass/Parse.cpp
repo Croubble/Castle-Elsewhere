@@ -1,32 +1,32 @@
 #include "Parse.h"
 #include <iostream>
-int distance_to_char(const char* start, const char match)
+int distance_to_char(const char* pos, const char match)
 {
 	int i = 0;
-	for (; start[0] != match || start[0] == '\0'; start++)
+	for (; pos[0] != match || pos[0] == '\0'; pos++)
 	{
 		i++;
 	}
 	return i;
 }
 
-int parse_number(const char* start)
+int parse_number(const char* pos)
 {
 	int result = 0;
-	for (; start[0] >= '0' && start[0] <= '9'; start++)
+	for (; pos[0] >= '0' && pos[0] <= '9'; pos++)
 	{
 		result *= 10;
-		int to_add = start[0] - '0';
+		int to_add = pos[0] - '0';
 		result += to_add;
 	}
 	return result;
 }
 
-bool parse_strings_match(const char* start, const char* match, int max_length)
+bool parse_strings_match(const char* pos, const char* match, int max_length)
 {
-	for (int i = 0; i < max_length; i++, start++, match++)
+	for (int i = 0; i < max_length; i++, pos++, match++)
 	{
-		if (start[0] != match[0])
+		if (pos[0] != match[0])
 			return false;
 	}
 	return true;

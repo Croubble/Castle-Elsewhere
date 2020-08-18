@@ -121,12 +121,26 @@ enum CursedDirection {
 	UCURSED,RCURSED,DCURSED,LCURSED,CURSED,NOTCURSED
 };
 enum Direction {
-	U,R,D,L
+	U,R,D,L,NO_DIRECTION,DIRECTION_COUNT
 };
 
-struct Animation
-{
+enum AnimationType {
+	AT_NONE,
+	AT_MOVE,
+	AT_COUNT
+};
 
+struct AnimationMoveInfo
+{
+	IntPair* pos;
+	Direction* to_move;
+	int* start_value;
+};
+struct GameStateAnimation
+{
+	int num_to_draw;
+	AnimationMoveInfo starts;
+	AnimationMoveInfo ends;
 };
 Direction direction_reverse(Direction dir);
 IntPair direction_to_intpair(Direction dir);
@@ -135,8 +149,9 @@ void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scop
 /*********************************************************************/
 void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scope_memory);
 void gamestate_timemachine_undo(GamestateTimeMachine* timeMachine);
+GameState* gamestate_timemachine_get_latest_gamestate(GamestateTimeMachine* timeMachine);
 GamestateTimeMachine* gamestate_timemachine_create(GameState* start_state, Memory* memory, int max_num_gamestates);
-void gamestate_timemachine_take_action(GamestateTimeMachine* timeMachine, Direction action, Memory* scope_memory, Memory* temp_memory);
+GameStateAnimation* gamestate_timemachine_take_action(GamestateTimeMachine* timeMachine, Direction action, Memory* scope_memory, Memory* temp_memory);
 /*************************PALETTE_BRUSH*******************************/
 /*********************************************************************/
 GamestateBrush gamestate_brush_create(bool applyFloor, Floor floor, bool applyPiece, Piece piece);
@@ -179,7 +194,7 @@ int curse_entity(int entity_value, CursedDirection curse_to_apply);
 /******************************GAMESTATE GAME ACTION WRITE**********************/
 /********************************************************************/
 
-void gamestate_action(GameState* state, Direction action, Memory* temp_memory);
+GameStateAnimation* gamestate_action(GameState* state, Direction action, Memory* temp_memory);
 void gamestate_crumble(GameState* state);
 void gamestate_extrude_lurking_walls(GameState* state);
 

@@ -143,6 +143,12 @@
     <None Include="draw_to_screen.vs">
       <Filter>Source Files\Shaders\DebugShaders</Filter>
     </None>
+    <None Include="movesprite.f">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="movesprite.vs">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resource.h">
@@ -213,6 +219,9 @@
     </ClInclude>
     <ClInclude Include="Regex.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Source Files\Main</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
