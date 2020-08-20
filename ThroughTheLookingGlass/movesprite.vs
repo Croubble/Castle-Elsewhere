@@ -4,10 +4,12 @@ layout (location = 1) in vec2 inputTexCoord;
 layout (location = 2) in vec3 positionOffset;
 layout (location = 3) in vec4 atlasCoord;	//first two the x_start, second two the y_start
 layout (location = 4) in vec2 movementoffset;
+layout (location = 5) in vec4 colorOffset;
 uniform mat4 viewProjectionMatrix;
 
 out vec2 TexCoord;
 out vec2 UnadjustedTexCoord;
+out vec4 color;
 //out vec2 nonAtlasTexCoord;
 void main()
 {
@@ -33,6 +35,7 @@ void main()
 	float yPos = true_input.y * atlasCoord.w + (1 - true_input.y) * atlasCoord.y;
 	TexCoord = vec2(xPos,yPos);
 	UnadjustedTexCoord = true_input;
+	color = colorOffset;
 }
 
 //todo: there positions, the moving sprite positions, stay static the whole time. the offset of texture reading moves.

@@ -155,6 +155,7 @@ int main(int argc, char *argv[])
 				layer_draw[i].positions_cpu = (glm::vec3*) memory_alloc(permanent_memory, MAX_NUM_FLOOR_SPRITES * sizeof(glm::vec3));
 				layer_draw[i].atlas_cpu = (glm::vec4*) memory_alloc(permanent_memory, MAX_NUM_FLOOR_SPRITES * sizeof(glm::vec4));
 				layer_draw[i].movement_cpu = (glm::vec2*) memory_alloc(permanent_memory, MAX_NUM_FLOOR_SPRITES * sizeof(glm::vec2));
+				layer_draw[i].color_cpu = (glm::vec4*) memory_alloc(permanent_memory, MAX_NUM_FLOOR_SPRITES * sizeof(glm::vec4));
 				glUseProgram(spriteShader);
 				std::cout << "Layer DRAW AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH" << std::endl;
 				glGenVertexArrays(1, &layer_draw[i].VAO);
@@ -199,19 +200,28 @@ int main(int argc, char *argv[])
 				glVertexAttribDivisor(atlasOffset, 1);
 
 				//build movement.
-				GLint movementOffset = 4;
-				glGenBuffers(1, &layer_draw[i].movement_VBO);
-				std::cout << glGetError() << std::endl;
-				glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].movement_VBO);
-				std::cout << glGetError() << std::endl;
-				glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2)* MAX_NUM_FLOOR_SPRITES, NULL, GL_DYNAMIC_DRAW);
-				std::cout << glGetError() << std::endl;
-				glVertexAttribPointer(movementOffset, 2, GL_FLOAT, false, 2 * sizeof(float), (void*)(0));
-				std::cout << glGetError() << std::endl;
-				glEnableVertexAttribArray(movementOffset);
-				std::cout << glGetError() << std::endl;
-				glVertexAttribDivisor(movementOffset, 1);
-				std::cout << glGetError() << std::endl;
+				{
+					GLint movementOffset = 4;
+					glGenBuffers(1, &layer_draw[i].movement_VBO);
+					glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].movement_VBO);
+					glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2)* MAX_NUM_FLOOR_SPRITES, NULL, GL_DYNAMIC_DRAW);
+					glVertexAttribPointer(movementOffset, 2, GL_FLOAT, false, 2 * sizeof(float), (void*)(0));
+					glEnableVertexAttribArray(movementOffset);
+					glVertexAttribDivisor(movementOffset, 1);
+				}
+
+				
+				//build color.
+				{
+					GLint colorOffset = 5;
+					glGenBuffers(1, &layer_draw[i].color_VBO);
+					glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].color_VBO);
+					glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * MAX_NUM_FLOOR_SPRITES, NULL, GL_DYNAMIC_DRAW);
+					glVertexAttribPointer(colorOffset, 4, GL_FLOAT, false, 4 * sizeof(float), (void*)(0));
+					glEnableVertexAttribArray(colorOffset);
+					glVertexAttribDivisor(colorOffset, 1);
+				}
+
 
 			}
 	#pragma endregion
@@ -668,12 +678,7 @@ int main(int argc, char *argv[])
 		TimeMachineEditorStartState* time_machine_start_state = (TimeMachineEditorStartState *) memory_alloc(permanent_memory,sizeof(TimeMachineEditorStartState));
 		gamestate_timemachine_startstate_empty_init(time_machine_start_state);
 		gamestate_timemachine_editor_initialise_from_start(timeMachine,time_machine_start_state);
-		//TimeMachineEditorAction action1 = gamestate_timemachineaction_create_create_action(0, 0, 7, 7);
-		//TimeMachineEditorAction action2 = gamestate_timemachineaction_create_create_action(10, 10, 5, 8);
-		//TimeMachineEditorAction action3 = gamestate_timemachineaction_create_create_action(20, 3, 3, 6);
-		//gamestate_timemachine_editor_take_action(timeMachine, action1);
-		//gamestate_timemachine_editor_take_action(timeMachine, action2);
-		//gamestate_timemachine_editor_take_action(timeMachine, action3);
+
 		//mouse state:
 		glm::vec2 dragging_start_position_in_gamespace = glm::vec2(0, 0);
 
@@ -686,7 +691,7 @@ int main(int argc, char *argv[])
 
 		//build gamestate
 		GameState* gamestate = gamestate_create(permanent_memory, 5, 5);
-		int palete_length = 12;
+		int palete_length = 15;
 		int currentBrush = 0;
 		GamestateBrush* palete = (GamestateBrush*) memory_alloc(permanent_memory, sizeof(GamestateBrush) * palete_length);
 		IntPair palete_screen_start = math_intpair_create(camera_viewport.left + 60, camera_viewport.up - 120);
@@ -698,14 +703,17 @@ int main(int argc, char *argv[])
 			palete[i++] = gamestate_brush_create(true, F_CURSE, false, P_NONE);
 			palete[i++] = gamestate_brush_create(true, F_CLEANSE, false, P_NONE);
 			palete[i++] = gamestate_brush_create(true, F_LURKING_WALL, false, P_NONE);
+			palete[i++] = gamestate_brush_create(false, F_NONE, true, Piece::P_NONE);
 			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_WALL);
 			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_WALL_ALT);
 			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRUMBLE);
 			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE);
 			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_PULL_CRATE);
 			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_PLAYER);
-			palete[i++] = gamestate_brush_create(false, F_NONE, true, Piece::P_NONE);
-
+			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CURSED_CRATE);
+			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CURSED_PULL_CRATE);
+			if (i != palete_length)
+				abort();
 		}
 	#pragma endregion
 	#pragma region MAIN_LOOP
@@ -747,6 +755,7 @@ int main(int argc, char *argv[])
 										if (ui_state.letters[i].released_since_pressed_last)
 										{
 											ui_state.letters[i].pressed_this_frame = true;
+											ui_state.letters[i].time_pressed = ui_state.total_time_passed;
 										}
 										ui_state.letters[i].released_since_pressed_last = false;
 									}
@@ -943,10 +952,12 @@ int main(int argc, char *argv[])
 							delta = delta_ms / 1000.0f;
 							total_time = (current_time_ms - start_time_ms) / 1000.0f;
 						}
-						camera = camera_make_matrix(camera_game);
-						ui_state.time_till_player_can_move = maxf(0,ui_state.time_till_player_can_move - delta);
+						ui_state.time_till_player_can_move = maxf(0, ui_state.time_till_player_can_move - delta);
 						ui_state.time_since_last_player_action += delta;
 						ui_state.time_since_scene_started += delta;
+						ui_state.total_time_passed = total_time;
+						camera = camera_make_matrix(camera_game);
+
 			#pragma endregion
 
 			if (scene == ST_EDITOR)
@@ -1020,8 +1031,8 @@ int main(int argc, char *argv[])
 											IntPair state_start = timeMachine->gamestates_positions[index_clicked];
 											IntPair grid_clicked = calculate_floor_cell_clicked(state, state_start, ui_state.mouseGamePos);
 											//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
-											GameState* next = gamestate_add_row(state, permanent_memory, grid_clicked.x, grid_clicked.y);
-											TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked);
+											GameState* next = gamestate_add_row(state, timeMachine->gamestate_memory, grid_clicked.x, grid_clicked.y);
+											TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, &timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
 											gamestate_timemachine_editor_take_action(timeMachine, NULL, action);
 										}
 									
@@ -1037,7 +1048,7 @@ int main(int argc, char *argv[])
 											IntPair grid_clicked = calculate_floor_cell_clicked(state, state_start, ui_state.mouseGamePos);
 											//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
 											GameState* next = gamestate_add_column(state, permanent_memory, grid_clicked.x, grid_clicked.y);
-											TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked);
+											TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, &timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
 											gamestate_timemachine_editor_take_action(timeMachine, NULL, action);
 										}
 									}
@@ -1049,7 +1060,7 @@ int main(int argc, char *argv[])
 										{
 											GameState* state = timeMachine->gamestates[index_clicked];
 											GameState* next = gamestate_surround_with_walls(state, permanent_memory);
-											TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked);
+											TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, &timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
 											gamestate_timemachine_editor_take_action(timeMachine, NULL, action);
 										}
 									}
@@ -1413,6 +1424,11 @@ int main(int argc, char *argv[])
 										timeMachine->gamestates_positions,
 										timeMachine->current_number_of_gamestates,
 										layer_draw);
+
+									draw_curse_to_gamespace(timeMachine->gamestates,
+										timeMachine->gamestates_positions,
+										timeMachine->current_number_of_gamestates,
+										layer_draw);
 								}
 								//parse palette data to gpu form
 								draw_palette(palete_screen_start, camera_game, camera_viewport, &ui_state, palete_length, palete, layer_draw);
@@ -1575,13 +1591,19 @@ int main(int argc, char *argv[])
 					&(play_scene_state.loc),
 					1,
 					layer_draw);
-
+				draw_curse_to_gamespace(&(play_draw),
+					&(play_scene_state.loc),
+					1,
+					layer_draw);
 				draw_layers_to_gamespace(
 					&(edit_draw),
 					&(next_position),
 					1,
 					layer_draw);
-				
+				draw_curse_to_gamespace(&(edit_draw),
+					&(next_position),
+					1,
+					layer_draw);
 				glm::vec3 text_start_pos = glm::vec3(next_position.x,next_position.y + edit_draw->h, 0);
 				draw_text_to_screen(text_start_pos, glm::vec2(1,1),play_scene_state.game_name, &text_draw_info);
 				//draw_text_to_screen(text_start_pos, play_scene_state.game_name, string_matrix_cpu, string_atlas_cpu, string_true_font_reference, text_positions, text_positions_normalized, &string_total_drawn, SCREEN_HEIGHT / ui_state.game_height_current);
@@ -1665,6 +1687,11 @@ int main(int argc, char *argv[])
 								world_scene_state->level_position,
 								world_scene_state->num_levels,
 								layer_draw);
+							draw_curse_to_gamespace(
+								world_scene_state->level_state,
+								world_scene_state->level_position,
+								world_scene_state->num_levels,
+								layer_draw);
 				#pragma endregion
 			}
 			else if (scene == ST_PLAY_LEVEL)
@@ -1677,10 +1704,29 @@ int main(int argc, char *argv[])
 					if (ui_state.time_since_scene_started > DRAW_TITLE_TIME)
 					{
 						char letter_priority = ui_state.most_recently_pressed_direction;
-						maybe_take_player_action(world_scene_state, &ui_state, 'w', U, level_memory, frame_memory,animation_memory);
-						maybe_take_player_action(world_scene_state, &ui_state, 'a', L, level_memory, frame_memory,animation_memory);
-						maybe_take_player_action(world_scene_state, &ui_state, 's', D, level_memory, frame_memory,animation_memory);
-						maybe_take_player_action(world_scene_state, &ui_state, 'd', R, level_memory, frame_memory,animation_memory);
+
+						if (ui_state.time_till_player_can_move <= 0)
+						{
+							char button_names[4] = { 'w', 'a', 's', 'd' };
+							Direction button_actions[4] = { U, L, D, R };
+							bool button_pressed = false;
+							int button_press_index = -1;
+							float time_button_pressed = -1;
+							for (int i = 0; i < 4; i++)
+							{
+								if (ui_state.letters[button_names[i] - 'a'].pressed)
+									if (ui_state.letters[button_names[i] - 'a'].time_pressed > time_button_pressed || !button_pressed)
+									{
+										button_pressed = true;
+										button_press_index = i;
+										time_button_pressed = ui_state.letters[button_names[i] - 'a'].time_pressed;
+									}
+							}
+							if (button_pressed)
+							{
+								take_player_action(world_scene_state, &ui_state, button_actions[button_press_index], level_memory, frame_memory, animation_memory);
+							}
+						}
 						if (ui_state.letters['z' - 'a'].pressed_this_frame ||
 							(ui_state.letters['z' - 'a'].pressed && ui_state.time_till_player_can_move <= 0))
 						{
@@ -1750,19 +1796,49 @@ int main(int argc, char *argv[])
 						GameState* to_draw = &world_scene_state->maybe_time_machine->state_array[gamestate_index_to_draw - 1];
 						int current_level = world_scene_state->current_level;
 						IntPair* to_draw_position = &world_scene_state->level_position[current_level];
-						if (world_scene_state->maybe_animation)
+						if (world_scene_state->maybe_animation && world_scene_state->maybe_animation->maybe_movement_animation)
 						{
 							draw_layer_to_gamespace(&to_draw, to_draw_position, 1, layer_draw, LN_FLOOR);
-							draw_animation_to_gamespace(world_scene_state->maybe_animation, layer_draw, LN_PIECE,ui_state.time_since_last_player_action);
-							//draw each animation element.
+							bool done_animating_movement = true;
+							done_animating_movement = draw_animation_to_gamespace(world_scene_state->maybe_animation->maybe_movement_animation, layer_draw, LN_PIECE,ui_state.time_since_last_player_action);
+							if (done_animating_movement)
+							{
+								draw_piece_curses_to_gamespace(&to_draw, to_draw_position, 1, layer_draw, LN_PIECE, world_scene_state->maybe_animation->curse_animation, ui_state.time_since_last_player_action);
+							}
+							else
+							{
+								draw_stationary_piece_curses_to_gamespace(world_scene_state->maybe_animation->maybe_movement_animation,
+									world_scene_state->maybe_animation->curse_animation,
+									&world_scene_state->maybe_animation->old_state,
+									to_draw_position, 
+									1, 
+									layer_draw, 
+									LN_PIECE,
+									ui_state.time_since_last_player_action);
+							}
 						}
-						else
+						if(!world_scene_state->maybe_animation || !world_scene_state->maybe_animation->maybe_movement_animation)
 						{
 							draw_layers_to_gamespace(
 								&to_draw,
 								to_draw_position,
 								1,
 								layer_draw);
+						}
+						if (!world_scene_state->maybe_animation || !world_scene_state->maybe_animation->curse_animation)
+						{
+							draw_curse_to_gamespace(&to_draw, to_draw_position, 1, layer_draw);
+						}
+						else if (world_scene_state->maybe_animation && world_scene_state->maybe_animation->curse_animation && !world_scene_state->maybe_animation->maybe_movement_animation)
+						{
+							draw_stationary_piece_curses_to_gamespace(world_scene_state->maybe_animation->maybe_movement_animation,
+								world_scene_state->maybe_animation->curse_animation,
+								&world_scene_state->maybe_animation->old_state,
+								to_draw_position,
+								1,
+								layer_draw,
+								LN_PIECE,
+								ui_state.time_since_last_player_action);
 						}
 
 					}
@@ -1814,7 +1890,6 @@ int main(int argc, char *argv[])
 			}
 			
 			//draw layers
-			//for (int i = 0; i < GAME_NUM_LAYERS; i++)
 			for (int i = 0; i < GAME_NUM_LAYERS; i++)
 			{
 				glBindVertexArray(layer_draw[i].VAO);
@@ -1825,6 +1900,8 @@ int main(int argc, char *argv[])
 				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4)* layer_draw[i].total_drawn, layer_draw[i].positions_cpu);
 				glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].movement_VBO);
 				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec2) * layer_draw[i].total_drawn, layer_draw[i].movement_cpu);
+				glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].color_VBO);
+				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4)* layer_draw[i].total_drawn, layer_draw[i].color_cpu);
 				glBindTexture(GL_TEXTURE_2D, layer_draw[i].texture);
 				glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, layer_draw[i].total_drawn);
 			}
@@ -1918,15 +1995,15 @@ int main(int argc, char *argv[])
 }
 
 
-void maybe_take_player_action(WorldScene* world_scene_state, EditorUIState* ui_state, char letter_to_test, Direction action, Memory* level_memory, Memory* frame_memory, Memory* animation_memory)
+void take_player_action(WorldScene* world_scene_state, EditorUIState* ui_state, Direction action, Memory* level_memory, Memory* frame_memory, Memory* animation_memory)
 {
-	if (ui_state->letters[letter_to_test - 'a'].pressed && ui_state->time_till_player_can_move <= 0)
-	{
-		GameStateAnimation* animation = gamestate_timemachine_take_action(world_scene_state->maybe_time_machine, action, level_memory, frame_memory);
-		ui_state->time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-		ui_state->time_since_last_player_action = 0;
-		world_scene_state->maybe_animation = animation_build_from_world(animation, world_scene_state, animation_memory);
-	}
+	GameActionJournal* journal = gamestate_timemachine_take_action(world_scene_state->maybe_time_machine, action, level_memory, frame_memory);
+	GameStateAnimation* animation = journal->maybe_animation;
+	ui_state->time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+	ui_state->time_since_last_player_action = 0;
+	Animations* a = animation_build_from_world(journal, world_scene_state, animation_memory);
+	world_scene_state->maybe_animation = a;
+	
 }
 /*
 float draw_text_to_screen(glm::vec3 start_position, 
@@ -2191,7 +2268,89 @@ void draw_gamestates_outlines_to_gamespace(GameState** gamestates,IntPair* offse
 	}
 }
 
-void draw_animation_to_gamespace(Animation* animation, LayerDrawGPUData* info_array, int layer_index, float time_since_last_action)
+void draw_stationary_piece_curses_to_gamespace(MovementAnimation* animation, 
+	DrawCurseAnimation* curse_animation,
+	GameState** gamestates, 
+	IntPair* offsets,
+	int number_of_gamestates,
+	LayerDrawGPUData* info, 
+	int layer_index,
+	float time_since_last_action)
+{
+	int i = layer_index;
+	for (int z = 0; z < number_of_gamestates; z++)
+	{
+		GameState* gamestate = gamestates[z];
+		IntPair offset = offsets[z];
+		int num_elements_in_gamestate = gamestate->w * gamestate->h;
+		for (int k = 0; k < num_elements_in_gamestate; k++)
+		{
+			int ele = gamestate->layers[i][k];
+			CursedDirection curse_status = get_entities_cursed_direction(ele);
+			if (curse_status != CursedDirection::NOTCURSED && 
+				(!animation || (animation->start_offset[k].x == animation->end_offset[k].x && animation->start_offset[k].y == animation->end_offset[k].y)))
+			{
+				int curse_to_draw = resource_cursed_direction_to_piece_sprite(curse_status);
+				info[i].atlas_cpu[info[i].total_drawn] = info[i].atlas_mapper[curse_to_draw];
+				IntPair p = t2D(k, gamestate->w, gamestate->h);
+				info[i].positions_cpu[info[i].total_drawn] = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i + 0.2f);
+				info[i].movement_cpu[info[i].total_drawn] = glm::vec2(0, 0);
+				if (curse_animation->flash[k])
+				{
+					float l = time_since_last_action / WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+					l = min(1, l);
+					float ln = l * NUM_CURSE_FLASHES * 2;
+					float flash_value = abs(fmod(ln, 2) - 1);
+					glm::vec4 color = glm::mix(glm::vec4(0, 0, 0, 0), glm::vec4(1, 1, 1, 1), flash_value);
+					info[i].color_cpu[info[i].total_drawn] = color;
+				}
+				else
+				{
+					info[i].color_cpu[info[i].total_drawn] = glm::vec4(1, 1, 1, 1);
+				}
+				info[i].total_drawn++;
+			}
+
+		}
+	}
+}
+
+void draw_piece_curses_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index, DrawCurseAnimation* curse, float time_since_last_action)
+{
+	int i = layer_index;
+	for (int z = 0; z < number_of_gamestates; z++)
+	{
+		GameState* gamestate = gamestates[z];
+		IntPair offset = offsets[z];
+		int num_elements_in_gamestate = gamestate->w * gamestate->h;
+		for (int k = 0; k < num_elements_in_gamestate; k++)
+		{
+			int ele = gamestate->layers[i][k];
+			CursedDirection curse_status = get_entities_cursed_direction(ele);
+			if (curse_status != CursedDirection::NOTCURSED)
+			{
+				int curse_to_draw = resource_cursed_direction_to_piece_sprite(curse_status);
+				info[i].atlas_cpu[info[i].total_drawn] = info[i].atlas_mapper[curse_to_draw];
+				IntPair p = t2D(k, gamestate->w, gamestate->h);
+				info[i].positions_cpu[info[i].total_drawn] = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i + 0.2f);
+				info[i].movement_cpu[info[i].total_drawn] = glm::vec2(0, 0);
+				if (curse && time_since_last_action < WAIT_BETWEEN_PLAYER_MOVE_REPEAT)
+				{
+					float l = time_since_last_action / WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+					float ln = l * NUM_CURSE_FLASHES * 2;
+					float flash_value = abs(fmod(ln, 2) - 1);
+					glm::vec4 color = glm::mix(glm::vec4(1, 0, 0, 1), glm::vec4(1, 1, 1, 1), flash_value);
+					info[i].color_cpu[info[i].total_drawn] = color;
+				}
+				else
+					info[i].color_cpu[info[i].total_drawn] = glm::vec4(1, 1, 1, 1);
+				info[i].total_drawn++;
+			}
+
+		}
+	}
+}
+bool draw_animation_to_gamespace(MovementAnimation* animation, LayerDrawGPUData* info_array, int layer_index, float time_since_last_action)
 {
 	float l = time_since_last_action / WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
 
@@ -2208,9 +2367,36 @@ void draw_animation_to_gamespace(Animation* animation, LayerDrawGPUData* info_ar
 		info->atlas_cpu[info->total_drawn] = info->atlas_mapper[ele];
 		info->positions_cpu[info->total_drawn] = animation->start_position[i];
 		info->movement_cpu[info->total_drawn] = animation->start_offset[i] * (1.0f - l) + animation->end_offset[i] * l;
-		if (info->movement_cpu[info->total_drawn].x > 1)
-			std::cout << " CHECK HERE" << std::endl;
+		info->color_cpu[info->total_drawn] = glm::vec4(1, 1, 1, 1);
 		info->total_drawn++;
+	}
+
+	return l >= 1;
+}
+void draw_curse_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info)
+{
+	int i = LN_PIECE;
+	for (int z = 0; z < number_of_gamestates; z++)
+	{
+		GameState* gamestate = gamestates[z];
+		IntPair offset = offsets[z];
+		int num_elements_in_gamestate = gamestate->w * gamestate->h;
+		for (int k = 0; k < num_elements_in_gamestate; k++)
+		{
+			int ele = gamestate->layers[i][k];
+			CursedDirection curse_status = get_entities_cursed_direction(ele);
+			if (curse_status != CursedDirection::NOTCURSED)
+			{
+				int curse_to_draw = resource_cursed_direction_to_piece_sprite(curse_status);
+				info[i].atlas_cpu[info[i].total_drawn] = info[i].atlas_mapper[curse_to_draw];
+				IntPair p = t2D(k, gamestate->w, gamestate->h);
+				info[i].positions_cpu[info[i].total_drawn] = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i + 0.2f);
+				info[i].movement_cpu[info[i].total_drawn] = glm::vec2(0, 0);
+				info[i].color_cpu[info[i].total_drawn] = glm::vec4(1, 1, 1, 1);
+				info[i].total_drawn++;
+			}
+
+		}
 	}
 }
 void draw_layer_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index)
@@ -2231,33 +2417,9 @@ void draw_layer_to_gamespace(GameState** gamestates, IntPair* offsets, int numbe
 				info[i].movement_cpu[info[i].total_drawn + k] = glm::vec2(0, 0);
 				IntPair p = t2D(k, gamestate->w, gamestate->h);
 				info[i].positions_cpu[info[i].total_drawn + k] = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i);
+				info[i].color_cpu[info[i].total_drawn + k] = glm::vec4(1, 1, 1, 1);
 			}
 			info[i].total_drawn += num_elements_in_gamestate;
-		}
-
-		if (i == LN_PIECE)
-		{
-			for (int z = 0; z < number_of_gamestates; z++)
-			{
-				GameState* gamestate = gamestates[z];
-				IntPair offset = offsets[z];
-				int num_elements_in_gamestate = gamestate->w * gamestate->h;
-				for (int k = 0; k < num_elements_in_gamestate; k++)
-				{
-					int ele = gamestate->layers[i][k];
-					CursedDirection curse_status = get_entities_cursed_direction(ele);
-					if (curse_status != CursedDirection::NOTCURSED)
-					{
-						int curse_to_draw = resource_cursed_direction_to_piece_sprite(curse_status);
-						info[i].atlas_cpu[info[i].total_drawn] = info[i].atlas_mapper[curse_to_draw];
-						IntPair p = t2D(k, gamestate->w, gamestate->h);
-						info[i].positions_cpu[info[i].total_drawn] = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i + 0.2f);
-						info[i].movement_cpu[info[i].total_drawn] = glm::vec2(0, 0);
-						info[i].total_drawn++;
-					}
-
-				}
-			}
 		}
 	}
 }
@@ -2348,17 +2510,21 @@ void draw_palette(IntPair palete_screen_start,
 			if (palete[i].applyFloor)
 			{
 				LayerDrawGPUData* floor = &layer_draw[LN_FLOOR];
-				floor->atlas_cpu[floor->total_drawn] = floor->atlas_mapper[palete[i].floor];
+				int ele_image = resource_layer_value_to_layer_sprite_value(palete[i].floor, LN_FLOOR);
+				floor->atlas_cpu[floor->total_drawn] = floor->atlas_mapper[ele_image];
 				floor->positions_cpu[floor->total_drawn] = glm::vec3(palete_true_start.x + i, palete_true_start.y, 4);
 				floor->movement_cpu[floor->total_drawn] = glm::vec2(0, 0);
+				floor->color_cpu[floor->total_drawn] = glm::vec4(1, 1, 1, 1);
 				floor->total_drawn++;
 			}
 			if (palete[i].applyPiece)
 			{
 				LayerDrawGPUData* piece = &layer_draw[LN_PIECE];
-				piece->atlas_cpu[piece->total_drawn] = piece->atlas_mapper[palete[i].piece];
+				int ele_image = resource_layer_value_to_layer_sprite_value(palete[i].piece, LN_PIECE);
+				piece->atlas_cpu[piece->total_drawn] = piece->atlas_mapper[ele_image];
 				piece->positions_cpu[piece->total_drawn] = glm::vec3(palete_true_start.x + i, palete_true_start.y, 5);
 				piece->movement_cpu[piece->total_drawn] = glm::vec2(0, 0);
+				piece->color_cpu[piece->total_drawn] = glm::vec4(1, 1, 1, 1);
 				piece->total_drawn++;
 			}
 		}
@@ -2452,15 +2618,14 @@ bool MaybeApplyBrushInPlayMode(Memory* memory, GamestateBrush* palete,int curren
 
 /*
 	
-	well, lets think about what needs, and what doesn't.
-	-> animations is necessary for playtest
-	-> so how do I code animations? One way, hmm.
-	-> add like, enums for values 0-1
-	
-	SEPERATE STRATEGY:
-		-> for each drawable kind of sprite, have a seperate shader group to draw it, with numbers 0...64
-
-	So
-	Crate
-	CursedCrateDefault
+	okay so what are some things I could do that would make me happier:
+	1. Bundle all these awful, awful floating values that currently exist in our main function into a "Root" class, 
+		-make our main function a member function of Root, and call it from main, moving all the work into it.
+		-make available to functions, that are just reading stuff from main, all this detail
+	2. Code compress where possible
+		-we are drawing in 4 different ways, to world edit, view edit, world play, level play. There is alot of overlap.
+		-level play, with all its animations, is unecessarily difficult to read. lets fix that.
+		- 
+	3. Architecture
+		- mainHelers, while nice, has gotten waaay to big. Let's break those functions into different files.
 */

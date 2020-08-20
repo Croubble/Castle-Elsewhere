@@ -230,12 +230,6 @@ static void cancel_blocked_moves(bool* is_moving, int* layer, Direction d, int w
 			{
 				if (is_moving[z])
 				{
-					int old_1d = f2D(i, j,w,h);
-					if (old_1d != z)
-					{
-						std::cout << "You know what it means" << std::endl;
-						abort();
-					}
 					IntPair next = move_pos_wrapped_2d(math_intpair_create(i, j), d, w, h);
 					int next_1d = f2D(next.x, next.y, w, h);
 					bool next_is_blocked = (layer[next_1d] != LN_FLOOR) && !is_moving[next_1d];
@@ -274,14 +268,14 @@ GameState* gamestate_timemachine_get_latest_gamestate(GamestateTimeMachine* time
 {
 	return &timeMachine->state_array[timeMachine->num_gamestates_stored - 1];
 }
-GameStateAnimation* gamestate_timemachine_take_action(GamestateTimeMachine* timeMachine, Direction action, Memory* scope_memory, Memory* temp_memory)
+GameActionJournal* gamestate_timemachine_take_action(GamestateTimeMachine* timeMachine, Direction action, Memory* scope_memory, Memory* temp_memory)
 {
 	int next_pos = timeMachine->num_gamestates_stored;
 	int old_pos = next_pos - 1;
 	GameState* old = &timeMachine->state_array[old_pos];
 	GameState* next = &timeMachine->state_array[next_pos];
 	gamestate_clone_to_unitialized(old, next, scope_memory);
-	GameStateAnimation* result = gamestate_action(next, action, temp_memory);
+	GameActionJournal* result = gamestate_action(next, action, temp_memory);
 	timeMachine->num_gamestates_stored++;
 	return result;
 }
@@ -722,9 +716,9 @@ void curse_gamestate(GameState* state)
 	}
 }
 
-AnimationMoveInfo* gamestate_animationmoveinfo_create_internal(int num_elements, Memory* temp_memory)
+PieceMovementAnimation* gamestate_animationmoveinfo_create_internal(int num_elements, Memory* temp_memory)
 {
-	AnimationMoveInfo* result = (AnimationMoveInfo*)memory_alloc(temp_memory, sizeof(AnimationMoveInfo));
+	PieceMovementAnimation* result = (PieceMovementAnimation*)memory_alloc(temp_memory, sizeof(PieceMovementAnimation));
 	result->pos = (IntPair*)memory_alloc(temp_memory, sizeof(IntPair) * num_elements);
 	result->to_move = (Direction*)memory_alloc(temp_memory, sizeof(Direction) * num_elements);
 	result->start_value = (int*)memory_alloc(temp_memory, sizeof(int) * num_elements);
@@ -736,7 +730,7 @@ AnimationMoveInfo* gamestate_animationmoveinfo_create_internal(int num_elements,
 	}
 	return result;
 }
-void animationmoveinfo_set_default_positions(AnimationMoveInfo* info, GameState* state)
+void animationmoveinfo_set_default_positions(PieceMovementAnimation* info, GameState* state)
 {
 	int w = state->w;
 	int h = state->h;
@@ -747,7 +741,7 @@ void animationmoveinfo_set_default_positions(AnimationMoveInfo* info, GameState*
 			info->pos[z] = math_intpair_create(i, j);
 		}
 }
-void animationmoveinfo_copy_from_gamestate_internal(AnimationMoveInfo* info, GameState* state)
+void animationmoveinfo_copy_from_gamestate_internal(PieceMovementAnimation* info, GameState* state)
 {
 	int num_to_draw = state->w * state->h;
 	for (int i = 0; i < num_to_draw; i++)
@@ -757,7 +751,7 @@ void animationmoveinfo_copy_from_gamestate_internal(AnimationMoveInfo* info, Gam
 	}
 
 }
-void animationmoveinfo_apply_movements(GameState* state, AnimationMoveInfo* start,AnimationMoveInfo* end, bool* moves, Direction movement, int num_to_draw)
+void animationmoveinfo_apply_movements(GameState* state, PieceMovementAnimation* start,PieceMovementAnimation* end, bool* moves, Direction movement, int num_to_draw)
 {
 	int z = 0;
 	for(int i = 0; i < state->w;i++)
@@ -770,9 +764,10 @@ void animationmoveinfo_apply_movements(GameState* state, AnimationMoveInfo* star
 			end->pos[z] = next_goal;
 		}
 }
-GameStateAnimation* gamestate_action(GameState* state, Direction action, Memory* temp_memory)
+GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* temp_memory)
 {
-
+	GameActionJournal* journal = (GameActionJournal*)memory_alloc(temp_memory, sizeof(GameActionJournal));
+	journal->old_state = gamestate_clone(state, temp_memory);
 	const int w = state->w;
 	const int h = state->h;
 	const int num_elements = w * h;
@@ -798,12 +793,33 @@ GameStateAnimation* gamestate_action(GameState* state, Direction action, Memory*
 		{
 			if (is_player(pieces[i]))
 			{
-				//if we found a cursed player, cancel the action.
+				//if we found a cursed player trying to move , cancel the action.
 				if (get_entities_cursed_direction(pieces[i]) == action)
-					return NULL;
-				player_1d = i;
-				player_2d = t2D(i,state->w,state->h);
-				break;
+				{
+					journal->action_result = AR_ACTION_CANCELLED;
+					journal->maybe_animation = NULL;
+					journal->maybe_cursed_animation = (CurseAnimation*) memory_alloc(temp_memory, sizeof(CurseAnimation*));
+					journal->maybe_cursed_animation->flash = (bool*) memory_alloc(temp_memory, sizeof(CurseAnimation*) * w * h);
+					for (int z = 0; z < w * h; z++)
+					{
+						bool flash = false;
+						int entity = state->layers[LN_PIECE][z];
+						if (is_player(entity) && is_cursed(entity) && get_entities_cursed_direction(entity) != CursedDirection::CURSED)
+						{
+							flash = true;
+						}
+						journal->maybe_cursed_animation->flash[z] = flash;
+					}
+					return journal;
+					//TODO: build the cursed animation for the player, then return get out of here card.
+				}
+				//if we found a player that isn't having their move stopped, continue the algorithm.
+				else
+				{
+					player_1d = i;
+					player_2d = t2D(i, state->w, state->h);
+					break;
+				}
 			}
 		}
 	}
@@ -815,7 +831,14 @@ GameStateAnimation* gamestate_action(GameState* state, Direction action, Memory*
 		square_moving[player_1d] = true;
 	}
 
+	//setup memory for curse info.
+	journal->maybe_cursed_animation = (CurseAnimation*) memory_alloc(temp_memory, sizeof(CurseAnimation));
+	journal->maybe_cursed_animation->flash = (bool*)memory_alloc(temp_memory, sizeof(bool) * w * h);
+	for (int i = 0; i < w * h; i++)
+		journal->maybe_cursed_animation->flash[i] = false;
+
 	//for each moving player, if their is a crate in their movement direction, make that move too!
+	//this is where we cancel cursed moves that shouldn't be happening.
 	{
 		IntPair next_square = move_pos_wrapped_2d(player_2d, action, w, h);
 		IntPair back_square = move_pos_wrapped_2d(player_2d, direction_reverse(action), w, h);
@@ -824,16 +847,36 @@ GameStateAnimation* gamestate_action(GameState* state, Direction action, Memory*
 		int next_piece = pieces[next_square_1d];
 		int back_piece = pieces[back_square_1d];
 		if (can_be_pushed(next_piece))
-			if(get_entities_cursed_direction(next_piece) != action)
+		{
+			if (get_entities_cursed_direction(next_piece) != action)
+			{
 				square_moving[next_square_1d] = true;
+			}
+			else
+			{
+				//the square we are pushing's curse animation flashes true.
+				journal->maybe_cursed_animation->flash[next_square_1d] = true;
+			}
+		}
 		if (can_be_pulled(back_piece))
+		{
 			if (get_entities_cursed_direction(back_piece) != action)
+			{
 				square_moving[back_square_1d] = true;
+			}
+			else
+			{
+				//the square we are pulling's curse animation flashes true.
+				journal->maybe_cursed_animation->flash[back_square_1d] = true;
+			}
+		}
+
 	}
 	
 	//curse anything standing on a curse.
 	curse_gamestate(state);
 	//block moves.
+
 	cancel_blocked_moves(square_moving, pieces, action, w, h);
 
 	//curse anything that is moving and is (already cursed / stepping onto a curse this turn)
@@ -872,7 +915,9 @@ GameStateAnimation* gamestate_action(GameState* state, Direction action, Memory*
 	apply_moves_to_layer_SLOW(temp_memory, square_moving, pieces, w, h, action);
 	
 	//fin.
-	return animation;
+	journal->action_result = AR_ACTION_OCCURED;
+	journal->maybe_animation = animation;
+	return journal;
 }
 
 void gamestate_crumble(GameState* state)

@@ -47,6 +47,7 @@ struct button_click_state
 	bool released_this_frame;
 	bool pressed;
 	bool released_since_pressed_last;
+	float time_pressed;
 };
 
 struct EditorUIState
@@ -54,6 +55,7 @@ struct EditorUIState
 	float time_since_scene_started;
 	float time_till_player_can_move;
 	float time_since_last_player_action;
+	float total_time_passed;
 	float game_height_current;
 
 	char most_recently_pressed_direction;
@@ -101,6 +103,7 @@ void button_click_state_set_all_false(button_click_state* state)
 	state->pressed_this_frame = false;
 	state->released_this_frame = false;
 	state->released_since_pressed_last = true;
+	state->time_pressed = 0;
 }
 EditorUIState click_ui_init(Memory* permanent_memory)
 {
@@ -118,6 +121,7 @@ EditorUIState click_ui_init(Memory* permanent_memory)
 		result.letters[i].pressed_this_frame = false;
 		result.letters[i].released_this_frame = false;
 		result.letters[i].released_since_pressed_last = true;
+		result.letters[i].time_pressed = 0;
 	}
 	button_click_state_set_all_false(&result.left);
 	button_click_state_set_all_false(&result.right);

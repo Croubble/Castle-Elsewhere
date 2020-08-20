@@ -3,22 +3,14 @@ out vec4 FragColor;
 
 in vec2 TexCoord;
 in vec2 UnadjustedTexCoord;
+in vec4 color;
 uniform sampler2D texture1;
 
 void main() 
 {
-	//float x = nonAtlasTexCoord.x;
-	//float y = nonAtlasTexCoord.y;
-	//float use_black_color = step(1,nonAtlasTexCoord.x) + step(1,nonAtlasTexCoord.y) + step(x,-0.01) + step(y,-0.01);
-	//use_black_color = step(0.1,use_black_color);
-	//if(use_black_color > 0.1)
-	//	discard;
-
-	//float no_draw = step(1,UnadjustedTexCoord.x) + step(1,UnadjustedTexCoord.y) + step(UnadjustedTexCoord.x,0) + step(UnadjustedTexCoord.y,0);
-	//no_draw = step(0.1,no_draw);
-	//FragColor =  texture(texture1,TexCoord) * (1.0 - no_draw);
-
-	FragColor =  texture(texture1,TexCoord);
+	vec4 tex_color = texture(texture1,TexCoord);
+	vec4 final_color = vec4(tex_color.x * color.x, tex_color.y * color.y, tex_color.z * color.z, tex_color.w * color.w);
+	FragColor = final_color;
 }
 
 //okay so the basic problem is that the invisible sprite we are drawing is preventing other sprites from been drawn. 

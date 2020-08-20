@@ -130,7 +130,11 @@ enum AnimationType {
 	AT_COUNT
 };
 
-struct AnimationMoveInfo
+struct CurseAnimation
+{
+	bool* flash;	//says whether each cursed element should animate the curse or not.
+};
+struct PieceMovementAnimation
 {
 	IntPair* pos;
 	Direction* to_move;
@@ -139,8 +143,21 @@ struct AnimationMoveInfo
 struct GameStateAnimation
 {
 	int num_to_draw;
-	AnimationMoveInfo starts;
-	AnimationMoveInfo ends;
+	PieceMovementAnimation starts;
+	PieceMovementAnimation ends;
+};
+enum ActionResult
+{
+	AR_ACTION_CANCELLED,
+	AR_ACTION_OCCURED,
+	AR_COUNT
+};
+struct GameActionJournal
+{
+	GameState* old_state;
+	ActionResult action_result;
+	GameStateAnimation* maybe_animation;
+	CurseAnimation* maybe_cursed_animation;
 };
 Direction direction_reverse(Direction dir);
 IntPair direction_to_intpair(Direction dir);
@@ -151,7 +168,7 @@ void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scop
 void gamestate_timemachine_undo(GamestateTimeMachine* timeMachine);
 GameState* gamestate_timemachine_get_latest_gamestate(GamestateTimeMachine* timeMachine);
 GamestateTimeMachine* gamestate_timemachine_create(GameState* start_state, Memory* memory, int max_num_gamestates);
-GameStateAnimation* gamestate_timemachine_take_action(GamestateTimeMachine* timeMachine, Direction action, Memory* scope_memory, Memory* temp_memory);
+GameActionJournal* gamestate_timemachine_take_action(GamestateTimeMachine* timeMachine, Direction action, Memory* scope_memory, Memory* temp_memory);
 /*************************PALETTE_BRUSH*******************************/
 /*********************************************************************/
 GamestateBrush gamestate_brush_create(bool applyFloor, Floor floor, bool applyPiece, Piece piece);
@@ -194,7 +211,7 @@ int curse_entity(int entity_value, CursedDirection curse_to_apply);
 /******************************GAMESTATE GAME ACTION WRITE**********************/
 /********************************************************************/
 
-GameStateAnimation* gamestate_action(GameState* state, Direction action, Memory* temp_memory);
+GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* temp_memory);
 void gamestate_crumble(GameState* state);
 void gamestate_extrude_lurking_walls(GameState* state);
 

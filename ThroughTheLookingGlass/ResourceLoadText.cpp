@@ -50,8 +50,8 @@ PIECE_IMAGE resource_piece_to_piece_sprite(Piece piece)
 	if (is_pull_crate(piece))
 	{
 		if(is_cursed(piece))
-			return PI_PULL_CRATE;
-		return PI_CURSED_PULL_CRATE;
+			return PI_CURSED_PULL_CRATE;
+		return PI_PULL_CRATE;
 	}
 	return (PIECE_IMAGE)piece;
 }

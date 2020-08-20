@@ -25,6 +25,9 @@ struct LayerDrawGPUData
 	GLuint movement_VBO;
 	glm::vec2* movement_cpu;
 
+	GLuint color_VBO;
+	glm::vec4* color_cpu;
+
 	glm::vec4* atlas_mapper;
 };
 

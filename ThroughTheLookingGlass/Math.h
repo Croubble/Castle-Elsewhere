@@ -36,7 +36,7 @@ struct IntPair
 IntPair math_intpair_create(int x, int y);
 IntPair math_intpair_add(IntPair left, IntPair right);
 IntPair math_intpair_sub(IntPair left, IntPair right);
-
+bool math_intpair_eq(IntPair left, IntPair right);
 /*******************************SCREEN LOGIC************************************/
 float camera_ratio(ViewPortCamera viewport);
 glm::mat4 camera_make_matrix(GameSpaceCamera camera);

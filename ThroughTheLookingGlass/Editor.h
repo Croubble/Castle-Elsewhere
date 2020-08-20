@@ -129,7 +129,7 @@ TimeMachineEditorAction gamestate_timemachineaction_create_resize_gamsestate(int
 TimeMachineEditorAction gamestate_timemachineaction_create_move_gamestate(int target_gamestate, IntPair movement);
 TimeMachineEditorAction gamestate_timemachineaction_create_delete_gamestate(int target_gamestate);
 TimeMachineEditorAction gamestate_timemachineaction_create_replace_gamestate(GameState* replacement, int to_replace, const char* name);
-TimeMachineEditorAction gamestate_timemachineaction_create_update_gamestate(GameState* replacement, int to_replace);
+TimeMachineEditorAction gamestate_timemachineaction_create_update_gamestate(GameState* replacement, int to_replace, const char* name);
 
 /***********************************Building world from time machine helpers*************/
 int gamestate_timemachine_player_starting_level(TimeMachine* time_machine);

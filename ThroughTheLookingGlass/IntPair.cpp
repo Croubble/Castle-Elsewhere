@@ -23,3 +23,8 @@ IntPair math_intpair_sub(IntPair left, IntPair right)
 	result.y = left.y - right.y;
 	return result;
 }
+
+bool math_intpair_eq(IntPair left, IntPair right)
+{
+	return left.x == right.x && left.y == right.y;
+}

@@ -14,20 +14,20 @@ struct WorldScene
 	IntPair level_position[MAX_NUMBER_GAMESTATES];
 	bool level_solved[MAX_NUMBER_GAMESTATES];
 	GamestateTimeMachine* maybe_time_machine;
-	Animation* maybe_animation;
+	Animations* maybe_animation;
 };
 
-Animation* animation_build_from_world(GameStateAnimation* animation, WorldScene* world, Memory* animation_memory)
+Animations* animation_build_from_world(GameActionJournal* journal, WorldScene* world, Memory* animation_memory)
 {
 	if (world->maybe_time_machine == NULL)
 	{
 		std::cout << "calling animation_build_from_world when there is no time machine" << std::endl;
 		abort();
 	}
-	if (animation == NULL)
+	if (journal == NULL)
 		return NULL;
 	GameState* to_draw = gamestate_timemachine_get_latest_gamestate(world->maybe_time_machine);
-	return animation_build(animation, to_draw, world->level_position[world->current_level], animation_memory, Z_POSITION_STARTING_LAYER + LN_PIECE);
+	return animations_build(journal, to_draw, world->level_position[world->current_level], animation_memory, Z_POSITION_STARTING_LAYER + LN_PIECE);
 }
 void world_player_action(WorldScene* scene, Direction action, Memory* level_memory)
 {
