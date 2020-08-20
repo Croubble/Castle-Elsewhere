@@ -16,6 +16,7 @@ struct WorldScene
 	GamestateTimeMachine* maybe_time_machine;
 	Animations* maybe_animation;
 };
+WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene_memory);
 
 Animations* animation_build_from_world(GameActionJournal* journal, WorldScene* world, Memory* animation_memory)
 {

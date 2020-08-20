@@ -95,51 +95,20 @@ const float DRAW_TITLE_TIME = 2.0f;
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
+/************************************************************/
+/**********draw functions************************************/
 void draw_curse_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info);
 void draw_stationary_piece_curses_to_gamespace(MovementAnimation* animation, DrawCurseAnimation* curse, GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index, float time_since_last_action);
 void draw_piece_curses_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index, DrawCurseAnimation* curse, float time_since_last_action);
 bool draw_animation_to_gamespace(MovementAnimation* animation, LayerDrawGPUData* info_array, int layer_index, float time_since_last_action);
 void draw_layer_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index);
 void draw_layers_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info);
-
 void draw_gamestates_outlines_to_gamespace(
 	GameState** gamestates,
 	IntPair* offsets,
 	int length_function_input,
 	GamefullspriteDrawInfo* info,
 	int index);
-
-GameSpaceCamera math_camera_build_for_gamestate(GameState* gamestate, IntPair position, ViewPortCamera viewport, float x_padding = 4, float y_padding = 3);
-/*
-float draw_text_to_screen(glm::vec3 start_position,
-	const char* c_string,
-	glm::mat4* matrix,
-	glm::vec4* atlas_output,
-	TTF_Character* true_font_reference,
-	AABB* atlas_reference,
-	AABB* normalized_atlas_reference,
-	int* current_draw,
-	float num_pixels_per_gameunit);
-	*/
-void take_player_action(WorldScene* world_scene_state, EditorUIState* ui_state, Direction action, Memory* level_memory, Memory* frame_memory, Memory* animation_memory);
-float get_text_to_screen_size(glm::vec3 start_position, glm::vec2 scale, const char* c_string, TextDrawInfo* info);
-float draw_text_to_screen(glm::vec3 start_position, glm::vec2 scale, const char* c_string, TextDrawInfo* info);
-WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene_memory);
-AABB calculate_outline_from_create_info(Memory* frame_memory, TimeMachineEditor* timeMachine, EditorUIState ui_state);
-bool MaybeApplyBrush(GamestateBrush* palete, int currentBrush, EditorUIState* ui_state, TimeMachineEditor* timeMachine, glm::vec2 mouseGamePos);
-bool MaybeApplyBrushInPlayMode(Memory* memory, GamestateBrush* palete, int current_brush, EditorUIState* ui_state, GamestateTimeMachine* time_machine, IntPair current_state_pos, glm::vec2 mouseGamePos);
-void draw_black_box_over_screen(GameSpaceCamera screen, GamefullspriteDrawInfo* info);
-void draw_outline_to_gamespace(AABB outline, GamefullspriteDrawInfo* info);
-AABB calculate_outline_position_from_drag_info(Memory* frame_memory,
-	TimeMachineEditor* timeMachine,
-	EditorUIState ui_state,
-	glm::vec2 dragging_start_position_in_gamespace);
-AABB calculate_outline_from_move_info(Memory* frame_memory, TimeMachineEditor* timeMachine, EditorUIState ui_state);
-IntPair calculate_floor_cell_clicked(GameState* currentState, IntPair position, glm::vec2 mouseGamePos);
-TextureAtlasMaps* textureatlas_catoban_create(Memory* memory);
-TextureAtlasMaps* textureatlas_create(Memory* memory, char*** texture_references);
-
-
 void draw_palette(IntPair palete_screen_start,
 	GameSpaceCamera camera_game,
 	ViewPortCamera camera_viewport,
@@ -147,3 +116,32 @@ void draw_palette(IntPair palete_screen_start,
 	int palete_length,
 	GamestateBrush* palete,
 	LayerDrawGPUData* layer_draw);
+void draw_black_box_over_screen(GameSpaceCamera screen, GamefullspriteDrawInfo* info);
+void draw_outline_to_gamespace(AABB outline, GamefullspriteDrawInfo* info);
+
+/***********************************************************/
+/*********camera functions**********************************/
+GameSpaceCamera math_camera_build_for_gamestate(GameState* gamestate, IntPair position, ViewPortCamera viewport, float x_padding = 4, float y_padding = 3);
+
+/***********************************************************/
+/***********************stateful utils**********************/
+//highly stateful main action.
+void take_player_action(WorldScene* world_scene_state, EditorUIState* ui_state, Direction action, Memory* level_memory, Memory* frame_memory, Memory* animation_memory);
+float draw_text_to_screen(glm::vec3 start_position, glm::vec2 scale, const char* c_string, TextDrawInfo* info);
+bool MaybeApplyBrush(GamestateBrush* palete, int currentBrush, EditorUIState* ui_state, TimeMachineEditor* timeMachine, glm::vec2 mouseGamePos);
+bool MaybeApplyBrushInPlayMode(Memory* memory, GamestateBrush* palete, int current_brush, EditorUIState* ui_state, GamestateTimeMachine* time_machine, IntPair current_state_pos, glm::vec2 mouseGamePos);
+
+/********************************************************************/
+/************************click calculations utils********************/
+AABB calculate_outline_from_create_info(Memory* frame_memory, TimeMachineEditor* timeMachine, EditorUIState ui_state);
+AABB calculate_outline_position_from_drag_info(Memory* frame_memory,
+	TimeMachineEditor* timeMachine,
+	EditorUIState ui_state,
+	glm::vec2 dragging_start_position_in_gamespace);
+AABB calculate_outline_from_move_info(Memory* frame_memory, TimeMachineEditor* timeMachine, EditorUIState ui_state);
+IntPair calculate_floor_cell_clicked(GameState* currentState, IntPair position, glm::vec2 mouseGamePos);
+
+/********************************************************************/
+/**************************text utils********************************/
+
+float get_text_to_screen_size(glm::vec3 start_position, glm::vec2 scale, const char* c_string, TextDrawInfo* info);

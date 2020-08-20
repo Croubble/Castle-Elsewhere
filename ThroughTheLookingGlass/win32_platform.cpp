@@ -1796,7 +1796,9 @@ int main(int argc, char *argv[])
 						GameState* to_draw = &world_scene_state->maybe_time_machine->state_array[gamestate_index_to_draw - 1];
 						int current_level = world_scene_state->current_level;
 						IntPair* to_draw_position = &world_scene_state->level_position[current_level];
-						if (world_scene_state->maybe_animation && world_scene_state->maybe_animation->maybe_movement_animation)
+						bool can_draw_movement = world_scene_state->maybe_animation && world_scene_state->maybe_animation->maybe_movement_animation;
+						bool can_draw_curse = world_scene_state->maybe_animation && world_scene_state->maybe_animation->curse_animation;
+						if (can_draw_movement)
 						{
 							draw_layer_to_gamespace(&to_draw, to_draw_position, 1, layer_draw, LN_FLOOR);
 							bool done_animating_movement = true;
@@ -1817,7 +1819,7 @@ int main(int argc, char *argv[])
 									ui_state.time_since_last_player_action);
 							}
 						}
-						if(!world_scene_state->maybe_animation || !world_scene_state->maybe_animation->maybe_movement_animation)
+						else 
 						{
 							draw_layers_to_gamespace(
 								&to_draw,
@@ -1825,11 +1827,11 @@ int main(int argc, char *argv[])
 								1,
 								layer_draw);
 						}
-						if (!world_scene_state->maybe_animation || !world_scene_state->maybe_animation->curse_animation)
+						if (!can_draw_curse)
 						{
 							draw_curse_to_gamespace(&to_draw, to_draw_position, 1, layer_draw);
 						}
-						else if (world_scene_state->maybe_animation && world_scene_state->maybe_animation->curse_animation && !world_scene_state->maybe_animation->maybe_movement_animation)
+						else if (can_draw_curse && !can_draw_movement)
 						{
 							draw_stationary_piece_curses_to_gamespace(world_scene_state->maybe_animation->maybe_movement_animation,
 								world_scene_state->maybe_animation->curse_animation,
@@ -1993,7 +1995,6 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 }
-
 
 void take_player_action(WorldScene* world_scene_state, EditorUIState* ui_state, Direction action, Memory* level_memory, Memory* frame_memory, Memory* animation_memory)
 {
@@ -2619,13 +2620,9 @@ bool MaybeApplyBrushInPlayMode(Memory* memory, GamestateBrush* palete,int curren
 /*
 	
 	okay so what are some things I could do that would make me happier:
-	1. Bundle all these awful, awful floating values that currently exist in our main function into a "Root" class, 
-		-make our main function a member function of Root, and call it from main, moving all the work into it.
-		-make available to functions, that are just reading stuff from main, all this detail
 	2. Code compress where possible
 		-we are drawing in 4 different ways, to world edit, view edit, world play, level play. There is alot of overlap.
 		-level play, with all its animations, is unecessarily difficult to read. lets fix that.
-		- 
 	3. Architecture
-		- mainHelers, while nice, has gotten waaay to big. Let's break those functions into different files.
+		- mainHelers, while nice, has gotten waaay to big. Let's break those functions into different fill.
 */
