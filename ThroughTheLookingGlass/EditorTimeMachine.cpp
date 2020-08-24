@@ -155,7 +155,7 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 		editor->gamestates[pos] = state;
 		for (int i = 0; i < GAME_LEVEL_NAME_MAX_SIZE; i++)
 		{
-			//editor->names[pos * GAME_LEVEL_NAME_MAX_SIZE + i] = action.u.replace.name[i];
+			editor->names[pos * GAME_LEVEL_NAME_MAX_SIZE + i] = action.u.replace.name[i];
 		}
 	}
 	else if (action.action == TM_UPDATE_GAMESTATE)
@@ -286,7 +286,7 @@ TimeMachineEditorAction gamestate_timemachineaction_create_replace_gamestate(Gam
 TimeMachineEditorAction gamestate_timemachineaction_create_update_gamestate(GameState* replacement, int to_replace, const char* name)
 {
 	TimeMachineEditorAction action;
-	action.action = TM_REPLACE_GAMESTATE;
+	action.action = TM_UPDATE_GAMESTATE;
 	action.u.update.replace_state = replacement;
 	action.u.update.index_to_replace = to_replace;
 	for (int i = 0; i < GAME_LEVEL_NAME_MAX_SIZE; i++)

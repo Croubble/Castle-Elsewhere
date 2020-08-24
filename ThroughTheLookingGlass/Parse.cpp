@@ -295,9 +295,9 @@ TimeMachineEditorStartState* parse_deserialize_timemachine(std::string input_str
 {
 	//strip all whitespace from the input.
 	{
-		std::string::iterator end_pos = std::remove(input_string.begin(), input_string.end(), ' ');
-		input_string.erase(end_pos, input_string.end());
-		end_pos = std::remove(input_string.begin(), input_string.end(), '\n');
+		// end_pos = std::remove(input_string.begin(), input_string.end(), ' ');
+		//input_string.erase(end_pos, input_string.end());
+		std::string::iterator end_pos = std::remove(input_string.begin(), input_string.end(), '\n');
 		input_string.erase(end_pos, input_string.end());
 	}
 

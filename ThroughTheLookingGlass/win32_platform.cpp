@@ -691,7 +691,7 @@ int main(int argc, char *argv[])
 
 		//build gamestate
 		GameState* gamestate = gamestate_create(permanent_memory, 5, 5);
-		int palete_length = 15;
+		int palete_length = 16;
 		int currentBrush = 0;
 		GamestateBrush* palete = (GamestateBrush*) memory_alloc(permanent_memory, sizeof(GamestateBrush) * palete_length);
 		IntPair palete_screen_start = math_intpair_create(camera_viewport.left + 60, camera_viewport.up - 120);
@@ -712,6 +712,7 @@ int main(int argc, char *argv[])
 			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_PLAYER);
 			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CURSED_CRATE);
 			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CURSED_PULL_CRATE);
+			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CURSED_PLAYER);
 			if (i != palete_length)
 				abort();
 		}
@@ -2625,4 +2626,29 @@ bool MaybeApplyBrushInPlayMode(Memory* memory, GamestateBrush* palete,int curren
 		-level play, with all its animations, is unecessarily difficult to read. lets fix that.
 	3. Architecture
 		- mainHelers, while nice, has gotten waaay to big. Let's break those functions into different fill.
+*/
+
+/*
+	//use curse crate
+	//curse crate against wall that needs to stick against wall gets stuck in a "there are two places we are allowed to stand".
+	//curse crate s
+
+
+	Priority:
+	1. Editor helper uitilities: nope
+	2. Menu -> medium (could be optional)
+	3. Animation when player finishes a level -> low
+	4. Sound! Sound! Sound! - high
+	5. animation for shining -> medium
+	6. particle system -> low
+	7. research windows conversion - high
+	8. ui library -> low
+	9. rigidbodies -> no
+
+	4. Sound!
+	5. Enscriptem conversion
+	1. Convert empty file
+	2. Convert example project that relies on sdl2
+	3. Convert actual game! 
+		3a - probs gonna have to do some file conversion ughf.
 */
