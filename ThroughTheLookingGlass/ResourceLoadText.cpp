@@ -66,7 +66,7 @@ int resource_layer_value_to_layer_sprite_value(int layer_value, int layer_num)
 
 std::string resource_load_text_file(std::string filePath)
 {
-	std::ifstream myFile(filePath);
+	std::ifstream myFile("assets/" + filePath);
 	std::stringstream myStream;
 	myStream << myFile.rdbuf();
 	myFile.close();
@@ -77,6 +77,7 @@ std::string resource_load_text_file(std::string filePath)
 
 unsigned int resource_load_image_from_file_onto_gpu(std::string file_path)
 {
+	std::string asset_file_path = "assets/" + file_path;
 	unsigned int result;
 	glGenTextures(1, &result);
 	glEnable(GL_BLEND);
@@ -93,7 +94,7 @@ unsigned int resource_load_image_from_file_onto_gpu(std::string file_path)
 	int width;
 	int height;
 	int num_of_channels;
-	unsigned char* data = stbi_load(file_path.c_str(), &width, &height, &num_of_channels, 0);
+	unsigned char* data = stbi_load(asset_file_path.c_str(), &width, &height, &num_of_channels, 0);
 
 	if (data)
 	{
