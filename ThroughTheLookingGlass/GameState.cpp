@@ -2,7 +2,6 @@
 #include "Memory.h"
 #include <iostream>
 #include "Math.h"
-#include "GenericGamestate.h"
 
 //gamestate static functions, go right at top.
 //TODO: Test apply_direction_moves_to_layer for the four functions below. They 1000000% have bugs.

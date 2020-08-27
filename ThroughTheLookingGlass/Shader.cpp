@@ -1,6 +1,6 @@
 #include <string>
 
-#include <glad/glad.h>
+#include "PreludeIncludes.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Resource.h"
@@ -11,7 +11,7 @@ typedef GLuint Shader;
 Shader shader_compile_loaded_program(const char* vertexData, const char* fragmentData, const char* geometryData = nullptr)
 {
 
-	bool useGeometryShader = geometryData != nullptr;
+	//bool useGeometryShader = geometryData != nullptr;
 
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	std::cout << "glShaderSource VERT CREATE" << glGetError() << std::endl; // returns 0 (no error)
@@ -46,13 +46,13 @@ Shader shader_compile_loaded_program(const char* vertexData, const char* fragmen
 		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
 	}
 
-	unsigned int geometryShader;
-	if (useGeometryShader)
-	{
-		geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
-		glShaderSource(geometryShader, 1, &geometryData, NULL);
-		glCompileShader(geometryShader);
-	}
+	//unsigned int geometryShader;
+	//if (useGeometryShader)
+	//{
+	//	geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+	//	glShaderSource(geometryShader, 1, &geometryData, NULL);
+	//	glCompileShader(geometryShader);
+	//}
 
 	Shader result = glCreateProgram();
 	std::cout << "glCreateProgram" << glGetError() << std::endl; // returns 0 (no error)
@@ -73,8 +73,8 @@ Shader shader_compile_loaded_program(const char* vertexData, const char* fragmen
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
-	if (useGeometryShader)
-		glDeleteShader(geometryShader);
+	//if (useGeometryShader)
+	//	glDeleteShader(geometryShader);
 
 	std::cout << "Shader result" << result << std::endl;
 	return result;

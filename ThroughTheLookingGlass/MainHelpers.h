@@ -1,6 +1,5 @@
 #pragma once
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <cstring>
 #include "GameState.h"
 #include "Math.h"
 #include "Shader.h"
@@ -8,14 +7,14 @@
 #include <iostream>
 #include "Resource.h"
 #include <SDL.h>
-#include "Clock.h"
 #include "Click.h"
-#include "GenericGamestate.h"
 #include "TrueFontCharacter.h"
 #include <ft2build.h>
 #include "Parse.h"
 #include "World.h"
 #include "Animation.h"
+#include "TextureAtlas.h"
+
 #include FT_FREETYPE_H  
 
 enum SCENE_TYPE
@@ -66,8 +65,8 @@ struct TextDrawInfo {
 	int* current_number_drawn;
 };
 // settings
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 600;
+const int SCREEN_WIDTH = 1750;
+const int SCREEN_HEIGHT = 1000;
 const float SCREEN_RATIO = ((float)SCREEN_WIDTH / (float)SCREEN_HEIGHT);
 const int MAX_NUM_FLOOR_SPRITES = 5000;
 const int MAX_NUM_FULL_SPRITES = 100;
@@ -92,8 +91,6 @@ const int max_actions_in_puzzle = 1024;
 const float WAIT_BETWEEN_PLAYER_MOVE_REPEAT = 0.13f;
 const float DRAW_TITLE_TIME = 2.0f;
 //helper functions.
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
 
 /************************************************************/
 /**********draw functions************************************/

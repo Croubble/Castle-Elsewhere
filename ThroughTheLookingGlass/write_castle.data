@@ -1,0 +1,1081 @@
+
+#version 330 core
+out vec4 FragColor;
+
+in vec2 TexCoord;
+in vec2 wh;
+
+uniform float time;
+
+float wrap(float f)
+{
+	return mod(step(f,0) + f,1);
+}
+
+float test(float value, float num_segments, float percent)
+{
+	float v = wrap(value);
+	return step(mod(v,1.0/num_segments), (1.0/num_segments) * percent);
+}
+void main() 
+{
+	//define variables we will eventually pass in.
+	float t = time * 0.15;
+
+	float w = wh.x;
+	float h = wh.y;
+
+	float jut = 0.14;
+
+	float num_segments = 16;
+	float percent = 0.72;
+
+	//begin algorithm.
+	float x = TexCoord.x;
+	float y = TexCoord.y;
+
+
+	float total = w * 2 + h * 2 - jut * 4;
+	
+	float jutN = jut / total;
+
+	float left_start = -jut;
+	float left_end = h - jut;
+	float up_start = left_end - jut;
+	float up_end = left_end + w - jut;
+	float right_start = up_end - jut;
+	float right_end = up_end + h - jut;
+	float down_start = right_end - jut;
+	float down_end = right_end + w - jut;
+
+	float is_left = step(x*w,jut);
+	float is_right = step(w-jut,x*w);
+	float is_down = step(y*h,jut);
+	float is_up = step(h-jut,y*h);
+
+	
+	float left_start_norm = left_start / total;
+	float left_end_norm = left_end / total;
+	float up_start_norm = up_start / total;
+	float up_end_norm = up_end / total;
+	float right_start_norm = right_start / total;
+	float right_end_norm = right_end / total;
+	float down_start_norm = down_start / total;
+	float down_end_norm = down_end / total;
+
+
+	//okay, we have successfully calculated the values. Yes. Yes. Now, now comes converting this value into the lines.
+
+
+	float left_edge_top = test(mix(left_start_norm,left_end_norm,(h - jut) / h) + t,num_segments,percent);
+	float left_edge_bot = test(mix(left_start_norm,left_end_norm,jut / h) + t,num_segments,percent);
+	float up_edge_left = test(mix(up_start_norm,up_end_norm,jut / w) + t,num_segments,percent);
+	float up_edge_right = test(mix(up_start_norm,up_end_norm,(w - jut) / w) + t,num_segments,percent);
+	float right_edge_top = test(mix(right_start_norm,right_end_norm, (h - jut) / h) + t,num_segments,percent);
+	float right_edge_bot = test(mix(right_start_norm,right_end_norm,jut / h) + t,num_segments,percent);
+	float down_edge_left = test(mix(down_start_norm,down_end_norm,(w - jut) / w) + t,num_segments,percent);
+	float down_edge_right = test(mix(down_start_norm,down_end_norm,jut / w) + t,num_segments,percent);
+
+	//final calc
+
+	float left_top_unblocked = step(y,(h - jut) / h) + left_edge_top;
+	float left_bot_unblocked = step(jut / h,y) + left_edge_bot;
+	float up_left_unblocked = step(jut / w,x) + up_edge_left;
+	float up_right_unblocked = step(x,(w - jut) / w) + up_edge_right;
+	float right_up_unblocked = step(y,(h - jut) / h) + right_edge_bot;
+	float right_bot_unblocked = step(jut / h, y) + right_edge_top;
+	float down_left_unblocked = step(jut / w,x) + down_edge_left;
+	float down_right_unblocked = step(x,(w - jut) / w) + down_edge_right;
+
+	float value_horizontal = test(mix(left_start_norm,left_end_norm,y) + t,num_segments,percent) * is_left * left_top_unblocked * left_bot_unblocked
+	+ 
+	test(mix(right_start_norm,right_end_norm,1-y) + t,num_segments,percent) * is_right * right_up_unblocked * right_bot_unblocked;
+
+	float value_vertical = test(mix(up_start_norm,up_end_norm,x) + t,num_segments,percent) * is_up * up_left_unblocked * up_right_unblocked
+	+ 
+	test(mix(down_start_norm,down_end_norm,1-x) + t,num_segments,percent) * is_down * down_right_unblocked * down_left_unblocked;
+
+	float value = max(value_horizontal,value_vertical);
+	value = wrap(value + t);
+
+	float left_off = step(left_edge_top,y*h) * left_edge_top + step(y*h,left_edge_bot) * left_edge_bot;
+
+	float sidesA = step(0.01,value_horizontal);
+	float sidesB = step(0.01,value_vertical);
+	FragColor = vec4(0,0,0, step(0.01,sidesA + sidesB));
+}#version 330 core
+layout (location = 0) in vec3 pos;
+layout (location = 1) in vec3 positionOffset;
+layout (location = 2) in vec2 scale;
+uniform mat4 viewProjectionMatrix;
+
+out vec2 TexCoord;
+out vec2 wh;
+void main()
+{
+	gl_Position = viewProjectionMatrix * vec4(pos.x * scale.x + positionOffset.x,pos.y * scale.y + positionOffset.y, pos.z + positionOffset.z,1.0);
+	TexCoord = vec2(pos.x,pos.y);
+	wh = vec2(scale.x,scale.y);
+}#version 330 core
+layout (location = 0) in vec2 TexCoords; // <vec2 pos, vec2 tex>
+out vec2 TexCoords;
+
+uniform mat4 projection;
+
+void main()
+{
+    gl_Position = vec4(vertex.xy, 0.0, 1.0);
+    TexCoords = vertex.zw;
+}{
+  "frames": [
+    {
+      "filename": "Cleanse.png",
+      "frame": {
+        "x": 4,
+        "y": 4,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "Curse.png",
+      "frame": {
+        "x": 4,
+        "y": 76,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "Floor.png",
+      "frame": {
+        "x": 4,
+        "y": 148,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "LurkingWall.png",
+      "frame": {
+        "x": 4,
+        "y": 220,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "Outline.png",
+      "frame": {
+        "x": 4,
+        "y": 292,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "Start.png",
+      "frame": {
+        "x": 4,
+        "y": 364,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "Target.png",
+      "frame": {
+        "x": 4,
+        "y": 436,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "ZBlack.png",
+      "frame": {
+        "x": 4,
+        "y": 508,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  ],
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.6",
+    "image": "FinalFloor.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 72,
+      "h": 576
+    },
+    "scale": 1
+  }
+}‰PNG
+
+   IHDR   H  @   .!     IDATx^í}xUUÖö{Ó{ï•@ ´P@èˆ" ˆ¨¨3ão™qÆéõ›oœqçÓqPD”*Uz—B$¤Azï=ÿ³Öå\ïÍí97¡Ì>Ïãc’sÎ.ï~Wİk—AÃ¨ JKKkïn°š[›AÿÑekmËÿÉ¹ªjP]_ÅM¸:ºÁÕÁ¥ÓÍEGG36 =
+€Œpë (¯<[¯í@Us5‚œ0¹×Dyéz}SÒ‹Òù³½3zúFh=Gí%ß¹€òúr W?½í“=ƒ Iƒihi€³3zø„ÃÉÎIÕæ©ŒÓªŸã#GëKï}šĞ_’ŞÇşº±ÇK½—`Bt¢ÎçKkJñåÅu¸]›…ñ	xbĞl­ç2Š2°æò×¸Yw¶
+[<>³ÌÔzîvq&jkùïQ~Qp´sĞzÆ @uMuØvy'væíE¸Cââ4:Z›¼ÌY‰·ŸÁâ¡5ÀÓ‡ÆÅœäVŞáÛÃB†ğÊWã³k°­ì0l`…D×aˆŒÃ  üœ:›Îg_Àêkkq½1ÏÎÆqÏiu•zç
+>½¼
+Gê¯ÀMa‡'½&á'ãŞÔznë¥íØ˜³vş˜2ÓúM5 œ²\N?‚]QÜZ‰·¢^RDàıíÄHª¾„NÑøÍ¸wMhóÅ-X›³^6îXõ4&DçA]¾sÇ²c{ñ( @/û0Ø(lĞÏ½^õ¢jàŸY…-{a«°ÆÂ9xfè­IÎ8ƒ?\~wÛ*ÑˆVü"d)ñ¬ÆsÔßÆß`WÕiÔ¢¿{	ÏÓnË ƒRs/ãPÖQ5¡‡K8zyEª&D }tú­HBœë ,î¿…Õ…¸PÉŞ^½0)z‚hĞšœM¨n«Ã³As5@ƒ>›„ëUiHoÈÁÍÖbf§:@ÿsô=l-;‚ kOü¼ÿë9R M¿ÁÚœoPØV	®Ã13b:ª bÏ¿3¿@y[|­\1Å;o&¼nƒhÀ[nn‡½7úúôÑĞĞ¦”op¬øËùú¿€úæz<éWpƒÆ8Äkƒ_A¤_ON3Šncëõí8]yOMÇâa5îS»g2Ïâ›ÛÛáÆ@«ë_ü=NT_@¸m ~=âgÜ>µ™]Ãí„{†bGÚ.|[zÑöáx¶÷ şõØûØ[~Mí-pVØcAà,âjA9¥¹Øxe3V”~‹_„>ç†/Ö˜Ìşë°şöşÛ‚sábç‚­;q¬ö"Ü˜îˆùıŸRéÉºœ/ºˆúÖD¹õÄÌèÇ´,=§~}{cÿjoc‡ä’ì¯OÁ4§ÁøÍ˜wáíâ/Î~‰ı…Gaoe‡—ú>‡í»p¡öF»ÁOÇ¼©ÅbI=|]qA
+Ø+l1Şs~6îmóDııÄ?q¦:…Åè¥ÁÏkLæpÚQlÏÜÅ.î3Ã{)ái[°¿ú,bìBğƒ>/`tT<?C÷şïòrd5çÃÍÊ	½"°°Ï<‹åûº¬ŠôÎÉÆ›xÉçqœ®8œ–ŒtŠÁ_'ü‘'¿âÌgø4o|­]‘èÇà_©IÃcşÑÇ§7·íjïŠ!ıùg²„:ù®7dÀÖHo-Á3t‚iÔŠ}vî\¨He1zgØóU…'2Nagö8Z9`„ßPL™Æ¦İQ°umX4K¥ %İßV…=zØbJÀx„y„*,HAZuz:÷ÀËq/p[Ò;t”ûdÔe!­1qÎıñóø·™A{®îÃ†Ì-HoÎC´]z»ôÄğ€!°³²Ã¹‚óH®¸„§Âf©\‚«w¯aå•/Ö‰[Üi.D´C‰Ç‹¬~u§Áª›k1ÌcfEÏDUCNåá6<Üq¦8·²1Ãw^¾”'E:aãµÍ¸SŸ©!U:ä£“Ÿ°•rR8plC–l„çäÔŞAK{j[ëp°>İÇã„·¸Z İ%GØR>³G²©~iĞó¬ƒˆ8ñì­»ˆx»^XÒk¢ızÃŞÖ™B@ŒóˆS‰Y¹7¾àöû¸D¡¬©©uix*`§!’F"E]İXÍÅ†Â‰Œ“øôÖş}‚Ïh\©¼´†,<æˆWG¾ÌS°(y».öÎèåßêroß­í­°QX#Ú%i5hjoFC[#jÚê‘à>¿Hü+ıßı#®ÔİÂp—xwìOqìÖqlÊÚÆıÏë1õ›Êm¿yğç8ßp±ö=ñîğ·æÆLÿÓ±ÿÅ7Õ'Y„~;á—üéÎÏÓ×ñÏùO@~}!U$ñ"ütÔÌJé2
+ß ŞÙ¡TÌİc°¿ä;´ £yRït|\õ»$÷´š¡¶hnWFï@U­µ°R( ZIr É)ü]Ê{lîÇØGcÕŒ3;?º¸œY1İg<^ıCèÃSá@Å)xY¹âÕèTîÈïÿ¤ŒŸt_û9/ ôñÍÏQİ^‡Ù>“æŠÍ9;XJ–^$ ²0YeÙ<¹+E×°«èòZËñrĞ<¼4ò½ İ)»‹÷Ïı‹'iÊâ¤)îÖö6xX¹`qØ“˜7øIlNÙ‚¿e®De{#FØEâGÿÎì Ò¤Õ+‰Í×·6áFC&fûNÆÃŸc0şuâcÉ^áx-öDôÆÉôSøèúJT´VcÿTÄ‡ÔõpÊ ƒÔÁèá®e?Kú_æmaŸdNØÌ8«Ó İlÊEq{=úXûã'ı^E¤wOìJÛ‹åyÑŠvxY9áá‹8òaH$H±şjô;¼âÄ"u}%é§_üNU_âq½õ20ƒ­éÖ[;ùo£ƒâ9†VÀJ+3
+Ğ®4¥2C‡¿ò—£ÃáŠÓèi‚wG¼ÍÁ¬¾ËƒRª®áfsÑÏ6¿úŠª‹q¶à<‡{Ê¡¦½	Oxg1^~z%37Æ)
+?öCß‹üiÁvä!¼¹ÍmÍØ˜½çš2¨pÁ/ú¼†)}'CòÇè¹~ş1È¯ÊGmS-‚Ü‚T®€I:Èƒˆ¾[‹÷c€cŞñB¼‚õt·<ÿ—ü	®Õ¥#Ê!-•*;Q‘ŒÌÖR4£Åæµ?@êİË¸[oG/lËşG®a–K~Ÿø+ì»~ Gò³;ğìà…*AºE2 Ïõœ´Ò[ìäú*œ0Êy –Ä,d Ô3%µe8œy”³s"f¨t—I éí½Ï¤–^áPdÁ yÊ­ã»êi
+7dÔ+Cƒ>Î‘8S•‚ì¶r8Àó½'ã­1¯£¸ª˜ïÛÚØbİ¥z¤©¥	yUyœ‚6Xe–It$ÄÎÚÉe)¸Ş˜‰‰î#µœ\i|gn'áó_ñ¯‡NÃÌÓ5†n¶S›ÒÍ-Jkäëæk0—L:âBÎE¦rNe.—œä÷bİbT™‚üÖr8*lñãˆçµr<ä,~{w?ÿƒ¾/ 64íhãß§ŸÄåâ+üó¸ğôŠáŸWımaëµ°ïÓÌÃÁ´Ã|ßÅÎ™ÙÒ1\"T¿ddˆaı'G[Gökèºtç2NäâŸC]ƒqµü:ŠKï‡!A±Zz€˜±#]ÒÌŠš¡
+M¨Íi[±¯ê4|­Üğ‡Á?ç{äÜ~™¾§oa©×T¼{Ïı8—•Œ¯Ó6á|İu,z’]	‹dêAG\=ªWo£©µ‰u]îşğuõÕÂ˜ZPY¨õ‰ø‡·?CÚ1Ì©/í»"ı‹Âğ³vÅóağÔà¹¬˜÷Ş<€Õy›a«°Ápçş˜6ØöÚÚÛğDÔã>TCÌf­æÁÌ#<ØIãU«ÙqV+Î¬Â·…‡øÏËz.bójêeJ*—`kæ·8_#úãÅşÏ¡_pªê«ğÛïşŒİµÉëĞ?ö‡#’¯mk€‹•#R[îr®ifŸÇpàÖa\­¸O;Lë9YcNf¤î¦?µÍ¦®kçå]ø cßZğ8^ù}VĞP´Ò_§nP¦Xtd¥wÉ¤/ÏÛ +,
+Ë>˜~xácÜlÈÆLß‰ìiÓõá‰°½ä šÛ[në²Ö*LğÅ©XÒqr•áËÛı~¤‘?2 Õg×`CÒÉ¢˜)1l,ÿLqšºz4íVÜ\ƒÜ–"<á3™óB’®Ëé”&NıİÅ÷8HpŠ×Fü'n+º“7zaqùäü
+«NF_û¼>èÌº(Y{Eg%Ç³"¦ç—_X…õ•G1Â.‚“dÖn˜8OrW¾)Ş‡0[,Zˆ‰}&¨ÖĞ @ÇoÀíòL~xdX»éÿ9õ)V*ÑêŠ–*1LVI6şrö}Ünºƒ.è€Ë•×ánãŠ7†ÿHï6Œ´š•mµXôoÛüçÊ*ÜlÌÁÒà§8ıõùõ8TtœŞù=ĞHíêÒW”æ]•­­§}êÛøgJò‘I7ù[{r–S=7m ‰Æ^
+g<ò$¿¨PŒ]8
+ZJÙå_vOHĞ§åßÄÏÿ×šî ÄÚmhCQ[öš‚gÎ¿·›Q‚‚Ê~%À= ¾®>Øqù[|¹avâ+k¬¿»-í­Hğ7â_Ã‡§>Æê²½ìTvLâu´Ê„Ú*|¿v°Á$Q¸]§Œ%%€¤œ“®˜Ò(@+ó6¢m˜é€ßLø…†Yt°²G~³Ò¡{+æU$Df:Vâô$Îı¶Õ°•qRØ`}f„NQå‡t™oRĞi¥7q¦ä<JZÊ1Îk$nTßBzc.¦z%à‡#_ÆççÖ ¤±‘n=µrÚ4Ùõ¹Û0È¥/õ_À
+šşv0ÿ(ÜmÜâ„”J¥ß$Dãøë¥9'5Äm /‚t0XÿŞ<­Æê«kñmí9Ìs‹W‡¾ÄïIºdÇíİØU}
+G,yK†/MğÔİ3Hª ç¯í-œ=$ù<ÓûMã6Rr/!9ÿ”‚›•3EÎcº“3·ÿÆA¬Êüµí˜æ™À)T)zcÔQ{Ï- /»£[@»+NÁUá¤ÚõPwhSòR±9k»@’Ş¢-,JÙ¾6J©Øé2=@”?t÷ª[k8b—6ûèŞ/ü–¢ëYŸÇğ“±o0@»2÷!£>Wšï"ÀÊ	®ÃĞÃ5ˆğê+…§<“ê®Â6³õÃüˆ¹*ğÈÙX´®VìÇ4´6bOşAÖu‹-DË½J]•d­¶àw_é¹D+tX~#ÖİQêPÚW[0ôiÎHşíô?9«H™Ç›‰Ì–kÛ9/íjí‚×‡üPµ•³áÂ&ü;ûK´¢/ÍcÏ”¿Q”†7¿D}{#o8pê‡‚¦"Ş{&ø	
+ˆw’‡œÖ
+8+l@ºL¢;­æ{Épp:Éq Şúcf•”ÕT(¬T^¸.?ŒÜ‹¯³6³9Ÿ:›­”úEVxÕİMü§ƒçaéˆ%Ğš‹_iå®é“Ì<)ëÍ»´”1‰à¥‚ËÜY´O/UÂ›ş~£8uEÈ«ËÃ®ê$Öc´­<Ñy0ï—­º´šS¡”†èi¤ˆ_ï¦şÅíµègŒwcßÔpÜŒùağÎ´İz£sbĞ¹J€Ç¢ ‘§K}÷Ãd€È¥×—’ÔX{¿PÑƒL~“ºkîlFn[%¬ À	¬ìII*=	ow@Ä€÷ÒÿÃÉ3gØà­°ç°HmsQÊ6¶7ñ.Ç¢4\cÕ¦FÒ¼Lb.Ó©éoêy$GÕ\@µ;…ÌÅÂ¡óùQ]â·—wãïéËQĞ^ÃÉ²	ğË‘?ÕØ|”<mªYØc®Ê*¶··«b]ÙAêÓÔXÒ,€¡‹´J›Ò¶òkGNÇw¹'tî¨o¿<4‰õ™äÏ²×#·­TØ×& ¿Œ}[CÌÈp¬ËÚ‚ÂÖ2L÷§ò«ÔS*º²ƒ†æ¡ïƒ®\»¢ªQü>ieÇNœ®‹µ<i%+¸Ç'±_¢n)÷ŸŒôêÛB
+IH_ìHû–ß}±÷b(]—¾å­Õ(o«æØ#iX#bèêKk‘\•
+g+¼ÚwÇO¦Ô™’@/_TÔÑ!ÓÅÔû§?d…û‚÷tŞœ#Ïu]2^{Ü{";zrÌõ›†Æ¿¬£®ö¤íçÔ‚ËØWp„=ğÙÁiY#òï7>§•+™Á)²Ú2|xæßHªNA¼Û•£HÒYÇ/®Ööä;h ßı3¶×œQmºÑ„´]%‡y¯’WŸuÜ¿§Õ¥Ê‰P?Œ÷CÅ'¸ß¹!3´&J—Z\[?_x9y¡¾¹A§5JÎ:ªÆjdUd£®¥wëò19lWH;äCÑöÑ’°y]t/)ó,ç¹à¤œ¾Dœ:HZ K9§bĞ¯ı·sŸp…ßû®ä]ÁÛû±¿òv˜ç?#ÇcİÕ8Wu™‹š÷x
+'’°£&	O¸ÆcväœÈU–êéËI5Š©•Wá`å€‰Áã09z’ÎZD²¨ë²·`¤ÇLœO'On[ªB#f}xcg&{Ä«²‰Ğ†‹›x››B”¹g#­à&>¾¼‚71'ø%`^ì“Z• Z :Jú¾ö²¡K¹60©âŠ[ËQ×Ş„D9ôàæl­2¾¡ÜÏÕÊë¸\Ÿi^cñjÜ+Z5ËéŞÜÒ„SÙg°)wh‡u¢g¼Jñª[FbÕŒCH­¸†Ş.‘;êÏ}pî#^ ™ÎÃñêà—Ù±¥>·¥îàâ­~N½0»çyaåÅÏq®æ2KÄÏŞ6 uïrxè0üıì‡¸Ò…-nµ–À[á ?+w„Ú2 tÍò{k&z÷×YdÙ‘î}£AµH_]Y‹5W9ã')^iâä7}{{/G÷½İ£0(` ŞÂKªüúîVÖO/ö~VUø%EíÄ®…³x'˜6!?+İxû^œ:éX§hP©{—Nxïì\¨@şIV[9}{"çz–|Ç¿¿¹HU|©+˜¤g¨\åTşÎ%=1Sµ¥®x§MÂÈĞ8Ü,¾Å€9Uwp®œØ[ÁáJÇÊ4jWò¿(‡•_[ˆ²¦r•~¢ûäVüï•±øMòˆçMHsUîzäµ×àuÿyx~øóª;¤”vF¯×gp„^Ú^W…-|#CF¨BIª+ºÖbİ¥X_¼á6şxkÀ«!ÊwÙÇq¡â2¼l=PÜTŠš¶:Î >ğ.•_ÁÅúæÔ¢ŸÔªåQ÷¿ƒÇ `?ıDnÅò”U8_wãÜ†³•+«+ÃÊk_pÕìçşøCâ¯;1èb}çw*Úhå†?xGg :@äØ],VÆ:‹û/ÀRVádm*zÛ«êéyì;Ów#µê²Z‹ÑÎ®"0İ}4‚GãRQ*¶–à¿ş¿Ï«,”Ô—TF¿ó×ªl¥„şGIÿÁñŠsJ¶‡/Äø^ã´"y“‹Ô'IúŸ¤¿áDı5Uà9Ê!ï{S«PSı=›=ÙXi.õš†0—P*<†Œ¦»˜ã3‰‹²²Ë³‘U‘ƒ‹å©¸XUí³öD¸]úºõF*H²Påm5à‰E½ŸæêU–®âšb¤—ßÆûù_ã%ï™ˆ©‘+—œÚõ%{ak™ ÒÉS›&Åbô Ğ±ú«¬±Ô÷q¼™ğcu<4~¦ıûôr¬/İ‡Po,
+}YÕ9ØP²Ëxõìmì±6}Ò›îpMsE{#ì£yq\D‚ø’;ğ¯Be4şù ?1@ÄĞY[1Î'Îş¸^†ƒå'‘à6OFÏQ%ôi<œü.×¤Á×Öó£æòÖµ¾HŞl€şzö8Vw™©ï¥pÄËaÏ`Ñ½Bn]Aà‰ô“\‡“ŞœQNığnÜÛœ[ÚQ|ı£8íAå»«n~‰Ì–Bô°ñG¤c¼ì½0*xÂ<Cµ’ûdÍ¨.‰®ş~1 Q•+%õh÷ãì5œ4›å7¯ŒZÆÏ“©?~§}†Á®ı4Rï‘i¥Íb@ª»Œúöµï‰ÁSğT¬ÒS%úŸ/HáŸçöÍ+Oe*«¶ÂVx%d¾´ı[İ¨ÜI1ù¸x7´Ãêïâ‡Üª»ØWx˜‹F'ú%<Ø"MBª‰\]¶E«ŸOöß9Œïj/aœó $%`|¯D>7Fıo½µƒC£Ÿ/ÑY­.ftºî2ZÛÛájeÏ¾Ä„‰¸ZxWJ¯á»Š³å6„1UİïÉÜCÕççÔOgiGÙ$8pã ¾ÌÚŒ¼ÖR¶rêé½²€¶vvçà­ 'ÂGK[öåÆw70Õi0~÷³‘úøÃ±¿pğLÎ¡®:êN$•Î^¬»´ÀIaË{¼úaë]Èm)Æ4Ï1p´v€ƒµŠŠ9ÑN¾EKö0HU ’¨T6U"Â­Ç"È#yù8|û(‡æö,X Qi¯/7E,"Gó`åirìÉÁã‘\t*ò	¢w½Î)hKêvv$©h“öçõ,2KQ±ö·…¹5ĞÖTØ=Ü.v
+[d7pN¡B¶OÒ>ã	rèÜì]¹ÔäzI[£¸{bEÇh{™.òb¹õÇÄˆD"Õ+ÀBİCT¹ úûŠ‹Ÿóš‘®±øÉ˜7T>M|÷Õ½ø2g3
+Ú*ğ¬ßã°³²Å‘eÉk}—©
+ÚÕÅl‘ÇÎYõé¯³|Çd£âğÿ¹³qv‘äƒ+UiHjºÅyæ‘½1Ğ½æÆÌÆ¢›ì¯8Û8#Ê³'r«îğ.¨£•=&Çà Xì½µ»K£¼­–öíMğ²ñÀKı—j•¾Ht—j{ÖdnÀå–<Ö5¯zEÃ©#ı5ù¸Õ˜‹1®C0Â¶æ(AÚ Ÿ¥»*ófâtÏ±øñ?ÒyZÉd€È”+<Â¦Øùâz]rZ‹Ù«öP8`QÀl®” *Tº®æ]CÒİsØWr•muˆ¶Ã«ı—¡¦±İX‰¼–RŒt€‰Á‰°³QâíáÕCç	Bº—[š‹uW6bOÙwˆs¨:»F“%E_T]Ä'oÏç§àtÙ9$øŒDk[+”*÷õ_îµDUhÁl»¶Ë³ÖòiŸçAøóøßÊHÊÑn)åZÆzä½¬Ú©èÀİkÃ^aEHíøİS8PyÖP ÈÆÓüÇ³EÚpe3v—Ee{=ïÖN
+CÅê–J½(¡_4NfÆ­Êä7rYq€b<£ÑÓSyL“607”ìG€µ;^\Œ‰½¿?E:õo)"«© Üãğî¸ŸÊ1jğƒ”qµ)ñNñ£!/sÁSfqr+ragcOw¤•ÜÂ±Â“8ÕpVné:Cıó†ãİÊ<,¿úÎ6¦#ÄÚA6¾ğ³óÁ‹ƒS¥$Ô³~´oŸ^šÁ“u·wƒB¡@i]j›kQ\_Â!í§;*leÂ Íì©<&Ut$×\F[{;—ÂÄ÷h±¿»uûîFFCï±@gÖÁ,%M>ÍÖÂ}¨ioPù4Íî¡‡ññÍÏp³¥î
+{Ìô‹§cÒØhügöjåÂ¬}QİV‹¾=±lÀsˆğ‰@ym¶]Û¡J•X[Yã?·•Ç^ê±¾Î>Ø—uWënájK>×T“Óí¾Cå©:ÀKúèçÿ5­µœ} MË©¾‰|t”®UgWcOéQ6õÓ{NÕ
+|¥¹ÕARŞ˜|šıÕIˆw ×§¡:›Ï‹vpÈk†?ÆıJ#T XÚ´£j‰c÷J{§…MBK[œm±ªÆj¯q²-Ò½Vf­G]{#;öÆßaü~Y[Æ»Fo·(ô÷Ÿ«ŸV<HV÷hñI®O¢ƒu…Í¥\WMg1èúèìØwˆŸ%¼¥÷8©A€È5Ï)ÍÁ™œ³ø&o&xF˜[¨Î£–ÔéšskñÏÜµ<€ÇİGã÷Í?K +kvÄîìıÀÎu‡¿ƒ?ï„ô†²†r®
+‰qˆdVÜ­ÉÃÆÒµñÂ`—~œ½t³qÅ€X­šfuF“ãøËÌ1Ú¾7z:…ãTÕ^˜©!0¶WÖœÿ
+‡Šc˜û L‡Ş=tîÜ=/öiÒ*\¯¾‰ ‡ Ìí=[¯¦Áí¹º+3¾B~kf{ÇÏÂc¦@÷ëËëq¡ê
+æ‡ÍÁØÈ1ªcJCœ•“¦ó~1$0V#èáÆ‡g(_3Ú%?õíU+N¹&JÙÒ¥^ŠLV· FYøê‚ãy'Uáy¢ 5¯:Ç
+NÂÇÎKUÖQmˆv1(zşuØ2Y<õ¥*‰¤šTqŠQ%µ¾N^­y»QØZ¥AOaJ¯Iªƒ-cİ‡£°±Du¦‹*+(8_{±N}ğƒØe8“ÄÇÏ©æyÒ½©_©>€XIN¨z.GzFò{T&¡¿c”*‹Izê“” è`¢Ç(ÌWÓ—&é ±=×”Ü6V6ªò”(«„é‰×~  şIDAT”Ğ¶‹zRëƒãÿÂ×Å{T)áÃT9ªºTzYu¦‹b£õ7qI¹s¦¡‡G8ææg:.írœ*L‚—'fõš¡Jm¨Qr2Wg®GFKbiÌbDúöÄªäÕø¦ä <­œñ\ØÓZI8£JZúş®+©u£ä&¶ìe%I§p=4r0t²šâ¶D‡,‹Q~(@Yğ}G"A{o@ÏIÇ»İ­œ1/dæ™§shdö?J^Õg¡P OyMÂøğq(©-Á¿ÓWsyà0‡h.·Q¯é6
+ítf•eq§†<]iTº’ZTR¢~j±£H»T‡øó¾?æ4ˆú‘‘qZq–TŞK²6}#J[*ñlØSZPG‹*o7ŞŞŠ¤ú°UX!Ñe({ä”‰ø¦ì0‚¬=˜ER½k´ÂŒd|Å•Õ\>£Ç4£	&jTWRË¥
+Ô¶Ôbß@}H'¯Ö§c–ï$Uı³¾ÀVW$jt&gÖ$×]ƒ§•—éÑ‡Èó'³?/`æş…&t(ó(
+
+1ÙHjÀ\qì¨'¤ßõ)Zš]®ö.z;cc@¢­kg['ÄøõeËÜ1"µ#  irJ6ƒŒQô¿õ¾ø
+‘• 	€ä)‡ûú™@eêëù?ëzå±M]W«£#Zîı'oº¦¿mÔ“6½)yO
+€Œà' Òkf&ì‹‹aŸëÊJØ@Ñ¤Ìíè»ÚííÑngú«—Z]\ĞêæÆÿoôõE}@ ‹¡¥®n±À={`]QÛœXUWÃª  °²Z[Mš“¢F¹¯ßîâ¢|ÇÎNù;çé‰V??´x{£.&~~¨4©]}u@ÄçôtØ§§Ã&3ÖÙÙhww‡¢²°¶æÉ¶†…¡ÍÍíÚ{”¯hh€¢±‘YFÿGC¬
+•YÃv77(jkù?j›XÖ0v,júõCE?e¥Yg®.ˆ@qMM…]f&lîŞ…¢¼\9©¦& ]­ÁÁhswGsp0ª†3Y<$}åvõ*ì33aU_6XÕÕÁöæM¥hiAkx8êFFell§Ødq€$²»qÖEE@]hå‰)m>>héİÛ¢" Î
+Î÷èQaûÔTXß¾Í·ÛüüP;}z§@²@NùùpOI}Fl²³a•“ÃbC¢Ğîèˆ6oo´„…¡1*
+%cÆXT‰ê¿ï¾ƒËÑ£°¹z•Å–D°!>e‰‰f1I@0©©¬[P_Ïla²¶FãĞ¡hèİ5½z™5¨Îè
+]ïø$%Ááöm8;¦ÔMhŒ‹CÕ¨Q&ë¥ND+äxõ*ìRR  ï·±‘i‰ŒDsX˜Å¬ˆ\°h½…ã‰J£ P iøpTLœhHÈãêUxmÛ›ÔT•"`4YÎI_8°d}ÏtëC®C yœ=§ãÇa•—ØÚ¢nÆÜyšê™_fä}áÜöíƒíåË@{;Ú‚ƒQ;q¢Q`¼.]‚Óµk°®R~k^ÑÜÌJ\òkŒ”tZ›«+Z==Ñâãƒ¦  ³CZŸ“'á|ä¬srĞƒÚÑ£Q6|¸Ah@´şk×ÂöâEvÒZ@õÄ‰(ÕÙ	™z÷3g`SXë²2Xåæmm¬0­ŠŠX‘K&ß@$&yÑlÆÛüıÑ`²#¼ÎƒóÉ“°MIAkt4ª'MBÑXå÷Gt]&¤’åÃ‡y ­‘‘¨2Eoã¤£œ.\€í¥KJÿ‡Â{! 9qäŸHl PÁĞE¬³))aÊš@nnV‚Ll$À™ÑÑF™Lı„lÜ§;ù]ÒGEóçë5"&$É°óşıPTW³"®?^'8’es<{6ii€rµıüĞØ¿?šııÑìíİ©0@r>)n#ñ¶ÉËƒíµkh·±¢®ÙØ<p j†GI\œ^ÌY‡nŞz×Ã5sæ ÿ±Ç:Ï bƒÛ¦M°ª¬D»«+jfÎÔÙ é'—¤$¥e#³êâ‚–ˆÔÆÇ£>$ÄdOÙ˜¸I÷©?ûÜ\8\¹ë;w  Fµ´ aòd”Ì˜aĞµÚ¾Î»v±õmLH@Î2e±yÇË(ƒˆ>»vÁáØ1~·~òd”N¬Õ¹J?¥¤(iïå…ú1cLrÌL±h†,™ÊJ9«âb¿šY³ô²‚æAlôûäX %:/¼ P£ ‘õñZ±‚)Ü‚Š9sP:dˆĞõ)ÏºñãQ1b„F§c(RÜ’E£ÈŞ˜EkDCÿş:õŒf¸ìØÁAlóĞ¡¸óâ‹z-=²jìçÅÔ¨A€¨‘€mÛàxä‹LİÌ™¸³Póë’ÎqŞ½›E°µGÔ&$h…$÷®ÉÉ°ËÈ`°ÅÊÏêãF¦Q‹ÖÜ«Š
+´ùú¢vòdìØnâZ{öDMb¢AeŠ˜ˆhèûå—°¹ymìïtTfÌ°•+•òïèˆšÙ³µ!—ßõ»ï`Ke{;+U)ÓæáÁ“6fÑìH×œ8Á:†Ø‘õÚ÷ßøQ§3é%÷={Ø‰mxì1äÍŸ¯—E,f+WÂêî]4ÇÆâÎ+¯h=k €àºiÇWdï,[¦Ñ ±ÂãÀ¥)¯«Cã„	(5KC¬èÏİ»a›œÌóhŠBsTZ<=Íröˆ~ß|Ã"Ñ<dªuZ*b}èGñbPö vÊ½ºˆ%dçN8îÛ‡ÖˆÔŒ«Å8-€2RRT§ƒ¾úŠ•3ùµ3f oö÷ÿ
+
+Øûğa88À^1)ºúáÃ5£RğG²ânéÓUS§jLŒq(*‚mi©Šú2GèÇ3;ê|Rg¨@“öÛ¿Ÿ-©…†ñãõZ(êP½ÍšgÑ˜#İ×(oï^@¾_}ëôt¦_éìÙ¨øşßÑaùİ½›™CÊ³zæLô5w}=Zƒ‚TÏ¨§GhÖ÷²‚ê¢ÒÜ«j‡Ñ “&öşûì_éêSzßãúuø|ú)¬ÊÊĞ4h²ŞR~ş]×Ec	üàN®µôì©¥Øµ *ıòK@ë×s›ucÇ"oÎUûÜèÇÃúÖ-vk~ES¦¨ÄOµŠäX’ïäîÎT§gì**”#)şª*^eŠç4®{
+™W?dˆŠ•Ô®ÄjÊLêZqjÇùî],_Îº¥).Ù/ÿ9Œ uTìUÓ¦¡dÄÕcZ U|ò‰
+ ×o•Aˆ…¾ÿ¶ e]¶nUzÕ}ú ì©§4R¤(	\rŞH<ë'MRùCN§‹&¥GÈÃ–.J£ÚŸ9Ã ¶ÄÄ€}Ï3Ú¶™KWÃ˜1È]²D‹æ D/«ÚllDÃÄ‰mšºÿ@
+·zêTÑ¢û[¶Àqï^¶X£G£xÎVÜ oıL™¢ÓéT9qwîpP\½t©ŠE>gÏ2øº˜-!e.@Ô¦çÊ•ìU7Œ¬7”Åæt™CY‚ÿùO¥i$ù~]óßÃ‘L'¥È2¨;–Ä,Ï/¿äH¾54O?­åtÒ Ô­”™”BnÿóÏ¹ÿÆQ£t*`s’„ÆEúV@Æ:—\Z¦‘#‘ıÃï?¹¼eœ·nåòQr–.Õ«<ı‡ëÎfÃ¤IÈ]¬ügsXQÿãlÉš‡CæO*[ÄT®Ar2·™«æcEÆÆj~GÑ˜"á½n¯ ™PiàÒ(C×®e¿‚"øº©SqwŞ÷‘Ò½6OOÔ'$¨îu4õ”Ş°¿q6×¯CÑÖ†ú©SÍ(xÓ&8Rö°¼\ã]½«A¼ÿúûsd0îª‰Xø¨Q ¢¸@í´iÈŸ¦ü@¤1şé§°;uŠÓåÏ<ƒ²Xå¿ÛCWø'ŸÀ¼i åÏ?¯²äi»<+5_HAqyİŞŞ¨š3‡õ­´ÿ·ßrÂš†qã´DŒuäòå°;}šc¬Ê…†ª±Ñ¸“’ ‚W^Q9dÂı ¹‘2¼—TÊ¾÷’ÿáÃp%1¡È>1wŸÔüN!¤ÖQ­š	Y·UwÕ¯ŠëtÄ!ˆ—##98mòğàl Û¶mÌ^r*/Öš<şÛßÂ:?Ÿ}¥ü7ß4iG¥ã¸%„ŒDvã¸q 2d©Q#‡#Gx%J.DEß¾ªÕ ÷ÀyÏŞùlJHPÅSE¬£'-¥3OTfÉ+8PgŠ‚U 9¸·n¡iôh-#¢KÌ˜u+V°ˆ‘aÉ{õÕïYßQÄªÿúW•ä¼OyN£nÂ•¾[¹R~ØÙ¡vÖ,-×œåÿ¤òœhÅ3Ïh8]*3à ZúõãhÛXÒ\ŠÁ8Ş£œ´Ç…5qq:c1öğwîä4¯.Ô½ãtô(¬JJø¼E‹Ti)éš?ıIÓşıœ;fG°OÖ&'³W¼d‰FøÁz†äÿÜ9®Ø¨Z°@ÃÁd&Eö´ZAA¨=ZÃ—FFÀ¸ÜºÅ{ïÅ8ät6ÆÇÜøëñÏ*7ìíuŠ .€B×¬ã®]Jút¨AËªzÿıï:s-!!(|úi4xy)MìûïÃ:3“=h2‡kq¸³½{YÏtìL%×”4§tgSÚQ?j/P¬§§QDÎ;µVVœêmîß_+[ >aáÃ‡yë›"şÂ%KŒêÎ„®Y›Œ¶¼eË–¡lĞ U³Z nÙ¢È¾  mNNªmr¨|(Ù}ã;‰w^zI òƒ\öïWú/		L× ršäĞ!Ş[ãd;ÕFF¢İÙ™M³5UƒPGûû55¬oª&MBíØê©÷‘&j{á3¡æ‰'¦\%(ŸåI)º:4®•"ÖNw\ºôı?†İ®ü±…jv
+pc_}Å‘/5V0gÖä™eï½›ôtÎÇ¾şº–R›R´ïpò¤r3ÀÚš·†X”îP’R¬”;2´w¥ò¼·oçà·µW/äÿèGFÙ#eLÎã$^ù¢Eì¡qÍI«SØ˜$=ËŠüÀN×M™‚Â™3ufõ$=ãpó¦ªü®ÍÙ™™$™wcbÒ©ËŞ½°ÊÏ7)a/SÒ©$¤2
+/ÖÕ,€ŒyÑRÇ¬â}ğVJô/X 3æR(–Ùjf™/e\÷íc½H$+dlËGê—Õ¹×%&j„EÒ3fd,Sg[èW_ÁqÏöYš@É‚:EM—U1åoû¨ÂÄşôieÕÆĞ¡&WmPúìŞv''­°¨ËR9¤¦²u Ä•”ö0 CÏ’w;}öçÏ³Î!ßÔ·¯YõˆY^úüóNm—D0ı÷ï‡5™P¶|´®o›×àÔı(®.ñôä|¹9m’8¯^û£G•¾ÏŒ:}1³•´9"¦®œNŸæÜ6%¿h¿ª~äH4††ÔKê`Ñ„Ü¯_‡sj*ïÅS•,yÔìCQÅØ=Ê€¥…sÛ¸‘sÖ´É©ÏÒv@49
+2I‘’oÄ•íí\áÚæ  ”%$°#Úñ’b4ª+²¿x‘Pr.ÉKnîÛ×¤ú]múnÛ{
+‡
+ÔS¦bî\½{g]¦¤;2€ªÉÜ’“U©
+‰÷ğ=<ĞŠV__.Œ¢R©ÜÅšœÆœem4Åa­­7„êaÃL*¡S‡j§åŞN1íW<ù¤A&w@Ò Õı»´4ö–¹¾‘ªa;SIS”W’
+§šbcQß¯ŸIù]âÆŠ™¶ÈËË•ºkút'&Z®Â¬3:H×@IìˆQT}oGç4ÊËùX‚zñWßûù¡İÖVyÃÃÃ¤â(]"EÛL´uM•ä›‘#jjIp·2HŸ• “
+:åmR?[¹ÊR·J=>+ûM­¼7 c;¦Z‘®|C'ø\ˆİ…J¦Ô­³3WŸUPYg7ÌÈ”…®œ¼¡¶%ÒùÎ<Ò¦¥­-§K(xíìy³ ¢FüíoÊ„ÙÀÈyë­n9V`20gÏr…g\]9§M>—±l€¡öÍè/íÜ¹!««™$ùH®Tfœ‘ÁÅU,Nmm¼)Y—€š˜ÙñŸÙ q*ãğaNrQäœ?o^·²HÊ8òùŒö¸B*iCC•ûüÁÁFÍ·©h6@ìKPÆ²t2!ÁlWßÔÁIÖˆê‡(À.+KÉ:jE§
+öÊ›©4™2‚jéRsúÑ÷¬Ù IÅ	§N)M'¥sıû£zà@Ù”V7Ñ6ee\@nwåŠ²®‘˜BEçäU;:¢ÕßM}úğÁK#f6@Òè”.•NÒ¹04¶­ïÓ˜,~êqg%– ´H)^ÎQ{xpV€
+LÍ8ÊeQ§ R_eJ—Ò1H2«´ÕÃ¹e:åçï¯*Î$skE§)cH§=•ÿš
+]Òá‡K—8YÏ:å^^šNåĞAİ–à`®êáÃy—ÕX*V.0²Ô±sÊûPt“«]é¢ƒ·Ry¯““êï,"äŸÅ‘N:+¼Ié™B±’ÄÄ:²J2O/w°N3¨c‡êá‚]^ëUŒUV¦:O:KˆÅ†rĞ½z±²eæyx zäÈ.Ó)æe1€tuÜ1ÆR†‚G»6GG›š=LÖWæNRÎó]
+œ=(ï
+€Œ¬„ H $OXƒƒƒä!`.ƒº´·‡¸qñ™@#‹'  É“oƒöª¨“×ä£ñö´iÓ4+í@š+ 2Bt H.4‰Aj§åu÷`¿yokI}” 54@F,  ÉÓq‚A‚A‚Aò’‡ŸĞA‚A‚Aò’‡ŸĞA‚A‚Aò’‡ŸĞA‚A‚Aò’‡ŸĞA‚A‚Aò’‡ŸĞA‚A‚Aò’‡ŸĞA‚A‚Aò’‡ŸĞA‚A‚Aò’‡ŸĞA‚A‚Aò’‡ŸĞA‚A‚Aò’‡ŸĞA‚A‚Aò’‡ŸĞA‚A‚Aò’‡ŸĞA‚A‚Aò’‡ŸĞA]Å yëòp¿mÒ—î)Ê½ È~ …EL^sîÛâ3FÖV $ ’'ş*¥¥¥}ÿOËkó‘x[|OÚÈ2
+€@ò$]ƒæ?õ6lŞ,oøÛ² zÀçf‘á=0 YŠ–jGB÷È"Ëİ€„“G«.c¥u¼iê~Û”1v@–˜)°D?†Úx êêÉ›Òş}¨+Yb‰¶ï;@¦¬¢¾g,€±şj€ŒMÎ÷@–òƒºƒÎ–XqK·!d)YzeLm¯+˜kN›]Â s`*P÷ë¹.è~M¦+ú =ì:È\VXZ¼ƒşÛd.ãŒ=ßdi‘06asï›Ğƒ>!s0ö¼Ù kğA»/wAy€ä.ØC\F˜ØC¹”û¼ HøAº0UT-Â S;3FwKµc¬sî[ S:|'oÊ¸» Sc©g,¹$@–šÚ 	+&Of%å\ŞºöíNÔµÃzpZ`zPÚm YzÂ–nOg» û)4ÆÀ4tÿ¿ 9‹# ’ë£§œÕyŞ’Ë SWùQeš`Pw1ÈT¦uås]ÁâûÆ ÎL¦3ïÈ]ûÜ[ò}á(Ê@S0è¿IIË ŠŞWÍfPW*Ê®l»³à™Pg;zXß 	$»%ƒºSW=” u†µ[ êìà:„¥ßé€,=èîlO $¬˜<¾	™Ë yx?ºo‹ÏY[ Hø«”””$¾£¨†e\\c# ÒC0É3tSô>|o««õ !µ H $Oï			ÉC@0H~B		ÉC@0H~B		ÉC@0H~B		ÉC@0H~B		ÉC@0H~B		ÉC@0H~B		ÉC@0H~B		ÉC@0H~B		ÉC@0H~B		ÉC@0H~B		ÉC@0H~B		ÉC@0H~B		ÉC@0H~B		ÉC@0H~BYŠAòÖáÑx[|?ÈÈ:
+€ÌèÑËÏB|&Ğ¦ <±S1hïŞ½â;ŠjXN›6Mó;Š M¦	€ŒH H $O9›Ä ˆˆy½<$ogffjT ¤‰ È“@ yÊN0H0H0H‚Aòğ:èabPïèhYË}3-MÖûº^~ $˜³$P÷ KÓ@İ7€Œc*,Õ>Ù¼/ š”©ÀtœPW´I}t;@ú&ÒcÌ 2õ½Îß­ ™ú3Æ&¥ïYSú1ÕÜu@Æm0†ÄKÕX@'cŒ1Æ&%b$sûèéZMKƒ#giî@]© ™Ã¢.È{Ì¬1S¿OıZBÔº ®f¥Yt_ê*ö¨ƒ¤E¦öİ­ u{LaÑ©4GïèzVŸ.2µÿûÆ S( ’‹€‘÷ƒ@ò(&$$$G•A4¯®6õ†"{SûîV?HuåÙU2°> u%‹Œå…X€º‹EMºƒ é˜êê ÕRìé¶mcI3KŠš1pÌí«Ë•tÇÔƒºB¶4“,N·1H—˜I@éJh™ª@uÿĞnû˜RÇgŒõHm5]zá¿rëÙHæ*Pu}öÈ/˜’9@cš115æÅw›Ó5c“36xc÷å‚Ó­VÌĞd,”%€‘Æ{_Ô4¹@Y˜ c"s?î?Pº ëS d! È˜¾/$$$Á yø	ÔU’·.÷Û&}yáá¢¼Ñ€Œà'  YXÄä5÷è¾->hdm@ yâ¯bPZZšø¢–ÑÑÑšßQ i2M dDò@ yÊY0H0H0H‚Aòğ:H0H0H‚Aòğ:H0H0HƒfÏ­w¨Û·oïR5ş@è CàHƒ¿_ İw€Lç~‚Ôm ™„¹òÔ•ìê€ÌG}²}Ï\€ï«2g’4ĞÎÔñ]KÔ¥2¹ uHİÄ}à™Â CmXZu+@¯$c kã¡H—H ]¿~}ûöÕÒAÒß½«®oz€ŒMTƒŒ1§«|¥.1´)ºFı9] İ/ph\])L×Ä;d*8Íº¥D­K 2œÎˆ„9íZÊä[ S'aHùêrò:*sSA¹Lºo ™#¦‚®´ ¹4•)ÒsÁ”Û—3Hî @æ"`äù‡A¦Ìß–uV™Òv·¦;L™ˆ¹¬£~QßØ<p òY.×Râëé³&¦€£/ÔoZ.s¤ñZÜŠ©an¦ cî#Íëcƒ¥Ò–­ûÂ SDEnÂì‘Èñ3å]FÁRú§KÓú¬ŞÔmfS3–¶5æ»_”´¡A1cz¨DÌŸHš¸\€,)^].b¦úDúÌ´)^yWšønÈ}dˆA†ô—¥™Ó-fŞ}aKº
+CãìR%- 21…E÷ƒ=İªƒŒádŠÏc¬®¸ßE¬+&eÉ6@FĞ 	€ä	œ```<ƒäá't``<ƒäá't``<ƒäá§¥ƒä5÷è¾->hdm@ yâ¯Î ñEM,5¿£@ $ 2KÜƒLÑÏBéGI0H0È,•£õ°```<ƒäá't``<ƒäá't``<ƒäá't``<ƒäá't``<ƒäá't``<ƒäá't``<ƒäá't``<ƒäá't``<ƒäá't``<ƒäá't``<ƒäá't``<ƒäá't``<ƒäá't``<ƒäá't``<ƒäá't¹’‡÷#ú¶øL ‘…ıÿ²÷ñ™‡{åU    IEND®B`‚{
+  "frames": [
+    {
+      "filename": "Crate.png",
+      "frame": {
+        "x": 4,
+        "y": 4,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "Crumble.png",
+      "frame": {
+        "x": 4,
+        "y": 76,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "CursedCrate.png",
+      "frame": {
+        "x": 4,
+        "y": 148,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "CursedPlayer.png",
+      "frame": {
+        "x": 4,
+        "y": 220,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "CursedPullCrate.png",
+      "frame": {
+        "x": 4,
+        "y": 292,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "Empty.png",
+      "frame": {
+        "x": 4,
+        "y": 364,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "Player.png",
+      "frame": {
+        "x": 4,
+        "y": 436,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "PullCrate.png",
+      "frame": {
+        "x": 4,
+        "y": 508,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "StopD.png",
+      "frame": {
+        "x": 4,
+        "y": 580,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "StopL.png",
+      "frame": {
+        "x": 4,
+        "y": 652,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "StopR.png",
+      "frame": {
+        "x": 4,
+        "y": 724,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "StopU.png",
+      "frame": {
+        "x": 4,
+        "y": 796,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "Wall.png",
+      "frame": {
+        "x": 4,
+        "y": 868,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "WallAlt.png",
+      "frame": {
+        "x": 4,
+        "y": 940,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  ],
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.6",
+    "image": "FinalPiece.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 72,
+      "h": 1008
+    },
+    "scale": 1
+  }
+}‰PNG
+
+   IHDR   H  ğ   ’œ8Â  .IDATx^í1zä¸F[ßú{€‰l°'s¬Ø'ÛÀã9ÀÂûÉgE›PUøAE½	§A õğP (6ûåÁ¿&ø´	Œ ô¿É!ÿCé€z :ĞìÓk¿{š)e#AêT‚Ó=JJm\;¤=€†4|”}µr_£€äO³mFêsÔĞ`†@òÊgÕƒPWÅSk>‹(\á¤`º§[Ğá„§[Ğá„ mµvÆMàl;kµÏ?®÷ Rº2-)}wR¸Ì¶íŞäéÌà¶ÓİÓ§jÎµ¦X´rOy AÀhã–½m‚¶6°Ö ƒ,GÚŸcaĞ'$iC
+ èñPvÒ„ATt º)«‰ôå¦Ø6`mWã»ºvgÂ“/¹İ ÷­M1 €|ãg©/—ƒ „A¾}Ëüà{/ìƒ¢Éç½<Iš³˜/g1Å˜bÏXÅXÅş&ĞûĞaĞuæö!7ñ.¹42àh]Ñi @šX‹ò„Yt¤Ï(è-×%€ŞÎŞjCé»Ë 'İ:4µ8òsÎ‡<Hş<DŸ òU„Ÿ€ŠÆYÏöî®œ:jİ¡˜,@ÊDäˆëCp–x İRNPvH]p¢€²Bê†Ó($	N/ ,d8
+ ¤#VQuzvÖŸÚò®bµNÎö-ÃZ?»à¨­™R7 9&¯:Å2ä¢ËrŒCŞ"#Ê½£ç 2 ( èì§R‚_Zä‡<[ƒ ô< òÌ.ªSÂ Ù oß¾]š%Ïhüû÷ïµflƒ d¬b 
+ j¨xÆLÚÆvà‡M±}Eoÿü÷ãå¿ÿÚñ³*;P)˜£¡-õÿØİ&Òöe€j´Û_	t{íÚÆöÿj†Ohéô>ğˆ^@‘éy8 ªG¬Šï){8 V'"X¬Ï=0Ö2Û~¥dX‚€Zı—²‚|îä)³os*@#§É¨­Å%€®Z•z¦Üe€J›¸Òò¾špôN¼fïá€zF­´!¬íŠ#yÊ*[êk
+@V`G~~
+ Ö™è3€‡*Jç¢h‰LİíÙ+ÚÎå€,€ÖN¼ô¹‚g[q
+ Eñ£¯µLœg”k«Şˆü6% kT¶j[ÿt€zŒ¬6(‡ŠšpO?.ÛIİZ=@[°.ÙI¨¶¤::ÅJ«‹w¢‚­İû‰®l§ê™ÊÛ“w<ƒp* Úß¨¼»a/äQp–~]È3ŠÑ2# ­uœ(ä™å[÷ª¿ Ú©¾4uO3h„î#l²ò×%;iï­OçWHûDô L3Åjš×À¬ÿÿe ˜F«±ÑÍ`«íi¨5U{M;Po'½ğ¢QO½§²rŠ§Ó#ÊXÃÚÆ©€¶‰Õªu"‘g<'şK )xG~?Ş»ûúÓŠÂUóŞíío™xM:-ÕÎ?-"£¾/;z©ŸÒ / |4AÑœá=¿EÊõ&ìåºSÚN·Ö21(jDtÀ´‡áÙ÷D;¿OÀµ6¼ÀK¦H	V¹¶vw°fl-vÃÌ¬•l{VÂ}»ˆZ?ogg@"e dĞĞ€"
+g*;ì+™™‚ô@-	Pd$nXÖ~±Àƒ„ ƒ€ ™PŸËbPÔ ÷M¯æ-xn:øCÂÂ âuÉd ¨?ÍnÏY÷;¥•$©Ğ'8oÇïı"¿òåñø£PkØ¤@ÓÃYÁŒ€”Î(H@éàŒ€ä”
+É(=’è6pz!…~r¶¥¼wsYİÜ?#z8Q“¶€ª;cœÊ¨ô²|İ€>û~©w@Cr°½ˆ}·‰ôÆ5ô:!†C …Ï:Ciü¬ì#] ¨L@Ş›xw2hûÓ9ÖÖš™·4@Æ°@‡²ÌcaĞgv‡T¦Ø€ŒÄ  }èºÿŒAıı³¤Å»£3V´ÈÕ˜b 2 Y·$öŸsÔà¨ÁQƒ£Æ%’³g±zş¥^ÏÓcº¿¬²bÄ>ˆ}û Ÿ¦KÒÑÃm«ü-ÿ6 ‘²>şr"_S§µb;-%…|XJì»PVH"œ%ìO€¶cÙu.;P†áU{Ÿ¶ç«»}OávNspng’×œ•ŠçaÉÛ@ŠÂY y -åÒCê”R/œ( ”8=€RARáôJiPÒğİÜØ
+»şfç]Åj]Íòş.8ªA+´Ù!uÃc
+«S,C.ºÜ Ç8ä-2Â ¼Ñ;z € ä˜G"„A¤À ß°ôöxü¦ueìÕ/ÇFÔ8ĞlpV0# É€f…3
+’hv8# uÊG…Ô(RPV8½B€²Ãéät8QH.@8Iß£hn&M@á¬–8Ÿ2kBjÊg¤Ñ€"Aˆ~mÜ´}söŠ>H^µè
+@E0ë:(8Šü|IfgŠcÆ]ÏWfTƒã±a½>Õ+ç³·È[W@û€zÁX öõ¦ tœÍ
+şÄmiz@GÃ± ¥TšVŞ\²OĞV]ëçSjÙc-õ{ Õ«Ô^@Å€_÷ZÌÚ–İW9- _vËÍ@ 5@Kşšõ,¶TÍQƒ€ö¹*7 Æ¢õV€–`Ş£´Vœ§È5­|5¯A ë ZûÜ³¯zÛ´ıå yÀèÒF”'n9 mºìÙÓD¯­ûjÛi8ïó êÈS®´iûË ò5J×”€>6sNƒàìµHh^*j®Nyeå·i-öiœ$şş¬V p¤hùlÚÃêPëÔ]¼o,kÖÔZÛ›u“Ëº'ä=‚”’sŠf{@¥\äÙ{ÊÔÒÔô©µ7JèHHÖÆ1 $eÊyºT€j" ";ê¥Şt€Z<É8º²¥TZ–?Ş:®¿öÜHÈª ŒÌzÙ´€z§Ëa×ú|Ğ{â0¿æ4Û®E·È[ßri›ñaNÕœ¬×$k´fúÜ2'èN¼p"µÁ÷L·™LÙ÷%§Pf“¢pºe„ÔG”	R/PH
+œ!€f†¤ÂhFH#à4óÒ®ôÍ½“VÉ|-€ŒÑ€´	A„AÒøÈA¼.Ù ¨šÎnÏYäO4””©Ğô?esåÏFLgUf¤¨AiàŒ‚”ÎH^@iá¨<€ÒÃQ Y€n§RĞíàô@ªº-œ(¤- êÎØù0Òı'–ñWè³ï—z44>zgbßm@bÎ0-&Äp îSó`LÑÇ€Ké@„İLÒzbĞ~*ìNÌ Ğ† Sìù=`]»çÀs|‘Ç\Ë¼u¤[Å¬¯Pšd
+ïsu#;fÁÓ=ì3W1RôÚt­£t¹®çš´€¢÷ÀYÚHÈ©Î- Y8·T‚TZÍ¬ÛÂ¥kÒO±mP­—ôÀ¹•A–E j¼Ğ  µ—-õXt‹$İZÊ¿ü2ïà)Só3µA‘À#e·°Òê	¸çš”€zí½§Rj@=ËvR:@ë‘B³‡t»[®ûÎ£Ê¤4hTğz dP€<©^ƒ0è¦iapõ¡z~ßİyŞE8Õ®›¥Òwû¼Aà…]¥`ÎZù'@Åû)Hv·ç)áı.™ë<s7H^8?«t=T5'Ÿ{ã´”¹¤(/ [@ê”R/œ( ”8=€RARáôJiPÒÌËûãñèúš„z=Ëû;ºà¨­ÂÌ©€9AbrÑå9Æ!o‘åŞÑs   Ç<jÁ Â  iüÈA„AÒø‘ƒ0ƒ4¤ñ#ai0HãGÂ Ò`Æ„A¤À 9ƒ0H#€A?raF ƒ4~ä Â  iüÈA„AÒø‘ƒ0ƒ4¤ñ#ai0HãGÂ Ò`Æ„A¤À 9ƒ0H#€A?raF ƒ4~ä Â  iüÈA„AÒø‘ƒ0ƒ4¤ñ#ai0HãGÂ Ò`Æt¢A³ı’ô“5+·QÍgO†4Ğ¬p†@(2boÁôéëvĞ"}úÔ¥H£µx¢)‚YÿÓÑ!G‘§ÏM(jŒ%XTtĞªmyFÃê¨§358Şö£×{údÅõãso[•Y)×Û®·.«O.8g ÚÔfUo
+@VîQ¬lÕ?= £á¬Ìjí¤TšVŞ\²€Ø–µêZ?ŸPËk©ßğ¬^¥öÒ *ÜPÂh¿Àì«œĞ/»„:Pè¶î½Emú1ÕNz¨š/¢9 ísUn@õ½õV€–`Ş£´Vœ§È5­|5¯A ŞÍ¡g_õ¶iûËò€Ğ;¥(OÜr ÚtÙ³§‰^[÷Õ¶ÓpŞ)æÔ‘§\9hÓö—ä9j”®)}læœ=ÁÙ%k;Pé†Ü kY6pWÌÊoÓZÎ=­Û€V­Uã–gĞòÙ´‡Õ= Ö©û‰d	XaócM­µ½©Y7¹¬{BŞ#H)9§¸a¶Ô˜)r³LÚ[®g@jí¦Ÿb%ıGšdmÓ *™¤€*å¯RâN¨)*²£^êM¨©7Sßêá…-„æ2ß:®¿Wâ¹Ò ë$a™ä³Ö1- +È+>¿üÏ>û¤x„Z›œÈ*â	z¶‡9e8£y ¦+I|é‚Ña  m¢aaF ƒ4~ä Â  iüÈA„AÒø‘ƒN0h¶[­û¥[¯#a!€€f‡³v½{š)S,	R/ œîQÒâêÕCúØhHÃAÙW+÷5
+Hnğ$0Ûf¤>G I] f$/ ÌpVP]1x uU|±1µæÃ±X€ÂN
+¦{ºyŸó“öBs|»‚	ƒ÷vÉãPkgìÙÎ¶³Vûüãz µ!ïˆQNé»ÒÀ÷ÔÙÃ!€<é	2zMô1àj>²¦˜'àhg¢Áö”ö	@7ı˜bh„AÏRæ ÇyÌ|ì­# ë+”&™İ÷ñ÷›ÜÖÄèJütî<s™W E¯MgĞ:*Ñ@—ëz®I(pœ¥Ô€¼záÜIs@%H¥ÕÌº-\º&ıÛÕútœ[dY Â2¾µ@ j"</[ê±èIºµ”ùeŞÀS¦ægjƒ"GÊna¥ÔpÏ5)õÚ{  N¤Ô€z–í(¤t€Ö#…gÉûèNš[®ûÎ£Ê¤4hTğz dP€<©^ƒ0è¦iasõ¡û ¥Ë½n¬V¥ï®¨Öî(ÅBWZíó'@µû)HãÂ;¾¦ğƒäû.¹*8>CZpÇfİÆ1•†b² -]UxLLÃjÇâtHa8Kà^@Ù!uÁ‰Ê
+©N l$8½€²@’á(€j†-7TäÙYj6’¤K}.Ò±ÉUvÁQZ{=;¤n8 rˆ©N±¹èrƒã·ÈƒòFïè9€H c5Š`aF ƒ4~ä Â  iüÈA„AÒø‘ƒ0ƒ4¤ñ#ai0HãGÂ Ò`Æ„A¤À 9ƒôúúúöúú:µÅSwNû1Wˆ¤™„A„AÒø‘ƒ0ƒ4¤ñ#ai0HãGÂ Ò`Æ„A¤8Ë ·Ï¿ExhÇ­Ê_b¯«V7,È2 ÈšÕíÏ1ƒ0¨D€UŒ}63†¤ucŞ«tÖ›×­g„A¤À 9ƒ0H#€A?raF ƒ4~ä Â  iüÈA„AÒø‘ƒ0è@ƒ<OlŒz’Kã¸«›S@Æs| 97™bÊ*ÆcŠ1ÅLL1Iƒ0H#€A?raF ƒ4~ä Â  iüÈA„AÒø‘ƒ0ƒ4¤ñ#ai0HãGÂ Ò(Úr’Êyƒ4U1ƒ0H#€A?raF ƒ4~ä Â  iüÈA„AÒø‘ƒ0ƒ4¤ñ#ai0HãGÂ Ò`Æ„A¤À 9è«¤¾fìöÈ˜" ¶
+aaF ƒ4~ä Â  iüÈAô…z}}}{}}=ôSŒ)ö…§˜ºïj¦SÌgJ­ai0HãGÂ Ò`Æ„A¤À 9ƒ0H#€A‡ò3+?ô/
+fë	
+ È$ H›Ç„A¤À 9ƒ0H#€A?raF ƒ4~ä Â  iüÈA„AÒøËA‡´®Æ®~y<†Ä6¤’¥ë 2@ ŠÍñ}iÂ *`;k£HÒf`Ú«‡M±´Îšb º+ÒF–„A¤À 9ƒ0H#€A?raF ƒ4~—æ 3Ş£¨áôçYµ3_©A3ƒYû ’´æ)ai0HãGÂ Ò`Æ„A¤À 9ƒ0H#€A?raF ƒ4~ä Â  iüÈA„AÒø‘ƒ0ƒ4¤ñ#ai0Hã·ÍAoZU·»ú ÕÇ@ôƒAÔí)öíÛ·îÚ³\øıû÷ZW´¡ò0@Š²Ì¦~nS€
+Ã Ãi HK{„A¤À 9ƒ0H#€A?raF ƒ4~ä Â  iüÈA„AÒø‘ƒ0ƒ4¤ñ#ai0HãGÂ Ò`Æ„A¤À 9ƒ0H#€A?raF ƒ4~ä šĞ ­Kó^=ì+™ó†¨õ@?	66é¯¶_,>D-  ü  ¦˜F jĞ¡­e­œMz4Ê:ºgôƒ¼ıúë¯¼GqëÏ?ÿ|ŞèY% S@ ÒÖ8Â Ò`Æ„A¤À 9ƒ0H#€A?raF ƒ4~ä Â  iüÈA„AÒø‘ƒ0ƒ4¤ñ#ai0HãGÂ Ò`Æ„A¤À 9ƒ0H#€A?raF ƒ4~ä Â  iüÈA„AÒø‘ƒ0ƒ4¤ñ#ai¢ÚZâÊy1xÿòzÙ¥Ch¶î    IEND®B`‚‰PNG
+
+   IHDR      €   J‰!9   PLTEÿÿÿ   ÉÉÉÿÿÿ   IM³   tRNSÿ ÿ ş²   	pHYs     šœ  IDATxÚíİÍv‚0€Q,Ó¾ÿ#»èi~²€™ûm]ÎU!	:'ôuBã	}_¤Ç     >ğÙä     Îğóv      ÜÀ;C        .
+ "      (	 f z ¨    €ü ^c^Î€º úó %€  8€ßQ7•ù@Ì¿VÖ Èwş¬Ï€”·Ñ}{ş ä\ˆöS`kş d]Š6{Wc Ù4sn½å` ²Ø€j f¯÷`ã=¿r- @Î‹ÀŞ§~÷Z€ÜA1îÜ@»
+8î  ëfĞk7ÈJ`) ³oı£  $0=b%°€Åé0ÛÁe L&=àDP5 qàH 5 Œ TÛ^{€R ü>        ½ Š Š8p&€Ôç=    T `7°è™@ œ
+ êmàâQq 
+°        l ğ§Q     5\   (ÀßÇ    ÜÀC¥    €  @    €  @    €  @    €  @    €  @    €  @    €  @   Ó{¥VÈ¼¹Õ    IEND®B`‚‰PNG
+
+   IHDR      €   J‰!9   PLTEÿÿÿ   ÉÉÉÿÿÿ   IM³   tRNSÿ ÿ ş²   	pHYs     šœ  IDATxÚíİKrÂ0@AOrÿ#³Hd#
+TT˜é·Íre9¦}hĞ÷€.Åš     ^ğÚä     Æ øy:      >À3¿ı        À?      ”+ = Ô   @~ ÷1?Î€º úó %€  8€ßQ7ù@¬6ö Èwn¶ç@ÊËÀh†¾? rîDû-°7 ²nE›{wc Ù4sn½í` ²8€j V ï`ç3¿±  ç"°÷­ß]{#(æƒA hwç d½t¿d'°€Õ¯şÎQ  X±XÀÃé0·ƒË XLz	À‰ j âÄ‘  j ˜¨v;xëI Jğÿ        è"0 (  (
+àÄ™p RŸ8õh    P€»•Ö  ”_à* ó¨8 Ø        v xi    @M ^  ïàõñ     Ÿà¢Ò €  @    €  @    €  @    €  @    €  @    €  @    €  @    € Ğğ®”€|GA>    IEND®B`‚#version 330 core
+layout (location = 0) in vec3 pos;
+layout (location = 1) in vec2 inputTexCoord;
+layout (location = 2) in vec4 atlasCoord;
+layout (location = 3) in mat4 positionScaleRotate;	//a matrix that takes into account position, scale, and rotation. replaces just a flat position.
+
+
+uniform mat4 viewProjectionMatrix;
+
+out vec2 TexCoord;
+
+void main()
+{
+	//gl_Position = viewProjectionMatrix * vec4(pos,1.0);
+	//TexCoord = inputTexCoord;
+	gl_Position = viewProjectionMatrix * positionScaleRotate * vec4(pos,1.0);
+
+	float xPos = inputTexCoord.x * atlasCoord.z + (1 - inputTexCoord.x) * atlasCoord.x;
+	float yPos = inputTexCoord.y * atlasCoord.w + (1 - inputTexCoord.y) * atlasCoord.y;
+	TexCoord = vec2(xPos,yPos);
+}#version 330 core
+in vec2 TexCoords;
+out vec4 color;
+
+uniform sampler2D text;
+uniform vec3 textColor;
+
+void main()
+{    
+    vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);
+    color = vec4(textColor, 1.0) * sampled;
+}#version 330 core
+layout (location = 0) in vec4 vertex; // <vec2 pos, vec2 tex>
+out vec2 TexCoords;
+
+uniform mat4 projection;
+
+void main()
+{
+    gl_Position = vec4(vertex.xy, 0.0, 1.0);
+    TexCoords = vertex.zw;
+}#version 330 core
+out vec4 FragColor;
+
+in vec2 TexCoord;
+in vec2 UnadjustedTexCoord;
+in vec4 color;
+uniform sampler2D texture1;
+
+void main() 
+{
+	vec4 tex_color = texture(texture1,TexCoord);
+	vec4 final_color = vec4(tex_color.x * color.x, tex_color.y * color.y, tex_color.z * color.z, tex_color.w * color.w);
+	FragColor = final_color;
+}
+
+//okay so the basic problem is that the invisible sprite we are drawing is preventing other sprites from been drawn. 
+//the other problem is that our old system of just moving the tex_coord is gonna make things... trickier.
+//solutions: do some z axis sorting, make sure that the start has a higher z value than the end.
+//solution: do all the texture atlas texcoord work in here instead of .f, use my old chill system of just adding to the texcoord.
+//so, provide the min_max from movesprite.vs, then add lerped between min and max, then if out of bounds don't draw. Then they stay static, but provide move illusion.#version 330 core
+layout (location = 0) in vec3 pos;
+layout (location = 1) in vec2 inputTexCoord;
+layout (location = 2) in vec3 positionOffset;
+layout (location = 3) in vec4 atlasCoord;	//first two the x_start, second two the y_start
+layout (location = 4) in vec2 movementoffset;
+layout (location = 5) in vec4 colorOffset;
+uniform mat4 viewProjectionMatrix;
+
+out vec2 TexCoord;
+out vec2 UnadjustedTexCoord;
+out vec4 color;
+//out vec2 nonAtlasTexCoord;
+void main()
+{
+	//gl_Position = viewProjectionMatrix * vec4(pos.x + positionOffset.x,pos.y + positionOffset.y, pos.z + positionOffset.z,1.0);
+	//float xPos = inputTexCoord.x * atlasCoord.z + (1 - inputTexCoord.x) * atlasCoord.x;
+	//float yPos = inputTexCoord.y * atlasCoord.w + (1 - inputTexCoord.y) * atlasCoord.y;
+	//TexCoord = vec2(xPos,yPos);
+	//nonAtlasTexCoord = vec2(movementoffset.x,movementoffset.y);
+
+	float x = pos.x + movementoffset.x;
+	float y = pos.y + movementoffset.y;
+	float xb = max(0,min(1,x));
+	float yb = max(0,min(1,y));
+	float x_tex = pos.x - movementoffset.x;
+	float y_tex = pos.y - movementoffset.y;
+	float x_texb =  max(0,min(1,x_tex));
+	float y_texb =  max(0,min(1,y_tex));
+
+	gl_Position = viewProjectionMatrix * vec4(xb + positionOffset.x,yb + positionOffset.y, pos.z + positionOffset.z,1.0);
+	vec2 true_input = vec2(x_texb,y_texb);
+	//vec2 true_input = vec2(inputTexCoord.x - movementoffset.x,inputTexCoord.y - movementoffset.y);
+	float xPos = true_input.x * atlasCoord.z + (1 - true_input.x) * atlasCoord.x;
+	float yPos = true_input.y * atlasCoord.w + (1 - true_input.y) * atlasCoord.y;
+	TexCoord = vec2(xPos,yPos);
+	UnadjustedTexCoord = true_input;
+	color = colorOffset;
+}
+
+//todo: there positions, the moving sprite positions, stay static the whole time. the offset of texture reading moves.‰PNG
+
+   IHDR   Ì   D   ú*u   	PLTE      ê	Îã   tRNSÿÿ ×ÊA   	pHYs     šœ  ÆIDAThŞíšëƒ €Å÷èm]L	¹4ûµu*øâ")	ÙÉ‘Ì‚Y00ĞR À”„ºÆ¥;˜ú»Ä¹öÁ@ÅB-§º’>!ÀÊfî`
+÷n™3¶Ònv¢Ñ~Û|²ºë0aX6ÔÌ(ùì˜g>Ú	ŒO€ùÕ$ãÉ¢y‡:ÌİÅ@VíZĞè[¦.³§Ğ2„ÙW9K‚Ñ2<	h8N…!]Ìá¦O„O˜NÊ0 “-k³wÇ%&LïfŠ0H…ïTşæÔ£2ØÚoç£Á4–Ã«ÆA`NŠN-Ú0e„ÔÔsŒı$S›7*Ú"6Ìöô›à¯¦=0G[|ÿQ»a`® Ÿß-¡İİ	åª™ÂÒ ĞìØ9–3R0Ú_Îúçîa„Û­Ê0#½ã[õ”?Ğ¦1˜Ä
+Hï0,ÇôC\cµa8mcLM»9 ¢(Ò”ŒùPCÿ§#Ç0ùA0)2‡`ÀfÊ„ X¥fi˜rÍ	K€˜œ¨i¢Cê[3òN“Hw?b0oh€³EÖ”K.5„ÙrÙvŠ’ H;äA˜ºù²ÅÈ2òùbÁ,™ãE³JÅ¾”X    IEND®B`‚{"frames": [
+
+{
+	"filename": "Crate.png",
+	"frame": {"x":2,"y":2,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64}
+},
+{
+	"filename": "P_NONE.png",
+	"frame": {"x":66,"y":2,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64}
+},
+{
+	"filename": "Player.png",
+	"frame": {"x":130,"y":2,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64}
+}],
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "pieces.png",
+	"format": "RGBA8888",
+	"size": {"w":196,"h":68},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:8386f317aa980795da43b8eb327a0aef:806c8d6adc90bd52245ebdf49c1bbb2a:63fa604ff246ff6dc1eb73bcffe0689a$"
+}
+}
+‰PNG
+
+   IHDR   Ä   D   Şš³   	pHYs     šœ  õIDATxÚíQnƒ0@	âÂ=Iœ}uªh7Hc;¶ó„4MU‰¶!¥Û  ğ‰òòwc,`uv†  ! ì„¨µªïx­õwâ¸ØÇÃ…gîìÀ·´óVkmŸş~Ís»zmï{Kn7öàïQk½<÷d™™ä¹”W0”!²md¸‚ûŸÇ%åeW®>b¼¿!CÌ)Ó]eòÔ%S§á'èÓQ&"BäBu®§AV¾%+Ñ„(Jï…kgUö 2PÚ€GĞ€-d‹Ü¼^6·\³¶”áüydŒõ(Ó„è¸ÁU¢7íRô&*KnïÆvî%Tş+“¾YTj)„§’)—ev¶~§l¢—è©ËînjÌ»KÁÁGLM¿‘^ÅùD,“í’ÍÃÔ9Û½ìH¤T
+yËÜ#ñøÑ`'œívß–LQÎÀ‰ÒIqÎæ
+’eë6"OîXHˆ2»IÓ’t8Q2Á,)š°`MBB„€ÙrH\ø‘aDµ¯ğbt´˜dğN»rQ$jºlP£Ëp¼‹Ğ<™ÁeW°¤Ê°YÈ !K#@RŒ©2!@³IÖCM)!Èğ)@ËÍ¸i’©Ê ÑT{oHYÜo¦Æİîü€aŒá‚Ì=Ä›¤¬]r#Fñ*Ø®€ Ê¤W¤ïT³¤4Nf1µ+l6àÀÜ¼™ê‡-›ÌæwÌææ0:øâX 3!4Å@šhûBøRåèS×xÒŞZn^ÆÎü>Aîz:~»¦ÚãÉpÚ\ğ9ğ|bjÖ²¤_şÍr´Y„KúÔÒıÈ*‚å/W‚ÙY_½· ©¦©Zş¨Ì—h†8—)£géY¿U!ú •Uî2„´T’‘!b7ÄE]ˆÅêq„ğø=½Ô}PÙBeBè
+qÔ=´lÓ„ ©†A!Šñç}^ØË®\^å$²}÷q2îÂ“û    .ù aƒ‚ı[¶5    IEND®B`‚#version 330 core
+out vec4 FragColor;
+
+in vec2 TexCoord;
+
+uniform sampler2D texture1;
+
+void main() 
+{
+	FragColor =  texture(texture1,TexCoord);
+}#version 330 core
+layout (location = 0) in vec3 pos;
+layout (location = 1) in vec2 inputTexCoord;
+layout (location = 2) in vec3 positionOffset;
+layout (location = 3) in vec4 atlasCoord;	//first two the x_start, second two the y_start
+uniform mat4 viewProjectionMatrix;
+
+out vec2 TexCoord;
+void main()
+{
+	gl_Position = viewProjectionMatrix * vec4(pos.x + positionOffset.x,pos.y + positionOffset.y, pos.z + positionOffset.z,1.0);
+	float xPos = inputTexCoord.x * atlasCoord.z + (1 - inputTexCoord.x) * atlasCoord.x;
+	float yPos = inputTexCoord.y * atlasCoord.w + (1 - inputTexCoord.y) * atlasCoord.y;
+	TexCoord = vec2(xPos,yPos);
+}
+
+#version 330 core
+out vec4 FragColor;
+
+in vec2 TexCoord;
+uniform sampler2D texture1;
+
+void main() 
+{
+	//vec4 color = texture(texture1,TexCoord);
+	//FragColor = vec4(color.x + 0.2,color.y + 0.2,color.z + 0.2, color.w);
+	//FragColor = texture(texture1,TexCoord);
+
+	float sample = texture(texture1, TexCoord).r;
+    FragColor = vec4(1.0,1.0,1.0, sample);
+}#version 330 core
+layout (location = 0) in vec3 pos;
+layout (location = 1) in vec2 texCoords;
+layout (location = 2) in vec4 atlas;
+layout (location = 3) in mat4 positionScaleRotate;
+
+uniform mat4 viewProjectionMatrix;
+
+out vec2 TexCoord;
+
+void main()
+{
+	gl_Position = viewProjectionMatrix * positionScaleRotate * vec4(pos,1.0);
+
+	float xPos = texCoords.x * atlas.z + (1 - texCoords.x) * atlas.x;
+	float yPos = texCoords.y * atlas.w + (1 - texCoords.y) * atlas.y;
+	TexCoord = vec2(xPos,yPos);
+
+	//gl_Position = vec4((pos.x * 2 - 1) * 1, (pos.y * 2 - 1) * 1,pos.z,1.0);
+	//TexCoord = texCoords;
+}
+
+{"frames": [
+
+{
+	"filename": "Floor.png",
+	"frame": {"x":2,"y":2,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64}
+},
+{
+	"filename": "Outline.png",
+	"frame": {"x":70,"y":2,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64}
+},
+{
+	"filename": "Target.png",
+	"frame": {"x":138,"y":2,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64}
+},
+{
+	"filename": "Wall.png",
+	"frame": {"x":206,"y":2,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64}
+},
+{
+	"filename": "ZBlack.png",
+	"frame": {"x":274,"y":2,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64}
+}],
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "you.png",
+	"format": "RGBA8888",
+	"size": {"w":512,"h":128},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:7d389776bbd3dc5d025bef61c2181e3e:090fb6bb434d0574e71268087c0ac5a1:6890ca11a725f045f12dd30932c0f0ba$"
+}
+}
+#version 330 core
+layout (location = 0) in vec3 pos;
+layout (location = 1) in vec2 texCoords;
+
+uniform vec4 offset;
+out vec2 TexCoord;
+
+void main()
+{
+	//gl_Position = vec4(offset.x + pos.x * offset.z,offset.y + pos.y * offset.w,0.0,1.0);
+	vec4 top_half_position = vec4(offset.x + pos.x * offset.z,offset.y + pos.y * offset.w,0.0,1.0);
+	gl_Position = vec4(top_half_position.x * 2 - 1, top_half_position.y * 2 - 1,top_half_position.z,top_half_position.w);
+	TexCoord = vec2(texCoords.x,1.0 - texCoords.y);
+}
+

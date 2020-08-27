@@ -175,21 +175,24 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Downloads\glad (4)\src\glad.c" />
     <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Click.cpp" />
     <ClCompile Include="EditorTimeMachine.cpp" />
     <ClCompile Include="GameState.cpp" />
-    <ClCompile Include="GenericGamestate.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="IntPair.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Parse.cpp" />
     <ClCompile Include="Regex.cpp" />
     <ClCompile Include="ResourceLoadText.cpp" />
+    <ClCompile Include="SaveLoad.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Sprites.cpp" />
     <ClCompile Include="tinyfiledialogs.c" />
     <ClCompile Include="Walk.cpp" />
     <ClCompile Include="win32_platform.cpp" />
+    <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dottedlines.f" />
@@ -210,16 +213,17 @@
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Click.h" />
     <ClInclude Include="Clock.h" />
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="Fonts.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="GamestateAI.h" />
-    <ClInclude Include="GenericGamestate.h" />
     <ClInclude Include="MainHelpers.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="Parse.h" />
     <ClInclude Include="ParticleSystem.h" />
+    <ClInclude Include="PreludeIncludes.h" />
     <ClInclude Include="Regex.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SaveLoad.h" />

@@ -1,6 +1,6 @@
 #pragma once
+#include "PreludeIncludes.h"
 #include <glm\ext\vector_float4.hpp>
-#include <glad\glad.h>
 #include <glm\ext\vector_float3.hpp>
 
 struct TextureAtlasMaps

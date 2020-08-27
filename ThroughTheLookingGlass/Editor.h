@@ -1,8 +1,8 @@
 #pragma once
 #include "Math.h"
 #include "GameState.h"
+#include "Constants.h"
 
-const int GAME_LEVEL_NAME_MAX_SIZE = 64;
 enum TimeMachineEditorActionName
 {
 	TM_APPLY_BRUSH,

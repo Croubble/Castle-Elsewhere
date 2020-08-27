@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Math.h"
 
 IntPair math_intpair_create(int x, int y)

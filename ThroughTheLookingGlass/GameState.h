@@ -1,8 +1,6 @@
 #pragma once
 
-#define MAX_EDITOR_ACTIONS 100000
-#define MAX_NUMBER_GAMESTATES 1000
-
+#include "Constants.h"
 #include "Memory.h"
 #include "Math.h"
 #include <iostream>

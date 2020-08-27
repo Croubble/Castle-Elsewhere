@@ -2,11 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include "string.h"
-
-#include <windows.h>
-#include <shobjidl.h> 
 #include "SaveLoad.h"
-void resize_window_callback(GLFWwindow* window, int width, int height);
 
 
 void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, glm::mat4* camera, bool mouse_moved_this_frame, SCENE_TYPE scene)
@@ -53,36 +49,48 @@ int main(int argc, char *argv[])
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	//SDL_GL_SetSwapInterval(0);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
+	//int numBuffers;
+	//int numSamples;
+	//SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &numBuffers);
+	//SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &numSamples);
+	//std::cout << "Num buffers" << numBuffers << "Num Samples" << numSamples << std::endl;
 
-	SDL_Window* window = SDL_CreateWindow("Castle Elsewhere", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_OPENGL);
-	SDL_GLContext mainContext = SDL_GL_CreateContext(window);
 
-	int numBuffers;
-	int numSamples;
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &numBuffers);
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &numSamples);
-	std::cout << "Num buffers" << numBuffers << "Num Samples" << numSamples << std::endl;
-
-	//GLAD LOAD
+	SDL_Window* window;
+	SDL_GLContext mainContext;
+	window = SDL_CreateWindow("Castle Elsewhere", SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+	mainContext = SDL_GL_CreateContext(window);
+	if (mainContext == NULL)
 	{
-		if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
-		{
-			return -1;
-		}
+		printf("we have failed to initialise the gl context");
 	}
+	auto rdr = SDL_CreateRenderer(
+		window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+#ifndef EMSCRIPTEN
+	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
+	{
+		return -1;
+	}
+#endif 
+
 #pragma endregion
 #pragma region Memory_AND_TimeMachine_AND_Clock_Setup
+	printf("Hello world abc\n");
 	Memory* frame_memory = memory_create(1000000);
 	Memory* permanent_memory = memory_create(10000000);
 	Memory* play_memory = memory_create(3000000);
 	Memory* world_memory = memory_create(10000000);
 	Memory* level_memory = memory_create(10000000);
 	Memory* animation_memory = memory_create(1000000);
-	Clock* clock = clock_create(permanent_memory);
+	//Clock* clock = clock_create(permanent_memory);
+
 #pragma endregion
 #pragma region Nested GPU Setup
 	
@@ -114,7 +122,9 @@ int main(int argc, char *argv[])
 			1,2,3
 		};
 
+		printf("Helllooo no?\n/n)");
 		glEnable(GL_DEPTH_TEST);
+		printf("HELL YEAH!\n/n");
 		glDepthFunc(GL_LESS);
 		glEnable(GL_BLEND); 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -2490,10 +2500,6 @@ void draw_gamestates_to_gamespace(GameState** gamestates,IntPair* offsets,int nu
 
 }
 */
-void resize_window_callback(GLFWwindow* window, int width, int height)
-{
-	glViewport(0, 0, width, height);
-}
 
 void draw_palette(IntPair palete_screen_start, 
 	GameSpaceCamera camera_game, 

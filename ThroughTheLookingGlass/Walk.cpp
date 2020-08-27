@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Math.h"
 
 bool* math_grid_walk_adjacent(Memory* result_memory, Memory* temp_memory, int* input_grid, int start_x, int start_y, int w, int h)

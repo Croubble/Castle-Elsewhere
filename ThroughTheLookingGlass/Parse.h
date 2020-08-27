@@ -3,7 +3,6 @@
 #include <string>
 #include "Memory.h"
 #include <regex>
-#include "GenericGamestate.h"
 
 /*
 *	Okay so here is our file format, the basic idea is:

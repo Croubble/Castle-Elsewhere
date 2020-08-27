@@ -3,7 +3,7 @@
 #include <fstream>
 #include <sstream>
 
-#include <glad/glad.h>
+#include "PreludeIncludes.h"
 #include <GLFW/glfw3.h>
 #include "Memory.h"
 #define STB_IMAGE_IMPLEMENTATION
@@ -39,7 +39,6 @@ PIECE_IMAGE resource_piece_to_piece_sprite(Piece piece)
 		if(is_cursed(piece))
 			return PI_CURSED_PLAYER;
 		return PI_PLAYER;
-		PI_CURSED_PLAYER;
 	}
 	if (is_normal_crate(piece))
 	{

@@ -96,9 +96,6 @@
     <ClCompile Include="EditorTimeMachine.cpp">
       <Filter>Source Files\EditorFilter</Filter>
     </ClCompile>
-    <ClCompile Include="GenericGamestate.cpp">
-      <Filter>Source Files\GamestateFilter</Filter>
-    </ClCompile>
     <ClCompile Include="Parse.cpp">
       <Filter>Source Files\ParseFilter</Filter>
     </ClCompile>
@@ -107,6 +104,18 @@
     </ClCompile>
     <ClCompile Include="Regex.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SaveLoad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Click.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Source Files\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="World.cpp">
+      <Filter>Source Files\EditorFilter</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -196,9 +205,6 @@
     <ClInclude Include="TrueFontCharacter.h">
       <Filter>Source Files\Text</Filter>
     </ClInclude>
-    <ClInclude Include="GenericGamestate.h">
-      <Filter>Source Files\GamestateFilter</Filter>
-    </ClInclude>
     <ClInclude Include="TextureAtlas.h">
       <Filter>Source Files\Main</Filter>
     </ClInclude>
@@ -221,6 +227,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Animation.h">
+      <Filter>Source Files\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="Constants.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PreludeIncludes.h">
       <Filter>Source Files\Main</Filter>
     </ClInclude>
   </ItemGroup>

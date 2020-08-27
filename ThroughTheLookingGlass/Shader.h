@@ -2,8 +2,7 @@
 #include<glm/glm.hpp>
 
 #include <string>
-
-#include <glad/glad.h>
+#include "PreludeIncludes.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 

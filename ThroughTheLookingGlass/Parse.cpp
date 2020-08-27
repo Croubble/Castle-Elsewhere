@@ -1,5 +1,8 @@
 #include "Parse.h"
 #include <iostream>
+#ifdef EMSCRIPTEN
+#define sprintf_s(args1,args2,...) sprintf(args1,__VA_ARGS__)
+#endif
 int distance_to_char(const char* pos, const char match)
 {
 	int i = 0;
