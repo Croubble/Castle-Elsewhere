@@ -158,6 +158,45 @@
     <None Include="movesprite.vs">
       <Filter>Source Files\Shaders</Filter>
     </None>
+    <None Include="assets\dottedlines.f">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="assets\dottedlines.vs">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="assets\draw_to_screen.vs">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="assets\fullsprite.vs">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="assets\gl_text.fs">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="assets\gl_text.vs">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="assets\movesprite.f">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="assets\movesprite.vs">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="assets\sprite.f">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="assets\sprite.vs">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="assets\string.f">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="assets\string.vs">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="assets\text.vs">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resource.h">

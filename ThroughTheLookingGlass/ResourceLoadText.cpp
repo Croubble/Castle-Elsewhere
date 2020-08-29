@@ -69,7 +69,6 @@ std::string resource_load_text_file(std::string filePath)
 	std::stringstream myStream;
 	myStream << myFile.rdbuf();
 	myFile.close();
-
 	std::string result = myStream.str();
 	return result;
 }

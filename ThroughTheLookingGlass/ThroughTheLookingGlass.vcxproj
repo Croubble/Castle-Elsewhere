@@ -195,6 +195,19 @@
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\dottedlines.f" />
+    <None Include="assets\dottedlines.vs" />
+    <None Include="assets\draw_to_screen.vs" />
+    <None Include="assets\fullsprite.vs" />
+    <None Include="assets\gl_text.fs" />
+    <None Include="assets\gl_text.vs" />
+    <None Include="assets\movesprite.f" />
+    <None Include="assets\movesprite.vs" />
+    <None Include="assets\sprite.f" />
+    <None Include="assets\sprite.vs" />
+    <None Include="assets\string.f" />
+    <None Include="assets\string.vs" />
+    <None Include="assets\text.vs" />
     <None Include="dottedlines.f" />
     <None Include="dottedlines.vs" />
     <None Include="draw_to_screen.vs" />

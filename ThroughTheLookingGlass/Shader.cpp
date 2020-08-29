@@ -8,31 +8,77 @@
 
 typedef GLuint Shader;
 
-Shader shader_compile_loaded_program(const char* vertexData, const char* fragmentData, const char* geometryData = nullptr)
+bool test_strings_start_equals_string_internal(std::string start_test, std::string string)
 {
+	if (start_test.length() > string.length())
+		return false;
+	for (int i = 0; i < start_test.length(); i++)
+		if (start_test[i] != string[i])
+			return false;
+	return true;
+}
 
-	//bool useGeometryShader = geometryData != nullptr;
+std::string convert_core_to_es_internal(std::string input)
+{
+	std::string to_delete = "#version 300 core";
+	std::string to_replace = "#version 300 es";
+	int len = to_delete.length() + 2;
+	std::string result = to_replace + input.substr(17,std::string::npos);
+	return result;
+}
 
+std::string convert_char_core_to_es_internal(const char* input)
+{
+	std::string temp = std::string(input);
+	return convert_core_to_es_internal(temp);
+}
+
+Shader shader_compile_loaded_program(const char* vertexDataTemp, const char* fragmentDataTemp, const char* geometryData = nullptr)
+{
+	printf("NARROWED BUG DOWN TO THIS SEGMENT OF CODE!");
+#ifdef EMSCRIPTEN
+	std::string vertexDatastr = convert_char_core_to_es_internal(vertexDataTemp);
+	std::string fragmentDatastr = convert_char_core_to_es_internal(fragmentDataTemp);
+	const char* vertexData = vertexDatastr.c_str();
+	const char* fragmentData = fragmentDatastr.c_str();
+#else
+	const char* vertexData = vertexDataTemp;
+	const char* fragmentData = fragmentDataTemp;
+#endif 
+	//std::cout << vertexData << std::endl;
+	//std::cout << fragmentData << std::endl;
+
+	//create the shaders.
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	std::cout << "glShaderSource VERT CREATE" << glGetError() << std::endl; // returns 0 (no error)
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	std::cout << "glShaderSource FRAG CREATE" << glGetError() << std::endl; // returns 0 (no error)
+
+	//compile the vertex shader.
 	glShaderSource(vertexShader, 1, &vertexData, NULL);
 	std::cout << "glShaderSource VERT LOAD" << glGetError() << std::endl; // returns 0 (no error)
 	glCompileShader(vertexShader);
 	std::cout << "glShaderSource VERT COMPILE" << glGetError() << std::endl; // returns 0 (no error)
 
-
-	int success;
-	char infoLog[512];
+	GLint success;
+	char infoLog[1024];
 
 	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
 	std::cout << "glGetShaderiv VERT" << glGetError() << std::endl; // returns 0 (no error)
 	if (!success) {
+#ifndef EMSCRIPTEN
 		glGetProgramInfoLog(vertexShader, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+#else
+		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << std::endl;
+		std::cout << "END ERROR REPORTING" << std::endl;
+		abort();
+#endif
+
 	}
 
+	printf("EFGH");
+	std::cout << "ayooo" << std::endl;
 	std::cout << fragmentData[0] << fragmentData[1] << fragmentData[2] << std::endl;
 
 	glShaderSource(fragmentShader, 1, &fragmentData, NULL);
@@ -41,11 +87,13 @@ Shader shader_compile_loaded_program(const char* vertexData, const char* fragmen
 	std::cout << "glShaderSource FRAG COMPILE" << glGetError() << std::endl; // returns 0 (no error)
 
 	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+
+#ifndef EMSCRIPTEN
 	if (!success) {
 		glGetProgramInfoLog(fragmentShader, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
 	}
-
+#endif
 	//unsigned int geometryShader;
 	//if (useGeometryShader)
 	//{
