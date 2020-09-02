@@ -66,20 +66,16 @@ Shader shader_compile_loaded_program(const char* vertexDataTemp, const char* fra
 	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
 	std::cout << "glGetShaderiv VERT" << glGetError() << std::endl; // returns 0 (no error)
 	if (!success) {
-#ifndef EMSCRIPTEN
-		glGetProgramInfoLog(vertexShader, 512, NULL, infoLog);
+		glGetShaderInfoLog(vertexShader, 1024, NULL, infoLog);
 		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-#else
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << std::endl;
-		std::cout << "END ERROR REPORTING" << std::endl;
+		std::cout << infoLog << std::endl;
 		abort();
-#endif
-
+	}
+	else
+	{
+		std::cout << "successfully attached vertex shader" << std::endl;
 	}
 
-	printf("EFGH");
-	std::cout << "ayooo" << std::endl;
-	std::cout << fragmentData[0] << fragmentData[1] << fragmentData[2] << std::endl;
 
 	glShaderSource(fragmentShader, 1, &fragmentData, NULL);
 	std::cout << "glShaderSource FRAG LOAD" << glGetError() << std::endl; // returns 0 (no error)
@@ -88,43 +84,34 @@ Shader shader_compile_loaded_program(const char* vertexDataTemp, const char* fra
 
 	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
 
-#ifndef EMSCRIPTEN
 	if (!success) {
-		glGetProgramInfoLog(fragmentShader, 512, NULL, infoLog);
+		glGetShaderInfoLog(fragmentShader, 1024, NULL, infoLog);
 		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+		std::cout << infoLog << std::endl;
+		abort();
 	}
-#endif
-	//unsigned int geometryShader;
-	//if (useGeometryShader)
-	//{
-	//	geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
-	//	glShaderSource(geometryShader, 1, &geometryData, NULL);
-	//	glCompileShader(geometryShader);
-	//}
+	else
+	{
+		std::cout << "successfully attached fragment shader" << std::endl;
+	}
 
 	Shader result = glCreateProgram();
-	std::cout << "glCreateProgram" << glGetError() << std::endl; // returns 0 (no error)
+	std::cout << "glCreateProgram: " << glGetError() << std::endl; // returns 0 (no error)
 	glAttachShader(result, vertexShader);
-	std::cout << "glCreateProgram VERT" << glGetError() << std::endl; // returns 0 (no error)
+	std::cout << "glAttachShader VERT: " << glGetError() << std::endl; // returns 0 (no error)
 	glAttachShader(result, fragmentShader);
-	std::cout << "glCreateProgram FRAG" << glGetError() << std::endl; // returns 0 (no error)
-	//if(useGeometryShader)
-	//	glAttachShader(result, geometryShader);
+	std::cout << "glAttachShader FRAG: " << glGetError() << std::endl; // returns 0 (no error)
 	glLinkProgram(result);
-	std::cout << "LINK" << glGetError() << std::endl; // returns 0 (no error)
+	std::cout << "LINK: " << glGetError() << std::endl; // returns 0 (no error)
 	glGetProgramiv(result, GL_LINK_STATUS, &success);
 	if (!success) {
-		glGetProgramInfoLog(result, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+		glGetProgramInfoLog(result, 1024, NULL, infoLog);
+		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << std::endl;
+		std::cout << infoLog << std::endl;
 	}
-
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
-	//if (useGeometryShader)
-	//	glDeleteShader(geometryShader);
-
-	std::cout << "Shader result" << result << std::endl;
 	return result;
 }
 

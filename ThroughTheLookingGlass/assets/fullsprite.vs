@@ -1,4 +1,5 @@
 #version 330 core
+precision highp float;
 layout (location = 0) in vec3 pos;
 layout (location = 1) in vec2 inputTexCoord;
 layout (location = 2) in vec4 atlasCoord;
@@ -15,7 +16,7 @@ void main()
 	//TexCoord = inputTexCoord;
 	gl_Position = viewProjectionMatrix * positionScaleRotate * vec4(pos,1.0);
 
-	float xPos = inputTexCoord.x * atlasCoord.z + (1 - inputTexCoord.x) * atlasCoord.x;
-	float yPos = inputTexCoord.y * atlasCoord.w + (1 - inputTexCoord.y) * atlasCoord.y;
+	float xPos = inputTexCoord.x * atlasCoord.z + (1.0 - inputTexCoord.x) * atlasCoord.x;
+	float yPos = inputTexCoord.y * atlasCoord.w + (1.0 - inputTexCoord.y) * atlasCoord.y;
 	TexCoord = vec2(xPos,yPos);
 }

@@ -1,4 +1,5 @@
 #version 330 core
+precision highp float;
 layout (location = 0) in vec2 TexCoords; // <vec2 pos, vec2 tex>
 out vec2 TexCoords;
 

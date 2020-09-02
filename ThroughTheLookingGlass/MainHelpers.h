@@ -65,8 +65,8 @@ struct TextDrawInfo {
 	int* current_number_drawn;
 };
 // settings
-const int SCREEN_WIDTH = 1750;
-const int SCREEN_HEIGHT = 1000;
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 600;
 const float SCREEN_RATIO = ((float)SCREEN_WIDTH / (float)SCREEN_HEIGHT);
 const int MAX_NUM_FLOOR_SPRITES = 5000;
 const int MAX_NUM_FULL_SPRITES = 100;
@@ -75,7 +75,7 @@ const float CAMERA_LERP_TIME = 0.8f;
 const float CAMERA_ZOOM_SPEED = 3.0f;
 const float CAMERA_MOVE_MULT = 0.02f;
 //const float MAX_ZOOM = 3.0f;
-const float MAX_ZOOM = 0.5f;
+const float MAX_ZOOM = 2.0f;
 const float MAX_ZOOM_OUT_TO_STILL_DISPLAY_OUTLINES = 22.0f;
 const int MAX_NUM_DOTTED_SPRITES = 200;
 const int MAX_NUM_CHARACTERS = 200;

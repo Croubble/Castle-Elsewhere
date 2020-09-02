@@ -11,6 +11,7 @@ void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, g
 	if (ui_state->wheel_move != 0 && (scene == SCENE_TYPE::ST_EDITOR || scene == SCENE_TYPE::ST_EDIT_LEVEL))
 	{
 		//scroll up!
+		std::cout << "begin printing zoom info" << std::endl;
 		float game_height_old = ui_state->game_height_current;
 		ui_state->game_height_current -= ui_state->wheel_move;
 		ui_state->game_height_current = max(MAX_ZOOM, ui_state->game_height_current);
@@ -42,6 +43,8 @@ void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, g
 }
 
 #pragma region EMBARASSINGLY GLOBAL VARIABLES
+
+bool keep_running_infinite_loop = false;
 //Memory variables.
 Memory* frame_memory;
 Memory* permanent_memory;
@@ -138,7 +141,7 @@ SDL_Window* window;
 
 #pragma endregion 
 
-EM_BOOL mainloop(double time, void* userData)
+void mainloopfunction()
 {
 	{
 #pragma region Loop Startup
@@ -328,6 +331,10 @@ EM_BOOL mainloop(double time, void* userData)
 				if (event.wheel.y != 0)
 				{
 					ui_state.wheel_move = event.wheel.y;
+#ifdef EMSCRIPTEN
+					//if we using emscripten, this wheel scroll value is 100 times the window version for some reason, so we divide it by 100.
+					ui_state.wheel_move /= 100.0f;
+#endif
 				}
 			}
 		}
@@ -362,8 +369,8 @@ EM_BOOL mainloop(double time, void* userData)
 		}
 #pragma endregion
 #pragma region GLClear And Update Delta Time
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		//calculate delta
 		float delta = 0;
 		float total_time;
@@ -1404,7 +1411,8 @@ EM_BOOL mainloop(double time, void* userData)
 		*text_draw_info.current_number_drawn = 0;
 		memory_clear(frame_memory);
 #pragma endregion 
-		return running;
+		//return running;
+		keep_running_infinite_loop = running;
 	}
 }
 
@@ -1496,7 +1504,7 @@ int main(int argc, char *argv[])
 		
 		spriteShader = shader_compile_program("movesprite.vs", "movesprite.f");
 		fullSpriteShader = shader_compile_program("fullsprite.vs", "sprite.f");
-		dottedShader = shader_compile_program("dottedlines.vs","dottedlines.f");
+		dottedShader = shader_compile_program("dottedlines.vs", "dottedlines.f");
 		textShader = shader_compile_program("text.vs", "sprite.f");
 		stringShader = shader_compile_program("string.vs", "string.f");
 		floorAtlas = resource_load_image_from_file_onto_gpu("FinalFloor.png");
@@ -1531,7 +1539,7 @@ int main(int argc, char *argv[])
 				layer_draw[i].movement_cpu = (glm::vec2*) memory_alloc(permanent_memory, MAX_NUM_FLOOR_SPRITES * sizeof(glm::vec2));
 				layer_draw[i].color_cpu = (glm::vec4*) memory_alloc(permanent_memory, MAX_NUM_FLOOR_SPRITES * sizeof(glm::vec4));
 				glUseProgram(spriteShader);
-				std::cout << "Layer DRAW AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH" << std::endl;
+				std::cout << "Layer draw setup begins." << std::endl;
 				glGenVertexArrays(1, &layer_draw[i].VAO);
 				std::cout << glGetError() << std::endl;
 				glBindVertexArray(layer_draw[i].VAO);
@@ -1614,12 +1622,12 @@ int main(int argc, char *argv[])
 			glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices_EBO);
 
-			GLint position = glGetAttribLocation(spriteShader, "pos");
+			GLint position = 0;
 			glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 			glEnableVertexAttribArray(position);
 
 		
-			GLint texCoord = glGetAttribLocation(spriteShader, "inputTexCoord");
+			GLint texCoord = 1;
 			glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 			glEnableVertexAttribArray(texCoord);
 		
@@ -1630,6 +1638,7 @@ int main(int argc, char *argv[])
 		
 		
 			GLint positionOffset = glGetAttribLocation(spriteShader, "positionOffset");
+
 			glVertexAttribPointer(positionOffset, 3, GL_FLOAT, false, 3 * sizeof(float), (void*)0);
 			glEnableVertexAttribArray(positionOffset);
 			glVertexAttribDivisor(positionOffset, 1);
@@ -1662,11 +1671,11 @@ int main(int argc, char *argv[])
 			glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices_EBO);
 
-			GLint position = glGetAttribLocation(spriteShader, "pos");
+			GLint position = 0;
 			glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 			glEnableVertexAttribArray(position);
 
-			GLint texCoord = glGetAttribLocation(spriteShader, "inputTexCoord");
+			GLint texCoord = 1;
 			glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 			glEnableVertexAttribArray(texCoord);
 
@@ -1891,11 +1900,13 @@ int main(int argc, char *argv[])
 		FT_Library ft;
 		if(FT_Init_FreeType(&ft))
 			std::cout << "ERROR - freetype library load failed. alas." << std::endl;
-
+		else
+			std::cout << "successfully loaded freetype library" << std::endl;
 		FT_Face face;
-		if (FT_New_Face(ft, "fonts/arial.ttf", 0, &face))
+		if (FT_New_Face(ft, "assets/arial.ttf", 0, &face))
 			std::cout << "ERROR - freetype failed to load font." << std::endl;
-
+		else
+			std::cout << "successfully loaded freetype font." << std::endl;
 		FT_Set_Pixel_Sizes(face, 0, FONT_CHARACTER_HEIGHT);
 		//setup the gpu work.
 		GLuint text_VAO;
@@ -1948,13 +1959,16 @@ int main(int argc, char *argv[])
 			else
 				std::cout << "framebuffer complete!" << std::endl;
 
-			for (unsigned char c = 0; c < 128; c++)
+			for (unsigned char c = 0; c < FONT_NUM_CHARACTERS; c++)
 			{
-				std::cout << c;
 				if (FT_Load_Char(face, c, FT_LOAD_RENDER))
 				{
 					std::cout << "ERROR - uh oh, failed to load character glyph" << std::endl;
 					continue;
+				}
+				else
+				{
+					std::cout << "correctly loaded." << face->glyph->bitmap.width << std::endl;
 				}
 
 				//generate a texture for this particular character.
@@ -1966,13 +1980,14 @@ int main(int argc, char *argv[])
 					glTexImage2D(
 						GL_TEXTURE_2D,
 						0,
-						GL_RED, 
+						GL_R8, 
 						face->glyph->bitmap.width, 
 						face->glyph->bitmap.rows, 
 						0, 
 						GL_RED,
 						GL_UNSIGNED_BYTE, 
 						face->glyph->bitmap.buffer);
+					std::cout << glGetError() << std::endl;
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -2068,29 +2083,24 @@ int main(int argc, char *argv[])
 	#pragma endregion
 
 #ifdef EMSCRIPTEN
-		emscripten_request_animation_frame_loop(mainloop, 0);
+		//emscripten_request_animation_frame_loop(mainloopfunction, 0);
+		emscripten_set_main_loop(mainloopfunction, 0, 0);
 #else
 		while (true)
 		{
-			bool still_go = mainloop(0,NULL);
-			if (!still_go)
+			mainloopfunction();
+			if (!keep_running_infinite_loop)
 				break;
 		}
+		//cleanup.
+		{
+			printf("%s\n", glGetString(GL_VERSION));
+			SDL_DestroyWindow(window);
+			SDL_Quit();
+		}
 #endif 
-	//cleanup.
-	{
-		printf("%s\n", glGetString(GL_VERSION));
-		SDL_DestroyWindow(window);
-		SDL_Quit();
-
 		return 0;
-	}
 }
-
-
-
-
-
 
 void take_player_action(WorldScene* world_scene_state, EditorUIState* ui_state, Direction action, Memory* level_memory, Memory* frame_memory, Memory* animation_memory)
 {

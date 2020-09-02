@@ -208,19 +208,9 @@
     <None Include="assets\string.f" />
     <None Include="assets\string.vs" />
     <None Include="assets\text.vs" />
-    <None Include="dottedlines.f" />
-    <None Include="dottedlines.vs" />
     <None Include="draw_to_screen.vs" />
-    <None Include="fullsprite.vs" />
     <None Include="gl_text.fs" />
     <None Include="gl_text.vs" />
-    <None Include="movesprite.f" />
-    <None Include="movesprite.vs" />
-    <None Include="sprite.f" />
-    <None Include="sprite.vs" />
-    <None Include="string.f" />
-    <None Include="string.vs" />
-    <None Include="text.vs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />

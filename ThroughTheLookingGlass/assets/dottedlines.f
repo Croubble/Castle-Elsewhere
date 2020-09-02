@@ -1,5 +1,6 @@
-
 #version 330 core
+precision highp float;
+
 out vec4 FragColor;
 
 in vec2 TexCoord;
@@ -9,7 +10,7 @@ uniform float time;
 
 float wrap(float f)
 {
-	return mod(step(f,0) + f,1);
+	return mod(step(f,0.0) + f,1.0);
 }
 
 float test(float value, float num_segments, float percent)
@@ -27,7 +28,7 @@ void main()
 
 	float jut = 0.14;
 
-	float num_segments = 16;
+	float num_segments = 16.0;
 	float percent = 0.72;
 
 	//begin algorithm.
@@ -35,7 +36,7 @@ void main()
 	float y = TexCoord.y;
 
 
-	float total = w * 2 + h * 2 - jut * 4;
+	float total = w * 2.0 + h * 2.02 - jut * 4.0;
 	
 	float jutN = jut / total;
 
@@ -89,11 +90,11 @@ void main()
 
 	float value_horizontal = test(mix(left_start_norm,left_end_norm,y) + t,num_segments,percent) * is_left * left_top_unblocked * left_bot_unblocked
 	+ 
-	test(mix(right_start_norm,right_end_norm,1-y) + t,num_segments,percent) * is_right * right_up_unblocked * right_bot_unblocked;
+	test(mix(right_start_norm,right_end_norm,1.0-y) + t,num_segments,percent) * is_right * right_up_unblocked * right_bot_unblocked;
 
 	float value_vertical = test(mix(up_start_norm,up_end_norm,x) + t,num_segments,percent) * is_up * up_left_unblocked * up_right_unblocked
 	+ 
-	test(mix(down_start_norm,down_end_norm,1-x) + t,num_segments,percent) * is_down * down_right_unblocked * down_left_unblocked;
+	test(mix(down_start_norm,down_end_norm,1.0-x) + t,num_segments,percent) * is_down * down_right_unblocked * down_left_unblocked;
 
 	float value = max(value_horizontal,value_vertical);
 	value = wrap(value + t);
@@ -102,5 +103,5 @@ void main()
 
 	float sidesA = step(0.01,value_horizontal);
 	float sidesB = step(0.01,value_vertical);
-	FragColor = vec4(0,0,0, step(0.01,sidesA + sidesB));
+	FragColor = vec4(0.0,0.0,0.0, step(0.01,sidesA + sidesB));
 }

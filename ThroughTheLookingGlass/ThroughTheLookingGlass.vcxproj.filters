@@ -119,30 +119,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="sprite.f">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="sprite.vs">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="fullsprite.vs">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="dottedlines.vs">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="dottedlines.f">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="text.vs">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="string.vs">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="string.f">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
     <None Include="gl_text.vs">
       <Filter>Source Files\Shaders\DebugShaders</Filter>
     </None>
@@ -151,12 +127,6 @@
     </None>
     <None Include="draw_to_screen.vs">
       <Filter>Source Files\Shaders\DebugShaders</Filter>
-    </None>
-    <None Include="movesprite.f">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="movesprite.vs">
-      <Filter>Source Files\Shaders</Filter>
     </None>
     <None Include="assets\dottedlines.f">
       <Filter>Source Files\Shaders</Filter>
