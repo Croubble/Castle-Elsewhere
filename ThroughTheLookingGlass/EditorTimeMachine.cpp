@@ -83,13 +83,13 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 		IntPair worldspace_left = action.u.merge.worldspace_left;
 		IntPair worldspace_right = action.u.merge.worldspace_right;
 
-		int xStart = min(worldspace_left.x, worldspace_right.x);
-		int yStart = min(worldspace_left.y, worldspace_right.y);
+		int xStart = mini(worldspace_left.x, worldspace_right.x);
+		int yStart = mini(worldspace_left.y, worldspace_right.y);
 		IntPair leftOffset = math_intpair_create(worldspace_left.x - xStart, worldspace_left.y - yStart);
 		IntPair rightOffset = math_intpair_create(worldspace_right.x - xStart, worldspace_right.y - yStart);
 
-		int output_length_x = max(leftOffset.x + left->w, rightOffset.x + right->w);
-		int output_length_y = max(leftOffset.y + left->h, rightOffset.y + right->h);
+		int output_length_x = maxi(leftOffset.x + left->w, rightOffset.x + right->w);
+		int output_length_y = maxi(leftOffset.y + left->h, rightOffset.y + right->h);
 		IntPair output_length = math_intpair_create(output_length_x, output_length_y);
 		GameState* next = gamestate_merge_with_allocate(left, right, output_length, editor->gamestate_memory, leftOffset, rightOffset);
 
@@ -205,10 +205,10 @@ int gamestate_timemachine_get_click_collision(TimeMachineEditor* timeMachine, fl
 	for (int i = 0; i < timeMachine->current_number_of_gamestates; i++)
 	{
 		GameState* currentState = timeMachine->gamestates[i];
-		float left = timeMachine->gamestates_positions[i].x;
-		float right = timeMachine->gamestates_positions[i].x + currentState->w;
-		float down = timeMachine->gamestates_positions[i].y;
-		float up = timeMachine->gamestates_positions[i].y + currentState->h;
+		float left = (float) timeMachine->gamestates_positions[i].x;
+		float right = (float) timeMachine->gamestates_positions[i].x + currentState->w;
+		float down = (float) timeMachine->gamestates_positions[i].y;
+		float up = (float) timeMachine->gamestates_positions[i].y + currentState->h;
 		bool clickedFloor = math_click_is_inside_AABB(left, down, right, up, mouse_game_pos_x, mouse_game_pos_y);
 		if(clickedFloor)
 			return i;
@@ -247,12 +247,12 @@ TimeMachineEditorAction gamestate_timemachineaction_create_resize_gamsestate(int
 {
 	TimeMachineEditorAction action;
 	action.action = TM_RESIZE_GAMESTATE;
-	action.u.resize.next_starting_position.x = nextPosition.x;
-	action.u.resize.next_starting_position.y = nextPosition.y;
+	action.u.resize.next_starting_position.x = (int) nextPosition.x;
+	action.u.resize.next_starting_position.y = (int) nextPosition.y;
 	action.u.resize.target_gamestate_index = target_gamestate;
 	action.u.resize.displacement_from_input_to_next = displacement_from_input_to_next;
-	action.u.resize.next_size.x = nextPosition.w;
-	action.u.resize.next_size.y = nextPosition.h;
+	action.u.resize.next_size.x = (int) nextPosition.w;
+	action.u.resize.next_size.y = (int) nextPosition.h;
 	return action;
 }
 TimeMachineEditorAction gamestate_timemachineaction_create_move_gamestate(int target_gamestate, IntPair movement)

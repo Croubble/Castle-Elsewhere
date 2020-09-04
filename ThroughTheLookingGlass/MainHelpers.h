@@ -65,9 +65,9 @@ struct TextDrawInfo {
 	int* current_number_drawn;
 };
 // settings
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 600;
-const float SCREEN_RATIO = ((float)SCREEN_WIDTH / (float)SCREEN_HEIGHT);
+const int SCREEN_STARTING_WIDTH = 800;
+const int SCREEN_STARTING_HEIGHT = 600;
+const float SCREEN_RATIO = ((float)SCREEN_STARTING_WIDTH / (float)SCREEN_STARTING_HEIGHT);
 const int MAX_NUM_FLOOR_SPRITES = 5000;
 const int MAX_NUM_FULL_SPRITES = 100;
 

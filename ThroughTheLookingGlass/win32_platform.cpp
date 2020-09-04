@@ -14,7 +14,7 @@ void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, g
 		std::cout << "begin printing zoom info" << std::endl;
 		float game_height_old = ui_state->game_height_current;
 		ui_state->game_height_current -= ui_state->wheel_move;
-		ui_state->game_height_current = max(MAX_ZOOM, ui_state->game_height_current);
+		ui_state->game_height_current = maxf(MAX_ZOOM, ui_state->game_height_current);
 		float ratio = ui_state->game_height_current / game_height_old;
 		float camera_center_x = (camera_game->left + camera_game->right) / 2.0f;
 		float camera_center_y = (camera_game->up + camera_game->down) / 2.0f;
@@ -57,13 +57,21 @@ Memory* animation_memory;
 SCENE_TYPE scene;
 PlayScene play_scene_state;
 WorldScene* world_scene_state;
-GameSpaceCamera world_camera;
-GameSpaceCamera world_camera_start;
-GameSpaceCamera world_camera_goal;
+int screen_width = 800;
+int screen_height = 600;
 float world_camera_lerp;
 SDL_Event event;
 bool running = true;
 EditorUIState ui_state;
+
+GameSpaceCamera world_camera;
+GameSpaceCamera world_camera_start;
+GameSpaceCamera world_camera_goal;
+
+//camera stuff
+GameSpaceCamera camera_game;
+ViewPortCamera camera_viewport;
+glm::mat4 camera;
 
 //time machines.
 TimeMachineEditor* timeMachine;
@@ -81,11 +89,6 @@ int palete_length = 16;
 int currentBrush = 0;
 GamestateBrush* palete;
 IntPair palete_screen_start;
-
-//camera stuff
-GameSpaceCamera camera_game;
-ViewPortCamera camera_viewport;
-glm::mat4 camera;
 
 //Shader nonsense
 Shader spriteShader;
@@ -141,6 +144,37 @@ SDL_Window* window;
 
 #pragma endregion 
 
+void resize_screen_stateful(int next_width, int next_height)
+{
+	float old_screen_width = (float) screen_width;
+	float old_screen_height = (float) screen_height;
+	float old_ratio = old_screen_width / old_screen_height;
+	screen_width = next_width;
+	screen_height = next_height;
+	glViewport(0, 0, next_width, next_height);
+
+	//GameSpaceCamera world_camera;
+	//GameSpaceCamera world_camera_start;
+	//GameSpaceCamera world_camera_goal;
+	//GameSpaceCamera camera_game;
+	camera_viewport.right = next_width;
+	camera_viewport.up = next_height;
+
+	//calculate the camera_game, where we just determine the new ratio, and then alter the width and height.
+	{
+		float next_ratio = (float) screen_width / screen_height;
+		float expand_ratio = next_ratio / old_ratio;
+		float center = (camera_game.left + camera_game.right) / 2.0f;
+		float old_distance = camera_game.right - camera_game.left;
+		float next_distance = old_distance * expand_ratio;
+		camera_game.left = center - next_distance / 2.0f;
+		camera_game.right = center + next_distance / 2.0f;
+	}
+
+	//calculate the next world scene camera... eh? lets do it later.
+	//if we are in world scene mode, resize the world camera goal and snap the world camera start to that position as well.
+
+}
 void mainloopfunction()
 {
 	{
@@ -152,6 +186,7 @@ void mainloopfunction()
 				ui_state.letters[i].pressed_this_frame = false;
 				ui_state.letters[i].released_this_frame = false;
 			}
+			ui_state.update_actual_screen_size = false;
 			ui_state.mouse_last_pos = ui_state.mousePos;
 			ui_state.shift_key_down_this_frame = false;
 			ui_state.click_left_down_this_frame = false;
@@ -170,6 +205,14 @@ void mainloopfunction()
 		//poll events for tasty info.
 		while (SDL_PollEvent(&event))
 		{
+			if (event.type == SDL_WINDOWEVENT)
+			{
+				if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+				{
+					ui_state.update_actual_screen_size = true;
+					ui_state.next_camera_size = glm::ivec2(event.window.data1, event.window.data2);
+				}
+			}
 			if (event.type == SDL_KEYDOWN)
 			{
 				for (int i = 0; i < NUM_LETTERS_ON_KEYBOARD; i++)
@@ -330,7 +373,7 @@ void mainloopfunction()
 			{
 				if (event.wheel.y != 0)
 				{
-					ui_state.wheel_move = event.wheel.y;
+					ui_state.wheel_move = (float) event.wheel.y;
 #ifdef EMSCRIPTEN
 					//if we using emscripten, this wheel scroll value is 100 times the window version for some reason, so we divide it by 100.
 					ui_state.wheel_move /= 100.0f;
@@ -376,7 +419,7 @@ void mainloopfunction()
 		float total_time;
 		{
 			int current_time_ms = SDL_GetTicks();
-			float delta_ms = current_time_ms - last_frame_time_ms;
+			float delta_ms = (float) (current_time_ms - last_frame_time_ms);
 			last_frame_time_ms = current_time_ms;
 			delta = delta_ms / 1000.0f;
 			total_time = (current_time_ms - start_time_ms) / 1000.0f;
@@ -394,6 +437,17 @@ void mainloopfunction()
 #pragma region handle_events
 			//now that we've polled all the events, we try and find out what we need to do.
 			bool mouse_moved_this_frame = ui_state.mousePos.x != ui_state.mouse_last_pos.x || ui_state.mousePos.y != ui_state.mouse_last_pos.y;
+			if (ui_state.update_actual_screen_size)
+			{
+				//rebuild the editor camera. 
+				resize_screen_stateful(ui_state.next_camera_size.x, ui_state.next_camera_size.y);
+			}
+			if (ui_state.letters['y' - 'a'].pressed_this_frame)
+			{
+				SDL_SetWindowSize(window,1200, 900);
+				resize_screen_stateful(1200, 900);
+
+			}
 			if (ui_state.type == ECS_BRUSH)
 			{
 				if (ui_state.mouse_left_click_down)
@@ -527,7 +581,7 @@ void mainloopfunction()
 						}
 						play_scene_state.game_name_length = 0;
 						strcpy_s(play_scene_state.game_name, &timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
-						play_scene_state.game_name_length = strlen(&timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
+						play_scene_state.game_name_length = (int) strlen(&timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
 						//switch our scene to that gamestate.
 						scene = ST_EDIT_LEVEL;
 						ui_state.time_since_scene_started = 0;
@@ -545,11 +599,11 @@ void mainloopfunction()
 					//determine if we are clicking on a gamestate border.
 					for (int i = 0; i < timeMachine->current_number_of_gamestates; i++)
 					{
-						float box_left = timeMachine->gamestates_positions[i].x;
-						float box_width = timeMachine->gamestates[i]->w;
+						float box_left = (float) timeMachine->gamestates_positions[i].x;
+						float box_width = (float) timeMachine->gamestates[i]->w;
 						float box_right = box_left + box_width;
-						float box_down = timeMachine->gamestates_positions[i].y;
-						float box_height = timeMachine->gamestates[i]->h;
+						float box_down = (float) timeMachine->gamestates_positions[i].y;
+						float box_height = (float) timeMachine->gamestates[i]->h;
 						float box_up = box_down + box_height;
 						AABB left = math_AABB_create(box_left - OUTLINE_DRAW_SIZE,
 							box_down - OUTLINE_DRAW_SIZE,
@@ -610,7 +664,7 @@ void mainloopfunction()
 				if (ui_state.click_left_down_this_frame && !ui_state.shift_key_down && !left_click_action_resolved)
 				{
 					//determine what "game world" square we are clicking on.
-					IntPair game_world_click = math_intpair_create(floor(ui_state.mouseGamePos.x), floor(ui_state.mouseGamePos.y));
+					IntPair game_world_click = math_intpair_create((int) floor(ui_state.mouseGamePos.x),(int) floor(ui_state.mouseGamePos.y));
 					ui_state.type = ECS_CREATE_GAMESTATE;
 					ui_state.un.create.gameworld_start_pos = game_world_click;
 				}
@@ -637,10 +691,10 @@ void mainloopfunction()
 					int targetted_gamestate_width = targetted_gamestate->w;
 					int targetted_gamestate_height = targetted_gamestate->h;
 
-					AABB old = math_AABB_create(targetted_gamestate_position.x,
-						targetted_gamestate_position.y,
-						targetted_gamestate_width,
-						targetted_gamestate_height);
+					AABB old = math_AABB_create((float) targetted_gamestate_position.x,
+						(float) targetted_gamestate_position.y,
+						(float) targetted_gamestate_width,
+						(float) targetted_gamestate_height);
 					AABB next = old;
 
 					//IntPair next_start = targetted_gamestate_position;
@@ -688,7 +742,7 @@ void mainloopfunction()
 					//handle the edge case where we resize too far and the gameobject would be destroyed.
 					if (next.w <= 0)
 					{
-						int go_back = next.w - 1;
+						int go_back = (int) next.w - 1;
 						next.w = 1;
 						if (ui_state.un.resize.dragging_left)
 						{
@@ -698,7 +752,7 @@ void mainloopfunction()
 
 					if (next.h <= 0)
 					{
-						int go_back = next.h - 1;
+						int go_back = (int) next.h - 1;
 						next.h = 1;
 						if (ui_state.un.resize.dragging_down)
 						{
@@ -718,11 +772,11 @@ void mainloopfunction()
 						if (changeValid)
 						{
 							IntPair next_size;
-							next_size.x = next.w;
-							next_size.y = next.h;
+							next_size.x = (int) next.w;
+							next_size.y = (int) next.h;
 							IntPair displacement;
-							displacement.x = -next.x + targetted_gamestate_position.x;
-							displacement.y = -next.y + targetted_gamestate_position.y;
+							displacement.x = (int) (-next.x + targetted_gamestate_position.x);
+							displacement.y = (int) (-next.y + targetted_gamestate_position.y);
 							TimeMachineEditorAction action =
 								gamestate_timemachineaction_create_resize_gamsestate(ui_state.un.resize.dragging_gamestate_index, next, displacement);
 							gamestate_timemachine_editor_take_action(timeMachine, NULL, action);
@@ -776,7 +830,7 @@ void mainloopfunction()
 					if (successful_plant)
 					{
 						AABB current_outline = calculate_outline_from_create_info(frame_memory, timeMachine, ui_state);
-						TimeMachineEditorAction action = gamestate_timemachineaction_create_create_action(current_outline.x, current_outline.y, current_outline.w, current_outline.h);
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_create_action((int) current_outline.x, (int) current_outline.y, (int) current_outline.w, (int) current_outline.h);
 						gamestate_timemachine_editor_take_action(timeMachine, NULL, action);
 					}
 					ui_state.type = ECS_NEUTRAL;
@@ -884,15 +938,15 @@ void mainloopfunction()
 			}
 			//draw text.
 			{
-				//draw_text_to_screen(glm::vec3(0, 0, 0), "FINALLY!", text_draw_info.string_matrix_cpu, text_draw_info.string_atlas_cpu, text_draw_info.true_font_reference, text_draw_info.text_positions, text_draw_info.text_positions_normalized, &string_total_drawn, SCREEN_HEIGHT / ui_state.game_height_current);
+				//draw_text_to_screen(glm::vec3(0, 0, 0), "FINALLY!", text_draw_info.string_matrix_cpu, text_draw_info.string_atlas_cpu, text_draw_info.true_font_reference, text_draw_info.text_positions, text_draw_info.text_positions_normalized, &string_total_drawn, SCREEN_STARTING_HEIGHT / ui_state.game_height_current);
 				int len = timeMachine->current_number_of_gamestates;
 				for (int i = 0; i < len; i++)
 				{
 					char* name = &timeMachine->names[i * GAME_LEVEL_NAME_MAX_SIZE];
-					float x_pos = timeMachine->gamestates_positions[i].x;
-					float y_pos = timeMachine->gamestates_positions[i].y + timeMachine->gamestates[i]->h + 0.2f;
+					float x_pos = (float) timeMachine->gamestates_positions[i].x;
+					float y_pos = (float) (timeMachine->gamestates_positions[i].y + timeMachine->gamestates[i]->h) + 0.2f;
 					glm::vec3 draw_pos = glm::vec3(x_pos, y_pos, 0);
-					//draw_text_to_screen(draw_pos, name, string_matrix_cpu, string_atlas_cpu, string_true_font_reference, text_positions, text_positions_normalized, &string_total_drawn, SCREEN_HEIGHT / ui_state.game_height_current);
+					//draw_text_to_screen(draw_pos, name, string_matrix_cpu, string_atlas_cpu, string_true_font_reference, text_positions, text_positions_normalized, &string_total_drawn, SCREEN_STARTING_HEIGHT / ui_state.game_height_current);
 					draw_text_to_screen(draw_pos, glm::vec2(1, 1), name, &text_draw_info);
 				}
 			}
@@ -978,7 +1032,7 @@ void mainloopfunction()
 						{
 							//TODO: Slam down the text into our gamestate string!
 							int length = play_scene_state.game_name_length;
-							play_scene_state.game_name[length] = ('a' + i);
+							play_scene_state.game_name[length] = ('a' + (char) i);
 							play_scene_state.game_name[length + 1] = 0;
 							play_scene_state.game_name_length++;
 						}
@@ -1035,7 +1089,7 @@ void mainloopfunction()
 					layer_draw);
 				glm::vec3 text_start_pos = glm::vec3(next_position.x, next_position.y + edit_draw->h, 0);
 				draw_text_to_screen(text_start_pos, glm::vec2(1, 1), play_scene_state.game_name, &text_draw_info);
-				//draw_text_to_screen(text_start_pos, play_scene_state.game_name, string_matrix_cpu, string_atlas_cpu, string_true_font_reference, text_positions, text_positions_normalized, &string_total_drawn, SCREEN_HEIGHT / ui_state.game_height_current);
+				//draw_text_to_screen(text_start_pos, play_scene_state.game_name, string_matrix_cpu, string_atlas_cpu, string_true_font_reference, text_positions, text_positions_normalized, &string_total_drawn, SCREEN_STARTING_HEIGHT / ui_state.game_height_current);
 			}
 #pragma endregion
 		}
@@ -1188,6 +1242,10 @@ void mainloopfunction()
 				IntPair gamestate_pos = world_scene_state->level_position[current_num_player_standing_on];
 				world_camera_goal = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport, 0.3f, 0.3f);
 				world_camera_start = world_camera;
+				//world_camera_goal
+				//world_camera_start
+				//world_camera
+				//camera
 			}
 			world_camera = math_camera_move_towards_lerp(world_camera_start, world_camera_goal, world_camera_lerp, CAMERA_LERP_TIME);
 			camera = camera_make_matrix(world_camera);
@@ -1420,7 +1478,7 @@ int main(int argc, char *argv[])
 {
 #pragma region SDL_Setup
 
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_WINDOW_RESIZABLE);
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -1438,7 +1496,7 @@ int main(int argc, char *argv[])
 
 
 	SDL_GLContext mainContext;
-	window = SDL_CreateWindow("Castle Elsewhere", SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+	window = SDL_CreateWindow("Castle Elsewhere", SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, SCREEN_STARTING_WIDTH, SCREEN_STARTING_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 	mainContext = SDL_GL_CreateContext(window);
 	if (mainContext == NULL)
 	{
@@ -1872,8 +1930,8 @@ int main(int argc, char *argv[])
 			float camera_top_y;
 			//calculate camera's top and right positions.
 			{
-				int camera_width = SCREEN_WIDTH;
-				int camera_height = SCREEN_HEIGHT;
+				int camera_width = screen_width;
+				int camera_height = screen_height;
 				float ratio = (float)camera_width / (float)camera_height;
 				camera_right_x = GAME_HEIGHT_START * ratio;
 				camera_top_y = GAME_HEIGHT_START;
@@ -1887,9 +1945,9 @@ int main(int argc, char *argv[])
 			camera_game.farPoint = 20.0f;
 
 			camera_viewport.left = 0;
-			camera_viewport.right = SCREEN_WIDTH;
+			camera_viewport.right = screen_width;
 			camera_viewport.down = 0;
-			camera_viewport.up = SCREEN_HEIGHT;
+			camera_viewport.up = screen_height;
 		}
 
 		camera = camera_make_matrix(camera_game);
@@ -2005,7 +2063,7 @@ int main(int argc, char *argv[])
 					}
 
 					//2: write to our atlas info about where the character will be written too.
-					AABB temp = math_AABB_create(current_width_written + 1, current_height_written + 1, face_width, face_height);
+					AABB temp = math_AABB_create((float) (current_width_written + 1), (float) (current_height_written + 1), (float) face_width, (float) face_height);
 					text_draw_info.text_positions[c] = temp;
 					text_draw_info.text_positions_normalized[c] = text_draw_info.text_positions[c];
 					text_draw_info.text_positions_normalized[c].x = text_draw_info.text_positions[c].x / FONT_ATLAS_WIDTH;
@@ -2030,12 +2088,12 @@ int main(int argc, char *argv[])
 			//cleanup.
 			glDeleteFramebuffers(1,&text_FBO);
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+			glViewport(0, 0, screen_width, screen_height);
 		}
 	#pragma endregion
 
 	#pragma endregion
-	#pragma region MAIN_LOOP_INIT
+#pragma region MAIN_LOOP_INIT
 		//MAIN LOOP
 		scene = ST_EDITOR;
 		//PlayScene play_scene_state;
@@ -2083,7 +2141,6 @@ int main(int argc, char *argv[])
 	#pragma endregion
 
 #ifdef EMSCRIPTEN
-		//emscripten_request_animation_frame_loop(mainloopfunction, 0);
 		emscripten_set_main_loop(mainloopfunction, 0, 0);
 #else
 		while (true)
@@ -2228,14 +2285,14 @@ float draw_text_to_screen(glm::vec3 start_position, glm::vec2 scale, const char*
 }
 AABB calculate_outline_from_create_info(Memory* frame_memory, TimeMachineEditor* timeMachine, EditorUIState ui_state)
 {
-	IntPair current_position = math_intpair_create(floor(ui_state.mouseGamePos.x), floor(ui_state.mouseGamePos.y));
-	IntPair bottom_left = math_intpair_create(min(current_position.x, ui_state.un.create.gameworld_start_pos.x),
-		min(current_position.y, ui_state.un.create.gameworld_start_pos.y));
-	IntPair top_right = math_intpair_create(max(current_position.x, ui_state.un.create.gameworld_start_pos.x),
-		max(current_position.y, ui_state.un.create.gameworld_start_pos.y));
+	IntPair current_position = math_intpair_create((int) floor(ui_state.mouseGamePos.x), (int) floor(ui_state.mouseGamePos.y));
+	IntPair bottom_left = math_intpair_create(mini(current_position.x, ui_state.un.create.gameworld_start_pos.x),
+		mini(current_position.y, ui_state.un.create.gameworld_start_pos.y));
+	IntPair top_right = math_intpair_create(maxi(current_position.x, ui_state.un.create.gameworld_start_pos.x),
+		maxi(current_position.y, ui_state.un.create.gameworld_start_pos.y));
 	int w = top_right.x - bottom_left.x + 1;
 	int h = top_right.y - bottom_left.y + 1;
-	AABB next_size = math_AABB_create(bottom_left.x, bottom_left.y, w, h);
+	AABB next_size = math_AABB_create((float) bottom_left.x, (float) bottom_left.y, (float) w, (float) h);
 	return next_size;
 }
 AABB calculate_outline_from_move_info(Memory* frame_memory, TimeMachineEditor* timeMachine, EditorUIState ui_state)
@@ -2247,7 +2304,7 @@ AABB calculate_outline_from_move_info(Memory* frame_memory, TimeMachineEditor* t
 	int gamestate_index = ui_state.un.move.moving_gamestate_index;
 	GameState* current_gamestate = timeMachine->gamestates[gamestate_index];
 	IntPair startPosition = timeMachine->gamestates_positions[gamestate_index];
-	AABB outline = math_AABB_create(startPosition.x + offset.x, startPosition.y + offset.y, current_gamestate->w, current_gamestate->h);
+	AABB outline = math_AABB_create((float) (startPosition.x + offset.x), (float) (startPosition.y + offset.y), (float) current_gamestate->w, (float) current_gamestate->h);
 	return outline;
 }
 AABB calculate_outline_position_from_drag_info(Memory* frame_memory,
@@ -2263,7 +2320,7 @@ AABB calculate_outline_position_from_drag_info(Memory* frame_memory,
 	int targetted_gamestate_width = targetted_gamestate->w;
 	int targetted_gamestate_height = targetted_gamestate->h;
 
-	AABB old = math_AABB_create(targetted_gamestate_position.x,
+	AABB old = math_AABB_create_int(targetted_gamestate_position.x,
 		targetted_gamestate_position.y,
 		targetted_gamestate_width,
 		targetted_gamestate_height);
@@ -2310,7 +2367,7 @@ AABB calculate_outline_position_from_drag_info(Memory* frame_memory,
 	//handle the edge case where we resize too far and the gameobject would be destroyed.
 	if (next.w <= 0)
 	{
-		int go_back = next.w - 1;
+		int go_back = (int) next.w - 1;
 		next.w = 1;
 		if (ui_state.un.resize.dragging_left)
 		{
@@ -2320,7 +2377,7 @@ AABB calculate_outline_position_from_drag_info(Memory* frame_memory,
 
 	if (next.h <= 0)
 	{
-		int go_back = next.h - 1;
+		int go_back = (int) next.h - 1;
 		next.h = 1;
 		if (ui_state.un.resize.dragging_down)
 		{
@@ -2405,9 +2462,9 @@ void draw_stationary_piece_curses_to_gamespace(MovementAnimation* animation,
 				if (curse_animation->flash[k])
 				{
 					float l = time_since_last_action / WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-					l = min(1, l);
+					l = minf(1.0f, l);
 					float ln = l * NUM_CURSE_FLASHES * 2;
-					float flash_value = abs(fmod(ln, 2) - 1);
+					float flash_value = (float) abs(fmod(ln, 2) - 1.0);
 					glm::vec4 color = glm::mix(glm::vec4(0, 0, 0, 0), glm::vec4(1, 1, 1, 1), flash_value);
 					info[i].color_cpu[info[i].total_drawn] = color;
 				}
@@ -2445,7 +2502,7 @@ void draw_piece_curses_to_gamespace(GameState** gamestates, IntPair* offsets, in
 				{
 					float l = time_since_last_action / WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
 					float ln = l * NUM_CURSE_FLASHES * 2;
-					float flash_value = abs(fmod(ln, 2) - 1);
+					float flash_value = (float) abs(fmod(ln, 2) - 1);
 					glm::vec4 color = glm::mix(glm::vec4(1, 0, 0, 1), glm::vec4(1, 1, 1, 1), flash_value);
 					info[i].color_cpu[info[i].total_drawn] = color;
 				}
@@ -2579,10 +2636,10 @@ void draw_palette(IntPair palete_screen_start,
 IntPair calculate_floor_cell_clicked(GameState* currentState,IntPair position, glm::vec2 mouseGamePos)
 {
 
-	float left = position.x;
-	float right = position.x + currentState->w;
-	float down = position.y;
-	float up = position.y + currentState->h;
+	float left = (float) position.x;
+	float right = (float) (position.x + currentState->w);
+	float down = (float) position.y;
+	float up = (float) (position.y + currentState->h);
 	//calculate what floor cell we actually clicked.
 	float percentageX = percent_between_two_points(mouseGamePos.x, left, right);
 	float percentageY = percent_between_two_points(mouseGamePos.y, down, up);
@@ -2596,10 +2653,10 @@ bool MaybeApplyBrush(GamestateBrush* palete,int currentBrush, EditorUIState* ui_
 	for (int i = 0; i < timeMachine->current_number_of_gamestates; i++)
 	{
 		GameState* currentState = timeMachine->gamestates[i];
-		float left = timeMachine->gamestates_positions[i].x;
-		float right = timeMachine->gamestates_positions[i].x + currentState->w;
-		float down = timeMachine->gamestates_positions[i].y;
-		float up = timeMachine->gamestates_positions[i].y + currentState->h;
+		float left = (float) timeMachine->gamestates_positions[i].x;
+		float right = (float) (timeMachine->gamestates_positions[i].x + currentState->w);
+		float down = (float) timeMachine->gamestates_positions[i].y;
+		float up = (float) (timeMachine->gamestates_positions[i].y + currentState->h);
 		bool clickedFloor = math_click_is_inside_AABB(left, down, right, up, mouseGamePos.x, mouseGamePos.y);
 		if (clickedFloor)
 		{
@@ -2623,23 +2680,23 @@ bool MaybeApplyBrush(GamestateBrush* palete,int currentBrush, EditorUIState* ui_
 GameSpaceCamera math_camera_build_for_gamestate(GameState* gamestate, IntPair position, ViewPortCamera viewport, float x_padding, float y_padding)
 {
 	float ratio = camera_ratio(viewport);
-	float start_x = position.x;
-	float start_y = position.y;
+	float start_x = (float) position.x;
+	float start_y = (float) position.y;
 	float center_x = start_x + ((gamestate->w) / 2.0f);
 	float center_y = start_y + ((gamestate->h) / 2.0f);
 	float x_require = (gamestate->w + x_padding) / ratio;
 	float y_require = gamestate->h + y_padding;
-	float camera_height = max(x_require, y_require);
+	float camera_height = maxf(x_require, y_require);
 	return math_camera_build(camera_height, center_x, center_y, viewport);
 }
 bool MaybeApplyBrushInPlayMode(Memory* memory, GamestateBrush* palete,int current_brush, EditorUIState* ui_state, GamestateTimeMachine* time_machine, IntPair current_state_pos, glm::vec2 mouseGamePos)
 {
 	GameState* current_state = &time_machine->state_array[time_machine->num_gamestates_stored - 1];
 	GameState* next_state = &time_machine->state_array[time_machine->num_gamestates_stored];
-	float left = current_state_pos.x;
-	float right = current_state_pos.x + current_state->w;
-	float down = current_state_pos.y;
-	float up = current_state_pos.y + current_state->h;
+	float left = (float) current_state_pos.x;
+	float right = (float) (current_state_pos.x + current_state->w);
+	float down = (float) current_state_pos.y;
+	float up = (float) (current_state_pos.y + current_state->h);
 	bool clickedFloor = math_click_is_inside_AABB(left, down, right, up, mouseGamePos.x, mouseGamePos.y);
 	if (clickedFloor)
 	{

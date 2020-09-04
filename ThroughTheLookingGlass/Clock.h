@@ -23,7 +23,7 @@ inline void clock_start(Clock* clock)
 inline void clock_end(Clock* clock)
 {
 	QueryPerformanceCounter(&(clock->end));
-	long int timeConsumed = clock->end.QuadPart - clock->pos.QuadPart;
+	long int timeConsumed = (long int) (clock->end.QuadPart - clock->pos.QuadPart);
 	double time_in_millseconds = ((float) (1000 * timeConsumed) / (float) clock->clockFrequency.QuadPart);
 	std::cout << "Time consumed in milliseconds" << time_in_millseconds << std::endl;
 }

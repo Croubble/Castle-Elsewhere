@@ -21,6 +21,15 @@ AABB math_AABB_create(float x, float y, float width, float height)
 	result.h = height;
 	return result;
 }
+AABB math_AABB_create_int(int x, int y, int width, int height)
+{
+	AABB result;
+	result.x = (float) x;
+	result.y = (float) y;
+	result.w = (float) width;
+	result.h = (float) height;
+	return result;
+}
 
 bool math_AABB_is_colliding(AABB test, AABB* against_array, int length)
 {

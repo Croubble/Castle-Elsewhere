@@ -123,7 +123,7 @@ std::string load_puzzle_file()
 	{
 		if (i == 195)
 			std::cout << "oohwee!" << std::endl;
-		char c = fgetc(lIn);
+		char c = (char) fgetc(lIn);
 		buffer[i] = c;
 		i++;
 	}

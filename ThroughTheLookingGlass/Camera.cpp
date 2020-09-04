@@ -41,13 +41,13 @@ GameSpaceCamera math_camera_reposition_towards_internal(GameSpaceCamera moving, 
 	float x_move = (left_move_request + right_move_request) / 2.0f;
 	float y_move = (up_move_request + down_move_request) / 2.0f;
 	if (x_move > 0)
-		x_move = min(x_move, max_distance);
+		x_move = minf(x_move, max_distance);
 	if (y_move > 0)
-		y_move = min(y_move, max_distance);
+		y_move = minf(y_move, max_distance);
 	if (x_move < 0)
-		x_move = max(x_move, -max_distance);
+		x_move = maxf(x_move, -max_distance);
 	if (y_move < 0)
-		y_move = max(y_move, -max_distance);
+		y_move = maxf(y_move, -max_distance);
 
 	if (x_move == 0 && y_move == 0)
 		return moving;
@@ -68,11 +68,11 @@ GameSpaceCamera math_camera_zoom_towards_internal(GameSpaceCamera moving, GameSp
 	float goal_height;
 	if (goal_height_jump - current_height > 0)
 	{
-		goal_height = min(goal_height_jump, current_height + max_distance);
+		goal_height = minf(goal_height_jump, current_height + max_distance);
 	}
 	else if (goal_height_jump - current_height < 0)
 	{
-		goal_height = max(goal_height_jump, current_height - max_distance);
+		goal_height = maxf(goal_height_jump, current_height - max_distance);
 	}
 	else
 		goal_height = current_height;
@@ -93,6 +93,7 @@ GameSpaceCamera math_camera_zoom_towards_internal(GameSpaceCamera moving, GameSp
 	result.farPoint = moving.farPoint;
 	return result;
 }
+
 
 float smooth_start3(float t)
 {
@@ -195,7 +196,7 @@ glm::vec2 math_screenspace_to_gamespace(IntPair screenSpacePosition, GameSpaceCa
 }
 float math_gamespace_to_pixelspace_multiplier(ViewPortCamera view, float gameHeight)
 {
-	float yDist = view.up - view.down;
+	float yDist = (float) view.up - (float) view.down;
 	float result = yDist / gameHeight;
 	return result;
 }

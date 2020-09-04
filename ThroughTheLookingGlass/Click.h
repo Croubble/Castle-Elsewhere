@@ -53,6 +53,8 @@ struct button_click_state
 
 struct EditorUIState
 {
+	bool update_actual_screen_size;
+	glm::ivec2 next_camera_size;
 	float time_since_scene_started;
 	float time_till_player_can_move;
 	float time_since_last_player_action;

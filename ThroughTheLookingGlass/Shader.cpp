@@ -22,7 +22,7 @@ std::string convert_core_to_es_internal(std::string input)
 {
 	std::string to_delete = "#version 300 core";
 	std::string to_replace = "#version 300 es";
-	int len = to_delete.length() + 2;
+	int len = (int) to_delete.length() + 2;
 	std::string result = to_replace + input.substr(17,std::string::npos);
 	return result;
 }

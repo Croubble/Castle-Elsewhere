@@ -666,13 +666,13 @@ AABB* gamestate_create_colliders(Memory* memory, GameState** states, IntPair* lo
 	AABB* result = (AABB*)memory_alloc(memory, sizeof(AABB) * (length - 1));
 	for (int i = 0; i < length; i++)
 	{
-		result[i].w = states[i]->w;
-		result[i].h = states[i]->h;
+		result[i].w = (float) states[i]->w;
+		result[i].h = (float) states[i]->h;
 	}
 	for (int i = 0; i < length; i++)
 	{
-		result[i].x = locations[i].x;
-		result[i].y = locations[i].y;
+		result[i].x = (float) locations[i].x;
+		result[i].y = (float) locations[i].y;
 	}
 	return result;
 }
@@ -682,23 +682,23 @@ AABB* gamestate_create_colliders(Memory* memory, GameState** states, IntPair* lo
 	AABB* result = (AABB*) memory_alloc(memory, sizeof(AABB) * (length - 1));
 	for (int i = 0; i < skip_index; i++)
 	{
-		result[i].w = states[i]->w;
-		result[i].h = states[i]->h;
+		result[i].w = (float) states[i]->w;
+		result[i].h = (float) states[i]->h;
 	}
 	for (int i = skip_index + 1; i < length; i++)
 	{
-		result[i - 1].w = states[i]->w;
-		result[i - 1].h = states[i]->h;
+		result[i - 1].w = (float) states[i]->w;
+		result[i - 1].h = (float) states[i]->h;
 	}
 	for (int i = 0; i < skip_index; i++)
 	{
-		result[i].x = locations[i].x;
-		result[i].y = locations[i].y;
+		result[i].x = (float) locations[i].x;
+		result[i].y = (float) locations[i].y;
 	}
 	for (int i = skip_index + 1; i < length; i++)
 	{
-		result[i - 1].x = locations[i].x;
-		result[i - 1].y = locations[i].y;
+		result[i - 1].x = (float) locations[i].x;
+		result[i - 1].y = (float) locations[i].y;
 	}
 	return result;
 }

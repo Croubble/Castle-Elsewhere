@@ -5169,11 +5169,11 @@ static int stbi__high_bit(unsigned int z)
 
 static int stbi__bitcount(unsigned int a)
 {
-   a = (a & 0x55555555) + ((a >>  1) & 0x55555555); // max 2
-   a = (a & 0x33333333) + ((a >>  2) & 0x33333333); // max 4
-   a = (a + (a >> 4)) & 0x0f0f0f0f; // max 8 per 4, now 8 bits
-   a = (a + (a >> 8)); // max 16 per 8 bits
-   a = (a + (a >> 16)); // max 32 per 8 bits
+   a = (a & 0x55555555) + ((a >>  1) & 0x55555555); // maxi 2
+   a = (a & 0x33333333) + ((a >>  2) & 0x33333333); // maxi 4
+   a = (a + (a >> 4)) & 0x0f0f0f0f; // maxi 8 per 4, now 8 bits
+   a = (a + (a >> 8)); // maxi 16 per 8 bits
+   a = (a + (a >> 16)); // maxi 32 per 8 bits
    return a & 0xff;
 }
 
@@ -5236,7 +5236,7 @@ static void *stbi__bmp_parse_header(stbi__context *s, stbi__bmp_data *info)
       stbi__get32le(s); // discard hres
       stbi__get32le(s); // discard vres
       stbi__get32le(s); // discard colorsused
-      stbi__get32le(s); // discard max important
+      stbi__get32le(s); // discard maxi important
       if (hsz == 40 || hsz == 56) {
          if (hsz == 56) {
             stbi__get32le(s);
@@ -7291,10 +7291,10 @@ static int      stbi__pnm_info(stbi__context *s, int *x, int *y, int *comp)
    *y = stbi__pnm_getinteger(s, &c); // read height
    stbi__pnm_skip_whitespace(s, &c);
 
-   maxv = stbi__pnm_getinteger(s, &c);  // read max value
+   maxv = stbi__pnm_getinteger(s, &c);  // read maxi value
 
    if (maxv > 255)
-      return stbi__err("max value > 255", "PPM image not 8-bit");
+      return stbi__err("maxi value > 255", "PPM image not 8-bit");
    else
       return 1;
 }

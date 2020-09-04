@@ -87,6 +87,7 @@ struct AABB
 };
 
 AABB math_AABB_create(float x, float y, float width, float height);
+AABB math_AABB_create_int(int x, int y, int width, int height);
 int math_click_is_inside_AABB_list(float clickX, float clickY, AABB* boxes, int total_boxes);
 
 bool math_AABB_is_colliding(AABB test, AABB* against_array, int length);
@@ -96,17 +97,17 @@ inline bool math_click_is_inside_AABB(float clickX, float clickY, AABB box)
 {
 	return clickX >= box.x && clickX < (box.x + box.w) && clickY >= box.y && clickY < (box.y + box.h);
 }
-inline float percent_between_two_points(float point, float min, float max)
+inline float percent_between_two_points(float point, float mini, float maxi)
 {
-	return (point - min) / (max - min);
+	return (point - mini) / (maxi - mini);
 }
 inline bool math_click_is_inside_AABB(float left, float bottom, float right, float top, float clickX, float clickY)
 {
 	return clickX >= left && clickX < right && clickY >= bottom && clickY < top;
 }
-inline bool math_click_is_inside_AABB(IntPair min, IntPair max, IntPair click)
+inline bool math_click_is_inside_AABB(IntPair mini, IntPair maxi, IntPair click)
 {
-	return click.x >= min.x && click.x <= max.x && click.y >= min.y && click.y <= max.y;
+	return click.x >= mini.x && click.x <= maxi.x && click.y >= mini.y && click.y <= maxi.y;
 }
 
 
@@ -145,13 +146,13 @@ inline float minf(float x, float y)
 		return x;
 	return y;
 }
-inline int max(int x, int y)
+inline int maxi(int x, int y)
 {
 	if (x >= y)
 		return x;
 	return y;
 }
-inline int min(int x, int y)
+inline int mini(int x, int y)
 {
 	if (x <= y)
 		return x;
