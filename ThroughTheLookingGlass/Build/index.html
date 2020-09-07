@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+<title>Prototype</title>
+    <style>
+        body {
+            background: #000;
+            margin: 0 auto;
+            padding: 0;
+            width: 800px;
+        }
+    </style>
+</head>
+<body>
+<canvas id="canvas" oncontextmenu="event.preventDefault()" width="800" height="600"></canvas>
+<script type='text/javascript'>
+var Module = {
+			canvas: (function() {
+				var canvas = document.getElementById('canvas');
+				return canvas;
+			})()
+		};
+    </script>
+<script async type="text/javascript" src="write_castle.js"></script>
+</body>
+</html>
+

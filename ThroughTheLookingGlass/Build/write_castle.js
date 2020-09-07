@@ -36,7 +36,7 @@ var Module = typeof Module !== 'undefined' ? Module : {};
       } else {
         throw 'using preloaded data can only be done on a web page or in a web worker';
       }
-      var PACKAGE_NAME = 'write_castle.data';
+      var PACKAGE_NAME = 'Build/write_castle.data';
       var REMOTE_PACKAGE_BASE = 'write_castle.data';
       if (typeof Module['locateFilePackage'] === 'function' && !Module['locateFile']) {
         Module['locateFile'] = Module['locateFilePackage'];
@@ -165,10 +165,10 @@ var Module = typeof Module !== 'undefined' ? Module : {};
             for (var i = 0; i < files.length; ++i) {
               DataRequest.prototype.requests[files[i].filename].onload();
             }
-                Module['removeRunDependency']('datafile_write_castle.data');
+                Module['removeRunDependency']('datafile_Build/write_castle.data');
 
       };
-      Module['addRunDependency']('datafile_write_castle.data');
+      Module['addRunDependency']('datafile_Build/write_castle.data');
     
       if (!Module.preloadResults) Module.preloadResults = {};
     
@@ -189,7 +189,7 @@ var Module = typeof Module !== 'undefined' ? Module : {};
     }
   
    }
-   loadPackage({"files": [{"filename": "/assets/arial.ttf", "start": 0, "end": 1036584, "audio": 0}, {"filename": "/assets/arialbd.ttf", "start": 1036584, "end": 2017340, "audio": 0}, {"filename": "/assets/arialbi.ttf", "start": 2017340, "end": 2738484, "audio": 0}, {"filename": "/assets/ariali.ttf", "start": 2738484, "end": 3455912, "audio": 0}, {"filename": "/assets/ariblk.ttf", "start": 3455912, "end": 3623504, "audio": 0}, {"filename": "/assets/dottedlines.f", "start": 3623504, "end": 3627375, "audio": 0}, {"filename": "/assets/dottedlines.vs", "start": 3627375, "end": 3627836, "audio": 0}, {"filename": "/assets/draw_to_screen.vs", "start": 3627836, "end": 3628087, "audio": 0}, {"filename": "/assets/FinalFloor.json", "start": 3628087, "end": 3631823, "audio": 0}, {"filename": "/assets/FinalFloor.png", "start": 3631823, "end": 3647762, "audio": 0}, {"filename": "/assets/FinalPiece.json", "start": 3647762, "end": 3654134, "audio": 0}, {"filename": "/assets/FinalPiece.png", "start": 3654134, "end": 3659869, "audio": 0}, {"filename": "/assets/FloorAtlas.png", "start": 3659869, "end": 3660514, "audio": 0}, {"filename": "/assets/FloorAtlasOld.png", "start": 3660514, "end": 3661160, "audio": 0}, {"filename": "/assets/fullsprite.vs", "start": 3661160, "end": 3661928, "audio": 0}, {"filename": "/assets/gl_text.fs", "start": 3661928, "end": 3662197, "audio": 0}, {"filename": "/assets/gl_text.vs", "start": 3662197, "end": 3662445, "audio": 0}, {"filename": "/assets/movesprite.f", "start": 3662445, "end": 3663442, "audio": 0}, {"filename": "/assets/movesprite.vs", "start": 3663442, "end": 3665300, "audio": 0}, {"filename": "/assets/PieceAtlas.png", "start": 3665300, "end": 3665868, "audio": 0}, {"filename": "/assets/pieces.json", "start": 3665868, "end": 3666810, "audio": 0}, {"filename": "/assets/pieces.png", "start": 3666810, "end": 3667645, "audio": 0}, {"filename": "/assets/sprite.f", "start": 3667645, "end": 3667824, "audio": 0}, {"filename": "/assets/sprite.vs", "start": 3667824, "end": 3668494, "audio": 0}, {"filename": "/assets/string.f", "start": 3668494, "end": 3668891, "audio": 0}, {"filename": "/assets/string.vs", "start": 3668891, "end": 3669549, "audio": 0}, {"filename": "/assets/temp.json", "start": 3669549, "end": 3670888, "audio": 0}, {"filename": "/assets/text.vs", "start": 3670888, "end": 3671441, "audio": 0}], "remote_package_size": 3671441, "package_uuid": "eb322935-633e-4815-9a37-6d89d73e9502"});
+   loadPackage({"files": [{"filename": "/assets/arial.ttf", "start": 0, "end": 1036584, "audio": 0}, {"filename": "/assets/arialbd.ttf", "start": 1036584, "end": 2017340, "audio": 0}, {"filename": "/assets/arialbi.ttf", "start": 2017340, "end": 2738484, "audio": 0}, {"filename": "/assets/ariali.ttf", "start": 2738484, "end": 3455912, "audio": 0}, {"filename": "/assets/ariblk.ttf", "start": 3455912, "end": 3623504, "audio": 0}, {"filename": "/assets/dottedlines.f", "start": 3623504, "end": 3627375, "audio": 0}, {"filename": "/assets/dottedlines.vs", "start": 3627375, "end": 3627836, "audio": 0}, {"filename": "/assets/draw_to_screen.vs", "start": 3627836, "end": 3628087, "audio": 0}, {"filename": "/assets/FinalFloor.json", "start": 3628087, "end": 3631823, "audio": 0}, {"filename": "/assets/FinalFloor.png", "start": 3631823, "end": 3647762, "audio": 0}, {"filename": "/assets/FinalPiece.json", "start": 3647762, "end": 3654134, "audio": 0}, {"filename": "/assets/FinalPiece.png", "start": 3654134, "end": 3659869, "audio": 0}, {"filename": "/assets/FloorAtlas.png", "start": 3659869, "end": 3660514, "audio": 0}, {"filename": "/assets/FloorAtlasOld.png", "start": 3660514, "end": 3661160, "audio": 0}, {"filename": "/assets/fullsprite.vs", "start": 3661160, "end": 3661928, "audio": 0}, {"filename": "/assets/gl_text.fs", "start": 3661928, "end": 3662197, "audio": 0}, {"filename": "/assets/gl_text.vs", "start": 3662197, "end": 3662445, "audio": 0}, {"filename": "/assets/movesprite.f", "start": 3662445, "end": 3663442, "audio": 0}, {"filename": "/assets/movesprite.vs", "start": 3663442, "end": 3665300, "audio": 0}, {"filename": "/assets/PieceAtlas.png", "start": 3665300, "end": 3665868, "audio": 0}, {"filename": "/assets/pieces.json", "start": 3665868, "end": 3666810, "audio": 0}, {"filename": "/assets/pieces.png", "start": 3666810, "end": 3667645, "audio": 0}, {"filename": "/assets/sprite.f", "start": 3667645, "end": 3667824, "audio": 0}, {"filename": "/assets/sprite.vs", "start": 3667824, "end": 3668494, "audio": 0}, {"filename": "/assets/string.f", "start": 3668494, "end": 3668891, "audio": 0}, {"filename": "/assets/string.vs", "start": 3668891, "end": 3669549, "audio": 0}, {"filename": "/assets/temp.json", "start": 3669549, "end": 3670888, "audio": 0}, {"filename": "/assets/text.vs", "start": 3670888, "end": 3671441, "audio": 0}], "remote_package_size": 3671441, "package_uuid": "e2a5d6d8-b190-42c4-99e7-142d8757a2c3"});
   
   })();
   

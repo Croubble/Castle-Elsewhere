@@ -1369,6 +1369,7 @@ void mainloopfunction()
 			glUseProgram(fullSpriteShader);
 			glBindVertexArray(fullsprite_VAO);
 			glBindBuffer(GL_ARRAY_BUFFER, fullspriteAtlasBuffer);
+			std::cout << "buffer_attempt" << std::endl;
 			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4) * fullspriteDraw.num_sprites_drawn, fullspriteDraw.atlas_cpu);
 
 			glBindBuffer(GL_ARRAY_BUFFER, fullspriteMatrixBuffer);

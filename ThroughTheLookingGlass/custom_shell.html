@@ -1,0 +1,27 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+<title>Prototype</title>
+    <style>
+        body {
+            background: #000000;
+            padding: 0;
+            width: 800px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<canvas id="canvas" oncontextmenu="event.preventDefault()" width="800" height="600"></canvas>
+<script type='text/javascript'>
+var Module = {
+			canvas: (function() {
+				var canvas = document.getElementById('canvas');
+				return canvas;
+			})()
+		};
+    </script>
+{{{ SCRIPT }}}
+</body>
+</html>
