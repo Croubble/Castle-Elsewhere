@@ -57,6 +57,7 @@ Memory* animation_memory;
 SCENE_TYPE scene;
 PlayScene play_scene_state;
 WorldScene* world_scene_state;
+Direction last_move_taken = NO_DIRECTION;
 int screen_width = 800;
 int screen_height = 600;
 float world_camera_lerp;
@@ -144,6 +145,16 @@ SDL_Window* window;
 
 #pragma endregion 
 
+//these functions are also embarassingly global, they are going into our big class later.
+void load_editor_level_stateful(std::string to_load)
+{
+	std::cout << to_load << std::endl;
+	TimeMachineEditorStartState* res = parse_deserialize_timemachine(to_load, permanent_memory, frame_memory);
+	time_machine_start_state = res;
+	gamestate_timemachine_editor_initialise_from_start(timeMachine, time_machine_start_state);
+	timeMachine->current_number_of_actions = 0;
+	std::cout << "ALL DONE!" << std::endl;
+}
 void resize_screen_stateful(int next_width, int next_height)
 {
 	float old_screen_width = (float) screen_width;
@@ -175,6 +186,23 @@ void resize_screen_stateful(int next_width, int next_height)
 	//if we are in world scene mode, resize the world camera goal and snap the world camera start to that position as well.
 
 }
+void setup_world_screen_stateful()
+{
+	memory_clear(world_memory);
+	world_scene_state = setup_world_scene(timeMachine, world_memory);
+	scene = ST_PLAY_WORLD;
+	ui_state.time_since_scene_started = 0;
+	//setup world camera.
+	//TODO: Compress this code and the world scene camera code into something better.
+	int current_num = world_scene_state->current_level;
+	GameState* current_gamestate = world_scene_state->level_state[current_num];
+	IntPair gamestate_pos = world_scene_state->level_position[current_num];
+	world_camera = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport);
+	world_camera_start = world_camera;
+	world_camera_goal = world_camera;
+	world_camera_lerp = CAMERA_LERP_TIME;
+}
+
 void mainloopfunction()
 {
 	{
@@ -460,19 +488,7 @@ void mainloopfunction()
 				//HANDLE entering game.
 				if (ui_state.letters['m' - 'a'].pressed_this_frame)
 				{
-					memory_clear(world_memory);
-					world_scene_state = setup_world_scene(timeMachine, world_memory);
-					scene = ST_PLAY_WORLD;
-					ui_state.time_since_scene_started = 0;
-					//setup world camera.
-					//TODO: Compress this code and the world scene camera code into something better.
-					int current_num = world_scene_state->current_level;
-					GameState* current_gamestate = world_scene_state->level_state[current_num];
-					IntPair gamestate_pos = world_scene_state->level_position[current_num];
-					world_camera = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport);
-					world_camera_start = world_camera;
-					world_camera_goal = world_camera;
-					world_camera_lerp = CAMERA_LERP_TIME;
+					setup_world_screen_stateful();
 				}
 				//HANDLE opening game file.
 				if (ui_state.letters['o' - 'a'].pressed_this_frame)
@@ -484,11 +500,7 @@ void mainloopfunction()
 					}
 					else
 					{
-						TimeMachineEditorStartState* res = parse_deserialize_timemachine(to_load, permanent_memory, frame_memory);
-						time_machine_start_state = res;
-						gamestate_timemachine_editor_initialise_from_start(timeMachine, time_machine_start_state);
-						timeMachine->current_number_of_actions = 0;
-						std::cout << "ALL DONE!" << std::endl;
+						load_editor_level_stateful(to_load);
 					}
 				}
 				//HANDLE saving game file.
@@ -1187,8 +1199,8 @@ void mainloopfunction()
 			if (ui_state.time_since_scene_started > DRAW_TITLE_TIME)
 			{
 				char letter_priority = ui_state.most_recently_pressed_direction;
-
-				if (ui_state.time_till_player_can_move <= 0)
+				
+				//calculate if we should perform a new move.
 				{
 					char button_names[4] = { 'w', 'a', 's', 'd' };
 					Direction button_actions[4] = { U, L, D, R };
@@ -1207,7 +1219,12 @@ void mainloopfunction()
 					}
 					if (button_pressed)
 					{
-						take_player_action(world_scene_state, &ui_state, button_actions[button_press_index], level_memory, frame_memory, animation_memory);
+						if (ui_state.time_till_player_can_move <= 0 || button_press_index != last_move_taken)
+						{
+							take_player_action(world_scene_state, &ui_state, button_actions[button_press_index], level_memory, frame_memory, animation_memory);
+							last_move_taken = (Direction) button_press_index;
+						}
+
 					}
 				}
 				if (ui_state.letters['z' - 'a'].pressed_this_frame ||
@@ -2025,10 +2042,6 @@ int main(int argc, char *argv[])
 					std::cout << "ERROR - uh oh, failed to load character glyph" << std::endl;
 					continue;
 				}
-				else
-				{
-					std::cout << "correctly loaded." << face->glyph->bitmap.width << std::endl;
-				}
 
 				//generate a texture for this particular character.
 				int face_width = face->glyph->bitmap.width;
@@ -2142,6 +2155,9 @@ int main(int argc, char *argv[])
 	#pragma endregion
 
 #ifdef EMSCRIPTEN
+		std::string to_load = resource_load_puzzle_file("world3");
+		load_editor_level_stateful(to_load);
+		setup_world_screen_stateful();
 		emscripten_set_main_loop(mainloopfunction, 0, 0);
 #else
 		while (true)

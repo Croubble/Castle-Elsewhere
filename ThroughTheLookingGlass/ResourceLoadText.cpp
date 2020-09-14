@@ -63,6 +63,17 @@ int resource_layer_value_to_layer_sprite_value(int layer_value, int layer_num)
 		return resource_piece_to_piece_sprite((Piece)layer_value);
 }
 
+std::string resource_load_puzzle_file(std::string puzzlename)
+{
+	std::string final_path = "assets/puzzles/" + puzzlename + ".puzzle";
+	std::cout << "final path: " << final_path << std::endl;
+	std::ifstream myFile(final_path);
+	std::stringstream myStream;
+	myStream << myFile.rdbuf();
+	myFile.close();
+	std::string result = myStream.str();
+	return result;
+}
 std::string resource_load_text_file(std::string filePath)
 {
 	std::ifstream myFile("assets/" + filePath);

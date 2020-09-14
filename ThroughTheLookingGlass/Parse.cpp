@@ -318,7 +318,7 @@ TimeMachineEditorStartState* parse_deserialize_timemachine(std::string input_str
 	Tokenizer tokenizer;
 	tokenizer.at = input;
 
-	while (tokenizer.at[0])
+	while (tokenizer.at[0] != NULL)
 	{
 		consume_whitespace(&tokenizer);
 		int* maybe_num_gamestates = try_parse_num_gamestates(&tokenizer, temp_memory);
@@ -333,8 +333,21 @@ TimeMachineEditorStartState* parse_deserialize_timemachine(std::string input_str
 		if (!maybe_num_gamestates && !parsed_positions && !parsed_layer && !parsed_names)
 		{
 			std::cout << "uh oh, we've failed to parse something and the parsing isn't over. Better crash!" << std::endl;
+			std::cout << "rest of tokenizer next line:" << std::endl;
+			if (tokenizer.at[0] == NULL)
+				std::cout << "turns out there is no tokenizer left, and we are completely done.Huh ? Whats going on then." << std::endl;
+			else
+				std::cout << tokenizer.at[0] << std::endl;
+			std::cout << "parsed_positions:" << parsed_positions << std::endl;
+			std::cout << "parsed_layer:" << parsed_layer << std::endl;
+			std::cout << "parsed_names:" << parsed_names << std::endl;
+			std::cout << "parsed_positions:" << (maybe_num_gamestates != NULL) << std::endl;
 			abort();
 		}
+
+		consume_whitespace(&tokenizer);
+		if (tokenizer.at[0] == NULL)
+			std::cout << "We should quit right now, like straight outa town." << std::endl;
 	}
 	return result;
 }

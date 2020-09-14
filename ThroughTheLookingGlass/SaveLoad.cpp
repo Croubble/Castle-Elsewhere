@@ -6,6 +6,41 @@
 #endif
 #include <iostream>
 
+std::string load_puzzle_from_assets(std::string level_name)
+{
+	std::cout << "level file we are trying to open:" << level_name << std::endl;
+	FILE* lIn;
+	lIn = fopen(level_name.c_str(), "r");
+	if (!lIn)
+	{
+		std::cout << "function load_puzzle_from_assets has failed to find the path specified. (SaveLoad.cpp, line 17). Check it out!" << std::endl;
+	}
+	const int buffer_size = 50000;
+	char buffer[buffer_size];
+
+	int flen =
+		buffer[0] = '\0';
+	int i = 0;
+	for (int z = 0; z < buffer_size; z++)
+	{
+		buffer[z] = '\0';
+	}
+	while (!feof(lIn) && i < buffer_size)
+	{
+		char c = (char)fgetc(lIn);
+		buffer[i] = c;
+		i++;
+	}
+	if (i >= buffer_size)
+	{
+		std::cout << "our level files are finally to big for our buffer in saveload load function. Go in, implement it using memory_alloc instead of the current hacky way." << std::endl;
+		abort();
+	}
+	if(i > 0)
+		buffer[i - 1] = '\0';
+	fclose(lIn);
+	return std::string(buffer);
+}
 #ifdef EMSCRIPTEN
 int save_puzzle_file(std::string to_save)
 {
@@ -80,7 +115,8 @@ std::string load_puzzle_file()
 
 	lTheOpenFileName = tinyfd_openFileDialog(
 		"Choose a level to load",
-		"D:\\Puzzles\\myname",
+		".\\assets\\puzzles\\myname",
+		//"D:\\Puzzles\\myname",
 		2,
 		lFilterPatterns,
 		NULL,
@@ -96,45 +132,7 @@ std::string load_puzzle_file()
 			1);
 		return "";
 	}
-
-	lIn = fopen(lTheOpenFileName, "r");
-	if (!lIn)
-	{
-		tinyfd_messageBox(
-			"Error",
-			"Can not open this file in read mode",
-			"ok",
-			"error",
-			1);
-		return "";
-	}
-	//TODO: figure out the fastest way to read a file into memory.
-	const int buffer_size = 100000;
-	char buffer[buffer_size];
-
-	int flen =
-		buffer[0] = '\0';
-	int i = 0;
-	for (int z = 0; z < buffer_size; z++)
-	{
-		buffer[z] = '\0';
-	}
-	while (!feof(lIn) && i < buffer_size)
-	{
-		if (i == 195)
-			std::cout << "oohwee!" << std::endl;
-		char c = (char) fgetc(lIn);
-		buffer[i] = c;
-		i++;
-	}
-	if (i >= buffer_size)
-	{
-		std::cout << "our level files are finally to big for our buffer in saveload load function. Go in, implement it using memory_alloc instead of the current hacky way." << std::endl;
-		abort();
-	}
-	buffer[i - 1] = '\0';
-	fclose(lIn);
-	return std::string(buffer);
+	return load_puzzle_from_assets(lTheOpenFileName);
 }
 #else
 std::string load_puzzle_file()
