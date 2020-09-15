@@ -257,22 +257,14 @@ void handle_next_action_stateful(GamestateTimeMachine* maybe_time_machine, IntPa
 {
 	Action next_action = calculate_what_action_to_take_next_stateful();
 
-	Direction dir = Direction::NO_DIRECTION;
-	if (next_action == A_RIGHT)
-		dir = R;
-	else if (next_action == A_DOWN)
-		dir = D;
-	else if (next_action == A_LEFT)
-		dir = L;
-	else if (next_action == A_UP)
-		dir = U;
+	Direction to_take = action_to_direction(next_action);
 
-	if (dir != NO_DIRECTION)
+	if (to_take != NO_DIRECTION)
 		take_player_action(maybe_animation,
 			maybe_time_machine,
 			draw_position,
 			&ui_state,
-			dir,
+			to_take,
 			level_memory,
 			frame_memory,
 			animation_memory);
@@ -1175,15 +1167,7 @@ void mainloopfunction()
 #pragma region handle_events
 			bool world_action_taken = false;
 			Action action = calculate_what_action_to_take_next_stateful();
-			Direction to_take = Direction::NO_DIRECTION;
-			if (action == Action::A_UP)
-				to_take = Direction::U;
-			if (action == Action::A_RIGHT)
-				to_take = Direction::R;
-			if (action == Action::A_DOWN)
-				to_take = Direction::D;
-			if (action == Action::A_LEFT)
-				to_take = Direction::L;
+			Direction to_take = action_to_direction(action);
 			if (to_take != Direction::NO_DIRECTION)
 			{
 				world_player_action(world_scene_state, to_take, level_memory);
