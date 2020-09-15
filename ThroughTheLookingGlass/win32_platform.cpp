@@ -203,6 +203,93 @@ void setup_world_screen_stateful()
 	world_camera_lerp = CAMERA_LERP_TIME;
 }
 
+/// we want to statefully calculate what action the player should take based upon two things.
+/// 1. the editor UI, i.e. what buttons have been pressed recently.
+/// 2. Action last_action_taken, i.e. what action did we last take?
+Action calculate_what_action_to_take_next_stateful()
+{
+	//Direction last_move_taken = NO_DIRECTION;
+	char letter_priority = ui_state.most_recently_pressed_direction;
+
+	//calculate if we should perform a new move.
+	{
+		char button_names[4] = { 'w', 'a', 's', 'd' };
+		Direction button_actions[4] = { U, L, D, R };
+		bool button_pressed = false;
+		int button_press_index = -1;
+		float time_button_pressed = -1;
+		for (int i = 0; i < 4; i++)
+		{
+			if (ui_state.letters[button_names[i] - 'a'].pressed)
+				if (ui_state.letters[button_names[i] - 'a'].time_pressed > time_button_pressed || !button_pressed)
+				{
+					button_pressed = true;
+					button_press_index = i;
+					time_button_pressed = ui_state.letters[button_names[i] - 'a'].time_pressed;
+				}
+		}
+		if (button_pressed)
+		{
+			if (ui_state.time_till_player_can_move <= 0 || button_actions[button_press_index] != last_move_taken)
+			{
+				last_move_taken = (Direction)button_actions[button_press_index];
+				return (Action) button_actions[button_press_index];
+			}
+		}
+	}
+	if (ui_state.letters['z' - 'a'].pressed_this_frame ||
+		(ui_state.letters['z' - 'a'].pressed && ui_state.time_till_player_can_move <= 0))
+	{
+		last_move_taken = Direction::NO_DIRECTION;
+		return (Action) A_UNDO;
+
+	}
+	if (ui_state.letters['r' - 'a'].pressed_this_frame)
+	{
+		last_move_taken = Direction::NO_DIRECTION;
+		return (Action)A_RESET;
+	}
+	return (Action) A_NONE;
+}
+//world_scene_state->level_position[world_scene_state->current_level]
+//world_scene_state->maybe_animation
+void handle_next_action_stateful(GamestateTimeMachine* maybe_time_machine, IntPair draw_position, Animations** maybe_animation)
+{
+	Action next_action = calculate_what_action_to_take_next_stateful();
+
+	Direction dir = Direction::NO_DIRECTION;
+	if (next_action == A_RIGHT)
+		dir = R;
+	else if (next_action == A_DOWN)
+		dir = D;
+	else if (next_action == A_LEFT)
+		dir = L;
+	else if (next_action == A_UP)
+		dir = U;
+
+	if (dir != NO_DIRECTION)
+		take_player_action(maybe_animation,
+			maybe_time_machine,
+			draw_position,
+			&ui_state,
+			dir,
+			level_memory,
+			frame_memory,
+			animation_memory);
+
+
+	if (next_action == A_UNDO)
+	{
+		gamestate_timemachine_undo(maybe_time_machine);
+		ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+		*maybe_animation = NULL;
+	}
+	if (next_action == A_RESET)
+	{
+		gamestate_timemachine_reset(maybe_time_machine, level_memory);
+		*maybe_animation = NULL;
+	}
+}
 void mainloopfunction()
 {
 	{
@@ -976,34 +1063,9 @@ void mainloopfunction()
 			}
 			else if (ui_state.type == ECS_NEUTRAL)
 			{
-				if (ui_state.letters['a' - 'a'].pressed_this_frame ||
-					(ui_state.time_till_player_can_move <= 0 && ui_state.left.pressed))
-				{
-					gamestate_timemachine_take_action(play_scene_state.timeMachine, L, play_memory, frame_memory);
-					ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-				}
-
-				if (ui_state.letters['d' - 'a'].pressed_this_frame ||
-					(ui_state.time_till_player_can_move <= 0 && ui_state.right.pressed))
-				{
-					gamestate_timemachine_take_action(play_scene_state.timeMachine, R, play_memory, frame_memory);
-					ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-				}
-
-				if (ui_state.letters['w' - 'a'].pressed_this_frame ||
-					(ui_state.time_till_player_can_move <= 0 && ui_state.up.pressed))
-				{
-					gamestate_timemachine_take_action(play_scene_state.timeMachine, U, play_memory, frame_memory);
-					ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-				}
-
-				if (ui_state.letters['s' - 'a'].pressed_this_frame ||
-					(ui_state.time_till_player_can_move <= 0 && ui_state.down.pressed))
-				{
-					gamestate_timemachine_take_action(play_scene_state.timeMachine, D, play_memory, frame_memory);
-					ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-				}
-
+				Animations* maybe_animation = NULL;
+				Animations** maybe_animation_ptr = &maybe_animation;
+				handle_next_action_stateful(play_scene_state.timeMachine, play_scene_state.loc, maybe_animation_ptr);
 				if (ui_state.spacebar.pressed_this_frame)
 				{
 					GameState* current_edit_state = &play_scene_state.timeMachine_edit->state_array[play_scene_state.timeMachine_edit->num_gamestates_stored - 1];
@@ -1112,31 +1174,19 @@ void mainloopfunction()
 #pragma endregion
 #pragma region handle_events
 			bool world_action_taken = false;
-			if (ui_state.letters['w' - 'a'].pressed_this_frame ||
-				(ui_state.letters['w' - 'a'].pressed && ui_state.time_till_player_can_move <= 0))
+			Action action = calculate_what_action_to_take_next_stateful();
+			Direction to_take = Direction::NO_DIRECTION;
+			if (action == Action::A_UP)
+				to_take = Direction::U;
+			if (action == Action::A_RIGHT)
+				to_take = Direction::R;
+			if (action == Action::A_DOWN)
+				to_take = Direction::D;
+			if (action == Action::A_LEFT)
+				to_take = Direction::L;
+			if (to_take != Direction::NO_DIRECTION)
 			{
-				world_player_action(world_scene_state, U, level_memory);
-				ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-				ui_state.time_since_last_player_action = 0;
-			}
-			if (ui_state.letters['a' - 'a'].pressed_this_frame ||
-				(ui_state.letters['a' - 'a'].pressed && ui_state.time_till_player_can_move <= 0))
-			{
-				world_player_action(world_scene_state, L, level_memory);
-				ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-				ui_state.time_since_last_player_action = 0;
-			}
-			if (ui_state.letters['d' - 'a'].pressed_this_frame ||
-				(ui_state.letters['d' - 'a'].pressed && ui_state.time_till_player_can_move <= 0))
-			{
-				world_player_action(world_scene_state, R, level_memory);
-				ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-				ui_state.time_since_last_player_action = 0;
-			}
-			if (ui_state.letters['s' - 'a'].pressed_this_frame ||
-				(ui_state.letters['s' - 'a'].pressed && ui_state.time_till_player_can_move <= 0))
-			{
-				world_player_action(world_scene_state, D, level_memory);
+				world_player_action(world_scene_state, to_take, level_memory);
 				ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
 				ui_state.time_since_last_player_action = 0;
 			}
@@ -1198,48 +1248,7 @@ void mainloopfunction()
 			//if we should be allowed to take actions:
 			if (ui_state.time_since_scene_started > DRAW_TITLE_TIME)
 			{
-				char letter_priority = ui_state.most_recently_pressed_direction;
-				
-				//calculate if we should perform a new move.
-				{
-					char button_names[4] = { 'w', 'a', 's', 'd' };
-					Direction button_actions[4] = { U, L, D, R };
-					bool button_pressed = false;
-					int button_press_index = -1;
-					float time_button_pressed = -1;
-					for (int i = 0; i < 4; i++)
-					{
-						if (ui_state.letters[button_names[i] - 'a'].pressed)
-							if (ui_state.letters[button_names[i] - 'a'].time_pressed > time_button_pressed || !button_pressed)
-							{
-								button_pressed = true;
-								button_press_index = i;
-								time_button_pressed = ui_state.letters[button_names[i] - 'a'].time_pressed;
-							}
-					}
-					if (button_pressed)
-					{
-						if (ui_state.time_till_player_can_move <= 0 || button_press_index != last_move_taken)
-						{
-							take_player_action(world_scene_state, &ui_state, button_actions[button_press_index], level_memory, frame_memory, animation_memory);
-							last_move_taken = (Direction) button_press_index;
-						}
-
-					}
-				}
-				if (ui_state.letters['z' - 'a'].pressed_this_frame ||
-					(ui_state.letters['z' - 'a'].pressed && ui_state.time_till_player_can_move <= 0))
-				{
-					gamestate_timemachine_undo(world_scene_state->maybe_time_machine);
-					ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-					world_scene_state->maybe_animation = NULL;
-
-				}
-				if (ui_state.letters['r' - 'a'].pressed_this_frame)
-				{
-					gamestate_timemachine_reset(world_scene_state->maybe_time_machine, level_memory);
-					world_scene_state->maybe_animation = NULL;
-				}
+				handle_next_action_stateful(world_scene_state->maybe_time_machine, world_scene_state->level_position[world_scene_state->current_level], &world_scene_state->maybe_animation);
 			}
 
 #pragma endregion
@@ -2176,15 +2185,17 @@ int main(int argc, char *argv[])
 		return 0;
 }
 
-void take_player_action(WorldScene* world_scene_state, EditorUIState* ui_state, Direction action, Memory* level_memory, Memory* frame_memory, Memory* animation_memory)
+//TODO: remove world
+//GamestateTimeMachine* time_machine
+//IntPair draw_position;
+void take_player_action(Animations** maybe_animation, GamestateTimeMachine* maybe_time_machine, IntPair draw_position, EditorUIState* ui_state, Direction action, Memory* level_memory, Memory* frame_memory, Memory* animation_memory)
 {
-	GameActionJournal* journal = gamestate_timemachine_take_action(world_scene_state->maybe_time_machine, action, level_memory, frame_memory);
+	GameActionJournal* journal = gamestate_timemachine_take_action(maybe_time_machine, action, level_memory, frame_memory);
 	GameStateAnimation* animation = journal->maybe_animation;
 	ui_state->time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
 	ui_state->time_since_last_player_action = 0;
-	Animations* a = animation_build_from_world(journal, world_scene_state, animation_memory);
-	world_scene_state->maybe_animation = a;
-	
+	Animations* a = animation_build_from_world(journal, maybe_time_machine, draw_position, animation_memory);
+	*maybe_animation = a;
 }
 /*
 float draw_text_to_screen(glm::vec3 start_position, 

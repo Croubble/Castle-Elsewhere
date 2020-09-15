@@ -1,16 +1,16 @@
 #include "World.h"
 #include "Animation.h"
-Animations* animation_build_from_world(GameActionJournal* journal, WorldScene* world, Memory* animation_memory)
+Animations* animation_build_from_world(GameActionJournal* journal, GamestateTimeMachine* maybe_time_machine, IntPair draw_position, Memory* animation_memory)
 {
-	if (world->maybe_time_machine == NULL)
+	if (maybe_time_machine == NULL)
 	{
 		std::cout << "calling animation_build_from_world when there is no time machine" << std::endl;
 		abort();
 	}
 	if (journal == NULL)
 		return NULL;
-	GameState* to_draw = gamestate_timemachine_get_latest_gamestate(world->maybe_time_machine);
-	return animations_build(journal, to_draw, world->level_position[world->current_level], animation_memory, Z_POSITION_STARTING_LAYER + LN_PIECE);
+	GameState* to_draw = gamestate_timemachine_get_latest_gamestate(maybe_time_machine);
+	return animations_build(journal, to_draw, draw_position, animation_memory, Z_POSITION_STARTING_LAYER + LN_PIECE);
 }
 
 void world_player_action(WorldScene* scene, Direction action, Memory* level_memory)

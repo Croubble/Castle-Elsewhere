@@ -221,6 +221,7 @@
     <ClInclude Include="Fonts.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="GamestateAI.h" />
+    <ClInclude Include="gui.h" />
     <ClInclude Include="MainHelpers.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Memory.h" />

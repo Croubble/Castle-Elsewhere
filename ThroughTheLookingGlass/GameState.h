@@ -118,6 +118,16 @@ struct GamestateTimeMachine
 enum CursedDirection {
 	UCURSED,RCURSED,DCURSED,LCURSED,CURSED,NOTCURSED
 };
+enum Action {
+	A_UP,
+	A_RIGHT,
+	A_DOWN,
+	A_LEFT,
+	A_UNDO,
+	A_RESET,
+	A_NONE,
+	A_COUNT
+};
 enum Direction {
 	U,R,D,L,NO_DIRECTION,DIRECTION_COUNT
 };

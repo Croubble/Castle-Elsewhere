@@ -18,6 +18,6 @@ struct WorldScene
 	Animations* maybe_animation;
 };
 
-Animations* animation_build_from_world(GameActionJournal* journal, WorldScene* world, Memory* animation_memory);
+Animations* animation_build_from_world(GameActionJournal* journal, GamestateTimeMachine* maybe_time_machine, IntPair draw_position, Memory* animation_memory);
 void world_player_action(WorldScene* scene, Direction action, Memory* level_memory);
 WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene_memory);

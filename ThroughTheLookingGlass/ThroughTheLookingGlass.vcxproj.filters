@@ -55,6 +55,9 @@
     <Filter Include="Source Files\ExternalFilter">
       <UniqueIdentifier>{5c8677eb-d696-4d7f-8796-fa9bad87b6b0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ButtonFilter">
+      <UniqueIdentifier>{f49365e6-462c-451c-9b0e-a7d506c30daa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Downloads\glad (4)\src\glad.c">
@@ -243,6 +246,9 @@
     </ClInclude>
     <ClInclude Include="PreludeIncludes.h">
       <Filter>Source Files\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="gui.h">
+      <Filter>Source Files\ButtonFilter</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
