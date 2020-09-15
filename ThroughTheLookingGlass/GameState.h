@@ -167,18 +167,7 @@ struct GameActionJournal
 	GameStateAnimation* maybe_animation;
 	CurseAnimation* maybe_cursed_animation;
 };
-Direction action_to_direction(Action action)
-{
-	if (action == Action::A_UP)
-		return Direction::U;
-	if (action == Action::A_RIGHT)
-		return Direction::R;
-	if (action == Action::A_DOWN)
-		return Direction::D;
-	if (action == Action::A_LEFT)
-		return Direction::L;
-	return Direction::NO_DIRECTION;
-}
+Direction action_to_direction(Action action);
 Direction direction_reverse(Direction dir);
 IntPair direction_to_intpair(Direction dir);
 void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scope_memory);

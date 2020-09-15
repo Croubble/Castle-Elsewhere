@@ -204,6 +204,18 @@ void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scop
 	gamestate_clone_to_unitialized(old, next, scope_memory);
 	timeMachine->num_gamestates_stored++;
 }
+Direction action_to_direction(Action action)
+{
+	if (action == Action::A_UP)
+		return Direction::U;
+	if (action == Action::A_RIGHT)
+		return Direction::R;
+	if (action == Action::A_DOWN)
+		return Direction::D;
+	if (action == Action::A_LEFT)
+		return Direction::L;
+	return Direction::NO_DIRECTION;
+}
 Direction direction_reverse(Direction dir)
 {
 	if (dir == U)
