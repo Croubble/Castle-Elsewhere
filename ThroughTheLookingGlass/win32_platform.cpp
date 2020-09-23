@@ -1187,6 +1187,7 @@ void mainloopfunction()
 				scene = SCENE_TYPE::ST_SHOW_TEXT;
 				ui_state.time_since_scene_started = 0;
 				ui_state.time_since_last_player_action = 0;
+				world_scene_state->maybe_animation = NULL;
 				text_scene_state = level_popup(&world_scene_state->level_names[world_scene_state->current_level * GAME_LEVEL_NAME_MAX_SIZE], text_memory, ui_state.total_time_passed);
 			}
 
