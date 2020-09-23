@@ -11,11 +11,11 @@ enum LAYER_NAME
 	LN_COUNT
 };
 
-const int GAME_NUM_LAYERS = LN_COUNT;
-const int PLAYER_LAYER = LN_PIECE;
+const int GAME_NUM_LAYERS = LN_COUNT; 
+const int PLAYER_LAYER = LN_PIECE; 
 struct GenericGame
 {
-	int num_layers;
+	int num_layers;	
 	int* num_elements_in_layer;	//number of elements that occur in this layer per character.
 	char*** element_names;	//okay so what we actually do is make a biiiig array and put all of em. ALL OF EM. In order.
 };
@@ -25,6 +25,7 @@ struct GenericGamestate
 	int h;
 	int** layers;
 };
+
 
 
 enum FLOOR_IMAGE
@@ -171,6 +172,7 @@ Direction action_to_direction(Action action);
 Direction direction_reverse(Direction dir);
 IntPair direction_to_intpair(Direction dir);
 void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scope_memory);
+
 /*****************************GAMESTATE TIME MACHINE******************/
 /*********************************************************************/
 void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scope_memory);
@@ -223,4 +225,3 @@ int curse_entity(int entity_value, CursedDirection curse_to_apply);
 GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* temp_memory);
 void gamestate_crumble(GameState* state);
 void gamestate_extrude_lurking_walls(GameState* state);
-

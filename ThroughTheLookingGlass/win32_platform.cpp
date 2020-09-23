@@ -3,7 +3,7 @@
 #include <sstream>
 #include "string.h"
 #include "SaveLoad.h"
-
+#include "TextScene.h"
 
 void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, glm::mat4* camera, bool mouse_moved_this_frame, SCENE_TYPE scene)
 {
@@ -57,6 +57,7 @@ Memory* animation_memory;
 SCENE_TYPE scene;
 PlayScene play_scene_state;
 WorldScene* world_scene_state;
+TextScene* text_scene_state;
 Direction last_move_taken = NO_DIRECTION;
 int screen_width = 800;
 int screen_height = 600;
@@ -251,8 +252,6 @@ Action calculate_what_action_to_take_next_stateful()
 	}
 	return (Action) A_NONE;
 }
-//world_scene_state->level_position[world_scene_state->current_level]
-//world_scene_state->maybe_animation
 void handle_next_action_stateful(GamestateTimeMachine* maybe_time_machine, IntPair draw_position, Animations** maybe_animation)
 {
 	Action next_action = calculate_what_action_to_take_next_stateful();
@@ -1346,19 +1345,33 @@ void mainloopfunction()
 				if (ui_state.time_since_scene_started <= DRAW_TITLE_TIME)
 				{
 					//draw the text.
-					glm::vec3 screen_center = glm::vec3((world_camera.left + world_camera.right) / 2.0f, (world_camera.up + world_camera.down) / 2.0f, 15);
-					char* name = &world_scene_state->level_names[world_index_to_draw * GAME_LEVEL_NAME_MAX_SIZE];
-					float text_width = get_text_to_screen_size(screen_center, glm::vec2(1, 1), name, &text_draw_info);
-					float x_dist = world_camera.right - world_camera.left;
-					float x_scale = x_dist / text_width;
-					float x_center = (world_camera.right + world_camera.left) / 2.0f;
-					float x_start = screen_center.x - (text_width * x_scale) / 2.0f;
-					draw_text_to_screen(glm::vec3(x_start, screen_center.y, screen_center.z), glm::vec2(x_scale, x_scale), name, &text_draw_info);
+					draw_text_maximized_centered_to_screen(world_camera, &world_scene_state->level_names[world_index_to_draw * GAME_LEVEL_NAME_MAX_SIZE], &text_draw_info);
 					draw_black_box_over_screen(world_camera, &fullspriteDraw);
 				}
 #pragma endregion
 			}
 		}
+		else if (scene == ST_SHOW_TEXT)
+		{
+#pragma region update
+			if (text_scene_state->end_time <= ui_state.total_time_passed)
+			{
+				scene = text_scene_state->scene_to_revert_to;
+			}
+#pragma endregion
+#pragma region handle_events
+		//TODO: if the player presses the action key (x, for now), the scene immediately ends. if the player presses 
+		if (ui_state.letters['x' - 'a'].pressed_this_frame)
+		{
+			scene = text_scene_state->scene_to_revert_to;
+			//TODO.
+		}
+#pragma endregion
+#pragma region send draw data to gpu
+		draw_text_maximized_centered_to_screen(world_camera,text_scene_state->to_display,&text_draw_info);
+		draw_black_box_over_screen(world_camera, &fullspriteDraw);
+#pragma endregion
+ }
 #pragma region draw gpu data
 
 		//update camera.
@@ -1484,7 +1497,6 @@ void mainloopfunction()
 		keep_running_infinite_loop = running;
 	}
 }
-
 int main(int argc, char *argv[])
 {
 #pragma region SDL_Setup
@@ -2169,9 +2181,6 @@ int main(int argc, char *argv[])
 		return 0;
 }
 
-//TODO: remove world
-//GamestateTimeMachine* time_machine
-//IntPair draw_position;
 void take_player_action(Animations** maybe_animation, GamestateTimeMachine* maybe_time_machine, IntPair draw_position, EditorUIState* ui_state, Direction action, Memory* level_memory, Memory* frame_memory, Memory* animation_memory)
 {
 	GameActionJournal* journal = gamestate_timemachine_take_action(maybe_time_machine, action, level_memory, frame_memory);
@@ -2230,31 +2239,7 @@ float draw_text_to_screen(glm::vec3 start_position,
 	return next_position.x - start_position.x;
 }
 */
-float get_text_to_screen_size(glm::vec3 start_position, glm::vec2 scale, const char* c_string, TextDrawInfo* info)
-{
-	//TODO: get info.current_number_drawn to replace the other number we were using.
-	glm::vec3 next_position = start_position;
-	int draw = *info->current_number_drawn;
-	for (; c_string[0]; c_string++)
-	{
-		char c = c_string[0];
 
-		//handle the position of the character.
-		float horizontal_space = info->text_positions[c].w / FONT_CHARACTER_HEIGHT;
-
-		float x_start = (next_position.x + info->true_font_reference[c].Bearing.x) / float(FONT_CHARACTER_HEIGHT);
-		float y_start = (next_position.y - (info->true_font_reference[c].Size.y - info->true_font_reference[c].Bearing.y)) / float(FONT_CHARACTER_HEIGHT);
-		float w = (info->true_font_reference[c].Size.x) / float(FONT_CHARACTER_HEIGHT);
-		float h = info->true_font_reference[c].Size.y / float(FONT_CHARACTER_HEIGHT);
-
-		//we always increment the draw foward, even when we don't draw stuff like an empty space.
-		float x_pixels_in_gamespace = (info->true_font_reference[c].advance >> 6) / float(FONT_CHARACTER_HEIGHT);
-		next_position.x += (x_pixels_in_gamespace * scale.x);
-
-	}
-	*info->current_number_drawn = draw;
-	return next_position.x - start_position.x;
-}
 float draw_text_to_screen(glm::vec3 start_position, glm::vec2 scale, const char* c_string, TextDrawInfo* info)
 {
 	//TODO: get info.current_number_drawn to replace the other number we were using.

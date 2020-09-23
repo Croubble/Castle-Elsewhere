@@ -120,6 +120,9 @@
     <ClCompile Include="World.cpp">
       <Filter>Source Files\EditorFilter</Filter>
     </ClCompile>
+    <ClCompile Include="Source.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="gl_text.vs">
@@ -249,6 +252,9 @@
     </ClInclude>
     <ClInclude Include="gui.h">
       <Filter>Source Files\ButtonFilter</Filter>
+    </ClInclude>
+    <ClInclude Include="TextScene.h">
+      <Filter>Source Files\EditorFilter</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
