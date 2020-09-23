@@ -27,8 +27,6 @@ void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, g
 		camera_game->right = camera_center_x + new_camera_half_width;
 		camera_game->down = camera_center_y - new_camera_half_height;
 		camera_game->up = camera_center_y + new_camera_half_height;
-
-		*camera = camera_make_matrix(*camera_game);
 	}
 	//HANDLE camera move with right click resize.
 	if (mouse_moved_this_frame && ui_state->mouse_right_click_down && (scene == SCENE_TYPE::ST_EDITOR || scene == SCENE_TYPE::ST_EDIT_LEVEL))
@@ -38,7 +36,6 @@ void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, g
 		camera_game->right += ui_state->totalMove.x * CAMERA_MOVE_MULT;
 		camera_game->down += ui_state->totalMove.y * CAMERA_MOVE_MULT;
 		camera_game->up += ui_state->totalMove.y * CAMERA_MOVE_MULT;
-		*camera = camera_make_matrix(*camera_game);
 	}
 }
 
@@ -283,7 +280,6 @@ void handle_next_action_stateful(GamestateTimeMachine* maybe_time_machine, IntPa
 }
 void mainloopfunction()
 {
-	{
 #pragma region Loop Startup
 		//reset frame info
 		{
@@ -534,7 +530,6 @@ void mainloopfunction()
 		ui_state.time_since_last_player_action += delta;
 		ui_state.time_since_scene_started += delta;
 		ui_state.total_time_passed = total_time;
-		camera = camera_make_matrix(camera_game);
 
 #pragma endregion
 
@@ -929,6 +924,231 @@ void mainloopfunction()
 
 			}
 #pragma endregion
+
+		}
+		else if (scene == ST_EDIT_LEVEL)
+		{
+#pragma region handle_events
+			if (ui_state.type == ECS_BRUSH)
+			{
+				if (ui_state.mouse_left_click_down)
+					bool left_click_action_resolved = MaybeApplyBrushInPlayMode(play_memory, palete, currentBrush, &ui_state, play_scene_state.timeMachine_edit, play_scene_state.loc_edit, ui_state.mouseGamePos);
+				else
+					ui_state.type = ECS_NEUTRAL;
+			}
+			else if (ui_state.type == ECS_NEUTRAL)
+			{
+				Animations* maybe_animation = NULL;
+				Animations** maybe_animation_ptr = &maybe_animation;
+				handle_next_action_stateful(play_scene_state.timeMachine, play_scene_state.loc, maybe_animation_ptr);
+				if (ui_state.spacebar.pressed_this_frame)
+				{
+					GameState* current_edit_state = &play_scene_state.timeMachine_edit->state_array[play_scene_state.timeMachine_edit->num_gamestates_stored - 1];
+					play_scene_state.timeMachine = gamestate_timemachine_create(current_edit_state, play_memory, MAX_NUMBER_GAMESTATES);
+
+				}
+				if (ui_state.mouse_left_click_down)
+				{
+					bool left_click_action_resolved = MaybeApplyBrushInPlayMode(play_memory, palete, currentBrush, &ui_state, play_scene_state.timeMachine_edit, play_scene_state.loc_edit, ui_state.mouseGamePos);
+					if (left_click_action_resolved)
+						ui_state.type = ECS_BRUSH;
+				}
+				if (ui_state.backspace_key_down_this_frame)
+				{
+					scene = ST_EDITOR;
+					ui_state.time_since_scene_started = 0;
+					int num_states = play_scene_state.timeMachine_edit->num_gamestates_stored;
+					GameState* state_to_insert = gamestate_clone(&play_scene_state.timeMachine_edit->state_array[num_states - 1], permanent_memory);
+					TimeMachineEditorAction action = gamestate_timemachineaction_create_replace_gamestate(state_to_insert, play_scene_state.editor_position_in_time_machine, play_scene_state.game_name);
+					gamestate_timemachine_editor_take_action(timeMachine, NULL, action);
+				}
+				if (ui_state.shift_key_down_this_frame)
+				{
+					ui_state.type = ECS_EDIT_NAME;
+				}
+				if (ui_state.z_key_down_this_frame)
+				{
+					gamestate_timemachine_undo(play_scene_state.timeMachine);
+				}
+			}
+			else if (ui_state.type == ECS_EDIT_NAME)
+			{
+				if (play_scene_state.game_name_length < GAME_LEVEL_NAME_MAX_SIZE)
+				{
+					for (int i = 0; i < NUM_LETTERS_ON_KEYBOARD - 1; i++)
+					{
+						if (ui_state.letters[i].pressed_this_frame)
+						{
+							//TODO: Slam down the text into our gamestate string!
+							int length = play_scene_state.game_name_length;
+							play_scene_state.game_name[length] = ('a' + (char) i);
+							play_scene_state.game_name[length + 1] = 0;
+							play_scene_state.game_name_length++;
+						}
+					}
+					if (ui_state.spacebar.pressed_this_frame)
+					{
+						int length = play_scene_state.game_name_length;
+						play_scene_state.game_name[length] = ' ';
+						play_scene_state.game_name[length + 1] = 0;
+						play_scene_state.game_name_length++;
+					}
+				}
+				if (play_scene_state.game_name_length > 0)
+				{
+					if (ui_state.backspace_key_down_this_frame)
+					{
+						int length = play_scene_state.game_name_length;
+						play_scene_state.game_name[length - 1] = 0;
+						play_scene_state.game_name_length--;
+					}
+				}
+				if (ui_state.enter.pressed_this_frame)
+				{
+					ui_state.type = ECS_NEUTRAL;
+				}
+
+			}
+#pragma endregion
+
+		}
+		else if (scene == ST_PLAY_WORLD)
+		{
+#pragma region save state info before events
+			int old_gamestate_num_player_standing_on = world_scene_state->current_level;
+#pragma endregion
+#pragma region handle_events
+			bool world_action_taken = false;
+			Action action = calculate_what_action_to_take_next_stateful();
+			Direction to_take = action_to_direction(action);
+			if (to_take != Direction::NO_DIRECTION)
+			{
+				world_player_action(world_scene_state, to_take, level_memory);
+				ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
+				ui_state.time_since_last_player_action = 0;
+			}
+			if (ui_state.backspace_key_down_this_frame)
+			{
+				scene = ST_EDITOR;
+				ui_state.time_since_scene_started = 0;
+				ui_state.time_since_last_player_action = 0;
+			}
+
+			//after taking an action, if there's suddenly a time machine, that means its time to switch scenes!
+			if (world_scene_state->maybe_time_machine)
+			{
+				//scene = SCENE_TYPE::ST_PLAY_LEVEL;
+				scene = SCENE_TYPE::ST_SHOW_TEXT;
+				ui_state.time_since_scene_started = 0;
+				ui_state.time_since_last_player_action = 0;
+				world_scene_state->maybe_animation = NULL;
+				text_scene_state = level_popup(&world_scene_state->level_names[world_scene_state->current_level * GAME_LEVEL_NAME_MAX_SIZE], text_memory, ui_state.total_time_passed);
+			}
+
+#pragma endregion	
+#pragma region handle_state_update
+			//handle camera
+			{
+				int current_num_player_standing_on = world_scene_state->current_level;
+				if (old_gamestate_num_player_standing_on != current_num_player_standing_on)
+				{
+					world_camera_lerp = 0;
+					GameState* current_gamestate = world_scene_state->level_state[current_num_player_standing_on];
+					IntPair gamestate_pos = world_scene_state->level_position[current_num_player_standing_on];
+					world_camera_goal = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport);
+					world_camera_start = world_camera;
+				}
+				else
+				{
+					world_camera_lerp += delta;
+				}
+				world_camera = math_camera_move_towards_lerp(world_camera_start, world_camera_goal, world_camera_lerp, CAMERA_LERP_TIME);
+			}
+#pragma endregion
+
+		}
+		else if (scene == ST_PLAY_LEVEL)
+		{
+#pragma region save state info before events
+			int old_gamestate_num_player_standing_on = world_scene_state->current_level;
+#pragma endregion 
+#pragma region handle events
+			//if we should be allowed to take actions:
+				handle_next_action_stateful(world_scene_state->maybe_time_machine, world_scene_state->level_position[world_scene_state->current_level], &world_scene_state->maybe_animation);
+
+#pragma endregion
+#pragma region handle_state_update
+			//handle camera
+			{
+				int current_num_player_standing_on = world_scene_state->current_level;
+				if (old_gamestate_num_player_standing_on != current_num_player_standing_on)
+				{
+					world_camera_lerp = 0;
+				}
+				else
+				{
+					world_camera_lerp += delta;
+				}
+				GameState* current_gamestate = world_scene_state->level_state[current_num_player_standing_on];
+				IntPair gamestate_pos = world_scene_state->level_position[current_num_player_standing_on];
+				world_camera_goal = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport, 0.3f, 0.3f);
+				world_camera_start = world_camera;
+				//world_camera_goal
+				//world_camera_start
+				//world_camera
+				//camera
+			}
+			world_camera = math_camera_move_towards_lerp(world_camera_start, world_camera_goal, world_camera_lerp, CAMERA_LERP_TIME);
+			//camera = camera_make_matrix(world_camera);
+			//handle win update.
+			if (gamestate_is_in_win_condition(&world_scene_state->maybe_time_machine->state_array[world_scene_state->maybe_time_machine->num_gamestates_stored - 1]))
+			{
+				world_scene_state->level_solved[world_scene_state->current_level] = true;
+				int num_states = world_scene_state->maybe_time_machine->num_gamestates_stored;
+				GameState* current_state = &world_scene_state->maybe_time_machine->state_array[num_states - 1];
+				GameState* cloned_state = gamestate_clone(current_state, world_memory);
+				gamestate_crumble(cloned_state);
+				world_scene_state->level_state[world_scene_state->current_level] = cloned_state;
+
+				world_scene_state->maybe_time_machine = NULL;
+			}
+			//handle returning to world map by request.
+			if (ui_state.backspace_key_down_this_frame)
+			{
+				world_scene_state->maybe_time_machine = NULL;
+			}
+			//handle returning to world map by level finished.
+			if (!world_scene_state->maybe_time_machine)
+			{
+				scene = SCENE_TYPE::ST_PLAY_WORLD;
+				ui_state.time_since_scene_started = 0;
+			}
+#pragma endregion
+		}
+		else if (scene == ST_SHOW_TEXT)
+		{
+#pragma region update
+			if (text_scene_state->end_time <= ui_state.total_time_passed)
+			{
+				scene = text_scene_state->scene_to_revert_to;
+				ui_state.time_since_scene_started = 0;
+				ui_state.time_since_last_player_action = 0;
+			}
+#pragma endregion
+#pragma region handle_events
+		//TODO: if the player presses the action key (x, for now), the scene immediately ends. if the player presses 
+		if (ui_state.letters['x' - 'a'].pressed_this_frame)
+		{
+			scene = text_scene_state->scene_to_revert_to;
+			ui_state.time_since_scene_started = 0;
+			ui_state.time_since_last_player_action = 0;
+			//TODO.
+		}
+#pragma endregion
+		}
+
+		if (scene == ST_EDITOR)
+		{
 #pragma region send draw data to gpu
 			//parse gamestate outlines
 			int skip_index = -1;
@@ -1033,8 +1253,8 @@ void mainloopfunction()
 				for (int i = 0; i < len; i++)
 				{
 					char* name = &timeMachine->names[i * GAME_LEVEL_NAME_MAX_SIZE];
-					float x_pos = (float) timeMachine->gamestates_positions[i].x;
-					float y_pos = (float) (timeMachine->gamestates_positions[i].y + timeMachine->gamestates[i]->h) + 0.2f;
+					float x_pos = (float)timeMachine->gamestates_positions[i].x;
+					float y_pos = (float)(timeMachine->gamestates_positions[i].y + timeMachine->gamestates[i]->h) + 0.2f;
 					glm::vec3 draw_pos = glm::vec3(x_pos, y_pos, 0);
 					//draw_text_to_screen(draw_pos, name, string_matrix_cpu, string_atlas_cpu, string_true_font_reference, text_positions, text_positions_normalized, &string_total_drawn, SCREEN_STARTING_HEIGHT / ui_state.game_height_current);
 					draw_text_to_screen(draw_pos, glm::vec2(1, 1), name, &text_draw_info);
@@ -1042,90 +1262,8 @@ void mainloopfunction()
 			}
 #pragma endregion
 		}
-		else if (scene == ST_EDIT_LEVEL)
+		if (scene == ST_EDIT_LEVEL)
 		{
-#pragma region handle_events
-			if (ui_state.type == ECS_BRUSH)
-			{
-				if (ui_state.mouse_left_click_down)
-					bool left_click_action_resolved = MaybeApplyBrushInPlayMode(play_memory, palete, currentBrush, &ui_state, play_scene_state.timeMachine_edit, play_scene_state.loc_edit, ui_state.mouseGamePos);
-				else
-					ui_state.type = ECS_NEUTRAL;
-			}
-			else if (ui_state.type == ECS_NEUTRAL)
-			{
-				Animations* maybe_animation = NULL;
-				Animations** maybe_animation_ptr = &maybe_animation;
-				handle_next_action_stateful(play_scene_state.timeMachine, play_scene_state.loc, maybe_animation_ptr);
-				if (ui_state.spacebar.pressed_this_frame)
-				{
-					GameState* current_edit_state = &play_scene_state.timeMachine_edit->state_array[play_scene_state.timeMachine_edit->num_gamestates_stored - 1];
-					play_scene_state.timeMachine = gamestate_timemachine_create(current_edit_state, play_memory, MAX_NUMBER_GAMESTATES);
-
-				}
-				if (ui_state.mouse_left_click_down)
-				{
-					bool left_click_action_resolved = MaybeApplyBrushInPlayMode(play_memory, palete, currentBrush, &ui_state, play_scene_state.timeMachine_edit, play_scene_state.loc_edit, ui_state.mouseGamePos);
-					if (left_click_action_resolved)
-						ui_state.type = ECS_BRUSH;
-				}
-				if (ui_state.backspace_key_down_this_frame)
-				{
-					scene = ST_EDITOR;
-					ui_state.time_since_scene_started = 0;
-					int num_states = play_scene_state.timeMachine_edit->num_gamestates_stored;
-					GameState* state_to_insert = gamestate_clone(&play_scene_state.timeMachine_edit->state_array[num_states - 1], permanent_memory);
-					TimeMachineEditorAction action = gamestate_timemachineaction_create_replace_gamestate(state_to_insert, play_scene_state.editor_position_in_time_machine, play_scene_state.game_name);
-					gamestate_timemachine_editor_take_action(timeMachine, NULL, action);
-				}
-				if (ui_state.shift_key_down_this_frame)
-				{
-					ui_state.type = ECS_EDIT_NAME;
-				}
-				if (ui_state.z_key_down_this_frame)
-				{
-					gamestate_timemachine_undo(play_scene_state.timeMachine);
-				}
-			}
-			else if (ui_state.type == ECS_EDIT_NAME)
-			{
-				if (play_scene_state.game_name_length < GAME_LEVEL_NAME_MAX_SIZE)
-				{
-					for (int i = 0; i < NUM_LETTERS_ON_KEYBOARD - 1; i++)
-					{
-						if (ui_state.letters[i].pressed_this_frame)
-						{
-							//TODO: Slam down the text into our gamestate string!
-							int length = play_scene_state.game_name_length;
-							play_scene_state.game_name[length] = ('a' + (char) i);
-							play_scene_state.game_name[length + 1] = 0;
-							play_scene_state.game_name_length++;
-						}
-					}
-					if (ui_state.spacebar.pressed_this_frame)
-					{
-						int length = play_scene_state.game_name_length;
-						play_scene_state.game_name[length] = ' ';
-						play_scene_state.game_name[length + 1] = 0;
-						play_scene_state.game_name_length++;
-					}
-				}
-				if (play_scene_state.game_name_length > 0)
-				{
-					if (ui_state.backspace_key_down_this_frame)
-					{
-						int length = play_scene_state.game_name_length;
-						play_scene_state.game_name[length - 1] = 0;
-						play_scene_state.game_name_length--;
-					}
-				}
-				if (ui_state.enter.pressed_this_frame)
-				{
-					ui_state.type = ECS_NEUTRAL;
-				}
-
-			}
-#pragma endregion
 #pragma region send draw data to gpu
 			{
 				draw_palette(palete_screen_start, camera_game, camera_viewport, &ui_state, palete_length, palete, layer_draw);
@@ -1158,60 +1296,8 @@ void mainloopfunction()
 			}
 #pragma endregion
 		}
-		else if (scene == ST_PLAY_WORLD)
+		if (scene == ST_PLAY_WORLD)
 		{
-#pragma region save state info before events
-			int old_gamestate_num_player_standing_on = world_scene_state->current_level;
-#pragma endregion
-#pragma region handle_events
-			bool world_action_taken = false;
-			Action action = calculate_what_action_to_take_next_stateful();
-			Direction to_take = action_to_direction(action);
-			if (to_take != Direction::NO_DIRECTION)
-			{
-				world_player_action(world_scene_state, to_take, level_memory);
-				ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-				ui_state.time_since_last_player_action = 0;
-			}
-			if (ui_state.backspace_key_down_this_frame)
-			{
-				scene = ST_EDITOR;
-				ui_state.time_since_scene_started = 0;
-				ui_state.time_since_last_player_action = 0;
-			}
-
-			//after taking an action, if there's suddenly a time machine, that means its time to switch scenes!
-			if (world_scene_state->maybe_time_machine)
-			{
-				//scene = SCENE_TYPE::ST_PLAY_LEVEL;
-				scene = SCENE_TYPE::ST_SHOW_TEXT;
-				ui_state.time_since_scene_started = 0;
-				ui_state.time_since_last_player_action = 0;
-				world_scene_state->maybe_animation = NULL;
-				text_scene_state = level_popup(&world_scene_state->level_names[world_scene_state->current_level * GAME_LEVEL_NAME_MAX_SIZE], text_memory, ui_state.total_time_passed);
-			}
-
-#pragma endregion	
-#pragma region handle_state_update
-			//handle camera
-			{
-				int current_num_player_standing_on = world_scene_state->current_level;
-				if (old_gamestate_num_player_standing_on != current_num_player_standing_on)
-				{
-					world_camera_lerp = 0;
-					GameState* current_gamestate = world_scene_state->level_state[current_num_player_standing_on];
-					IntPair gamestate_pos = world_scene_state->level_position[current_num_player_standing_on];
-					world_camera_goal = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport);
-					world_camera_start = world_camera;
-				}
-				else
-				{
-					world_camera_lerp += delta;
-				}
-				world_camera = math_camera_move_towards_lerp(world_camera_start, world_camera_goal, world_camera_lerp, CAMERA_LERP_TIME);
-				camera = camera_make_matrix(world_camera);
-			}
-#pragma endregion
 #pragma region send draw data to gpu
 			draw_layers_to_gamespace(
 				world_scene_state->level_state,
@@ -1225,109 +1311,28 @@ void mainloopfunction()
 				layer_draw);
 #pragma endregion
 		}
-		else if (scene == ST_PLAY_LEVEL)
+		if (scene == ST_PLAY_LEVEL)
 		{
-#pragma region save state info before events
-			int old_gamestate_num_player_standing_on = world_scene_state->current_level;
-#pragma endregion 
-#pragma region handle events
-			//if we should be allowed to take actions:
-				handle_next_action_stateful(world_scene_state->maybe_time_machine, world_scene_state->level_position[world_scene_state->current_level], &world_scene_state->maybe_animation);
-
-#pragma endregion
-#pragma region handle_state_update
-			//handle camera
-			{
-				int current_num_player_standing_on = world_scene_state->current_level;
-				if (old_gamestate_num_player_standing_on != current_num_player_standing_on)
-				{
-					world_camera_lerp = 0;
-				}
-				else
-				{
-					world_camera_lerp += delta;
-				}
-				GameState* current_gamestate = world_scene_state->level_state[current_num_player_standing_on];
-				IntPair gamestate_pos = world_scene_state->level_position[current_num_player_standing_on];
-				world_camera_goal = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport, 0.3f, 0.3f);
-				world_camera_start = world_camera;
-				//world_camera_goal
-				//world_camera_start
-				//world_camera
-				//camera
-			}
-			world_camera = math_camera_move_towards_lerp(world_camera_start, world_camera_goal, world_camera_lerp, CAMERA_LERP_TIME);
-			camera = camera_make_matrix(world_camera);
-			//handle win update.
-			if (gamestate_is_in_win_condition(&world_scene_state->maybe_time_machine->state_array[world_scene_state->maybe_time_machine->num_gamestates_stored - 1]))
-			{
-				world_scene_state->level_solved[world_scene_state->current_level] = true;
-				int num_states = world_scene_state->maybe_time_machine->num_gamestates_stored;
-				GameState* current_state = &world_scene_state->maybe_time_machine->state_array[num_states - 1];
-				GameState* cloned_state = gamestate_clone(current_state, world_memory);
-				gamestate_crumble(cloned_state);
-				world_scene_state->level_state[world_scene_state->current_level] = cloned_state;
-
-				world_scene_state->maybe_time_machine = NULL;
-			}
-			//handle returning to world map by request.
-			if (ui_state.backspace_key_down_this_frame)
-			{
-				world_scene_state->maybe_time_machine = NULL;
-			}
-			//handle returning to world map by level finished.
-			if (!world_scene_state->maybe_time_machine)
-			{
-				scene = SCENE_TYPE::ST_PLAY_WORLD;
-				ui_state.time_since_scene_started = 0;
-			}
-#pragma endregion
-			if (scene == ST_PLAY_LEVEL)
-			{
 #pragma region send draw data to gpu
-				int world_index_to_draw = world_scene_state->current_level;
-				//draw the static gamestate, or draw the gamestate animation.
+			int world_index_to_draw = world_scene_state->current_level;
+			//draw the static gamestate, or draw the gamestate animation.
+			{
+				int gamestate_index_to_draw = world_scene_state->maybe_time_machine->num_gamestates_stored;
+				GameState* to_draw = &world_scene_state->maybe_time_machine->state_array[gamestate_index_to_draw - 1];
+				int current_level = world_scene_state->current_level;
+				IntPair* to_draw_position = &world_scene_state->level_position[current_level];
+				bool can_draw_movement = world_scene_state->maybe_animation && world_scene_state->maybe_animation->maybe_movement_animation;
+				bool can_draw_curse = world_scene_state->maybe_animation && world_scene_state->maybe_animation->curse_animation;
+				if (can_draw_movement)
 				{
-					int gamestate_index_to_draw = world_scene_state->maybe_time_machine->num_gamestates_stored;
-					GameState* to_draw = &world_scene_state->maybe_time_machine->state_array[gamestate_index_to_draw - 1];
-					int current_level = world_scene_state->current_level;
-					IntPair* to_draw_position = &world_scene_state->level_position[current_level];
-					bool can_draw_movement = world_scene_state->maybe_animation && world_scene_state->maybe_animation->maybe_movement_animation;
-					bool can_draw_curse = world_scene_state->maybe_animation && world_scene_state->maybe_animation->curse_animation;
-					if (can_draw_movement)
+					draw_layer_to_gamespace(&to_draw, to_draw_position, 1, layer_draw, LN_FLOOR);
+					bool done_animating_movement = true;
+					done_animating_movement = draw_animation_to_gamespace(world_scene_state->maybe_animation->maybe_movement_animation, layer_draw, LN_PIECE, ui_state.time_since_last_player_action);
+					if (done_animating_movement)
 					{
-						draw_layer_to_gamespace(&to_draw, to_draw_position, 1, layer_draw, LN_FLOOR);
-						bool done_animating_movement = true;
-						done_animating_movement = draw_animation_to_gamespace(world_scene_state->maybe_animation->maybe_movement_animation, layer_draw, LN_PIECE, ui_state.time_since_last_player_action);
-						if (done_animating_movement)
-						{
-							draw_piece_curses_to_gamespace(&to_draw, to_draw_position, 1, layer_draw, LN_PIECE, world_scene_state->maybe_animation->curse_animation, ui_state.time_since_last_player_action);
-						}
-						else
-						{
-							draw_stationary_piece_curses_to_gamespace(world_scene_state->maybe_animation->maybe_movement_animation,
-								world_scene_state->maybe_animation->curse_animation,
-								&world_scene_state->maybe_animation->old_state,
-								to_draw_position,
-								1,
-								layer_draw,
-								LN_PIECE,
-								ui_state.time_since_last_player_action);
-						}
+						draw_piece_curses_to_gamespace(&to_draw, to_draw_position, 1, layer_draw, LN_PIECE, world_scene_state->maybe_animation->curse_animation, ui_state.time_since_last_player_action);
 					}
 					else
-					{
-						draw_layers_to_gamespace(
-							&to_draw,
-							to_draw_position,
-							1,
-							layer_draw);
-					}
-					if (!can_draw_curse)
-					{
-						draw_curse_to_gamespace(&to_draw, to_draw_position, 1, layer_draw);
-					}
-					else if (can_draw_curse && !can_draw_movement)
 					{
 						draw_stationary_piece_curses_to_gamespace(world_scene_state->maybe_animation->maybe_movement_animation,
 							world_scene_state->maybe_animation->curse_animation,
@@ -1338,42 +1343,49 @@ void mainloopfunction()
 							LN_PIECE,
 							ui_state.time_since_last_player_action);
 					}
-
 				}
-#pragma endregion
-			}
-		}
-		else if (scene == ST_SHOW_TEXT)
-		{
-#pragma region update
-			camera = camera_make_matrix(world_camera);
-			if (text_scene_state->end_time <= ui_state.total_time_passed)
-			{
-				scene = text_scene_state->scene_to_revert_to;
-				ui_state.time_since_scene_started = 0;
-				ui_state.time_since_last_player_action = 0;
-			}
-#pragma endregion
-#pragma region handle_events
-		//TODO: if the player presses the action key (x, for now), the scene immediately ends. if the player presses 
-		if (ui_state.letters['x' - 'a'].pressed_this_frame)
-		{
-			scene = text_scene_state->scene_to_revert_to;
-			ui_state.time_since_scene_started = 0;
-			ui_state.time_since_last_player_action = 0;
-			//TODO.
-		}
-#pragma endregion
-#pragma region send draw data to gpu    
-		draw_text_maximized_centered_to_screen(world_camera,text_scene_state->to_display,&text_draw_info);
-		draw_black_box_over_screen(world_camera, &fullspriteDraw);
-#pragma endregion
-		}
+				else
+				{
+					draw_layers_to_gamespace(
+						&to_draw,
+						to_draw_position,
+						1,
+						layer_draw);
+				}
+				if (!can_draw_curse)
+				{
+					draw_curse_to_gamespace(&to_draw, to_draw_position, 1, layer_draw);
+				}
+				else if (can_draw_curse && !can_draw_movement)
+				{
+					draw_stationary_piece_curses_to_gamespace(world_scene_state->maybe_animation->maybe_movement_animation,
+						world_scene_state->maybe_animation->curse_animation,
+						&world_scene_state->maybe_animation->old_state,
+						to_draw_position,
+						1,
+						layer_draw,
+						LN_PIECE,
+						ui_state.time_since_last_player_action);
+				}
 
+			}
+#pragma endregion
+		}
+		if (scene == ST_SHOW_TEXT)
+		{
+#pragma region send draw data to gpu    
+			draw_text_maximized_centered_to_screen(world_camera, text_scene_state->to_display, &text_draw_info);
+			draw_black_box_over_screen(world_camera, &fullspriteDraw);
+#pragma endregion
+		}
 #pragma region draw gpu data
 
 		//update camera.
 		{
+			if (scene == ST_PLAY_WORLD || scene == ST_PLAY_LEVEL || scene == ST_SHOW_TEXT)
+				camera = camera_make_matrix(world_camera);
+			if (scene == ST_EDITOR || scene == ST_EDIT_LEVEL)
+				camera = camera_make_matrix(camera_game);
 			glUseProgram(spriteShader);
 			shader_set_uniform_mat4(spriteShader, "viewProjectionMatrix", camera);
 			glUseProgram(fullSpriteShader);
@@ -1493,7 +1505,6 @@ void mainloopfunction()
 #pragma endregion 
 		//return running;
 		keep_running_infinite_loop = running;
-	}
 }
 int main(int argc, char *argv[])
 {
