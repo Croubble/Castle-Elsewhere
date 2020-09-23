@@ -17,6 +17,7 @@ TextScene* build_text_scene(std::string to_build, SCENE_TYPE last_scene,Memory* 
 	result->to_display = (char*) memory_alloc(text_memory, to_build.length() + 1);
 	for (int i = 0; i < to_build.length(); i++)
 		result->to_display[i] = to_build[i];
+	result->to_display[to_build.length()] = NULL;
 	result->start_time = start_time;
 	result->end_time = start_time + display_time;
 	result->scene_to_revert_to = last_scene;

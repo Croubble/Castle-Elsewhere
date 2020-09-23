@@ -52,7 +52,7 @@ Memory* play_memory;
 Memory* world_memory;
 Memory* level_memory;
 Memory* animation_memory;
-
+Memory* text_memory;
 //main loop variables.
 SCENE_TYPE scene;
 PlayScene play_scene_state;
@@ -1183,9 +1183,11 @@ void mainloopfunction()
 			//after taking an action, if there's suddenly a time machine, that means its time to switch scenes!
 			if (world_scene_state->maybe_time_machine)
 			{
-				scene = SCENE_TYPE::ST_PLAY_LEVEL;
+				//scene = SCENE_TYPE::ST_PLAY_LEVEL;
+				scene = SCENE_TYPE::ST_SHOW_TEXT;
 				ui_state.time_since_scene_started = 0;
 				ui_state.time_since_last_player_action = 0;
+				text_scene_state = level_popup(&world_scene_state->level_names[world_scene_state->current_level * GAME_LEVEL_NAME_MAX_SIZE], text_memory, ui_state.total_time_passed);
 			}
 
 #pragma endregion	
@@ -1229,10 +1231,7 @@ void mainloopfunction()
 #pragma endregion 
 #pragma region handle events
 			//if we should be allowed to take actions:
-			if (ui_state.time_since_scene_started > DRAW_TITLE_TIME)
-			{
 				handle_next_action_stateful(world_scene_state->maybe_time_machine, world_scene_state->level_position[world_scene_state->current_level], &world_scene_state->maybe_animation);
-			}
 
 #pragma endregion
 #pragma region handle_state_update
@@ -1340,23 +1339,18 @@ void mainloopfunction()
 					}
 
 				}
-
-
-				if (ui_state.time_since_scene_started <= DRAW_TITLE_TIME)
-				{
-					//draw the text.
-					draw_text_maximized_centered_to_screen(world_camera, &world_scene_state->level_names[world_index_to_draw * GAME_LEVEL_NAME_MAX_SIZE], &text_draw_info);
-					draw_black_box_over_screen(world_camera, &fullspriteDraw);
-				}
 #pragma endregion
 			}
 		}
 		else if (scene == ST_SHOW_TEXT)
 		{
 #pragma region update
+			camera = camera_make_matrix(world_camera);
 			if (text_scene_state->end_time <= ui_state.total_time_passed)
 			{
 				scene = text_scene_state->scene_to_revert_to;
+				ui_state.time_since_scene_started = 0;
+				ui_state.time_since_last_player_action = 0;
 			}
 #pragma endregion
 #pragma region handle_events
@@ -1364,14 +1358,17 @@ void mainloopfunction()
 		if (ui_state.letters['x' - 'a'].pressed_this_frame)
 		{
 			scene = text_scene_state->scene_to_revert_to;
+			ui_state.time_since_scene_started = 0;
+			ui_state.time_since_last_player_action = 0;
 			//TODO.
 		}
 #pragma endregion
-#pragma region send draw data to gpu
+#pragma region send draw data to gpu    
 		draw_text_maximized_centered_to_screen(world_camera,text_scene_state->to_display,&text_draw_info);
 		draw_black_box_over_screen(world_camera, &fullspriteDraw);
 #pragma endregion
- }
+		}
+
 #pragma region draw gpu data
 
 		//update camera.
@@ -1543,6 +1540,7 @@ int main(int argc, char *argv[])
 	world_memory = memory_create(10000000);
 	level_memory = memory_create(10000000);
 	animation_memory = memory_create(1000000);
+	text_memory = memory_create(100000);
 	//Clock* clock = clock_create(permanent_memory);
 
 #pragma endregion
