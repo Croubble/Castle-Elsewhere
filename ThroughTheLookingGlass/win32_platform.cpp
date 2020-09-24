@@ -5,6 +5,8 @@
 #include "SaveLoad.h"
 #include "TextScene.h"
 #include "MenuScene.h"
+#include "EditorScene.h"
+
 void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, glm::mat4* camera, bool mouse_moved_this_frame, SCENE_TYPE scene)
 {
 	bool left_click_action_resolved = false;
@@ -45,6 +47,7 @@ bool keep_running_infinite_loop = false;
 //Memory variables.
 Memory* frame_memory;
 Memory* permanent_memory;
+Memory* editor_memory;
 Memory* play_memory;
 Memory* world_memory;
 Memory* level_memory;
@@ -52,6 +55,7 @@ Memory* animation_memory;
 Memory* text_memory;
 //main loop variables.
 SCENE_TYPE scene;
+EditorScene* editor_scene_state;
 PlayScene play_scene_state;
 WorldScene* world_scene_state;
 WorldPlayScene* world_play_scene_state;
@@ -75,8 +79,8 @@ ViewPortCamera camera_viewport;
 glm::mat4 camera;
 
 //time machines.
-TimeMachineEditor* timeMachine;
-TimeMachineEditorStartState* time_machine_start_state;
+//TimeMachineEditor* timeMachine;
+//TimeMachineEditorStartState* time_machine_start_state;
 
 //mouse state:
 glm::vec2 dragging_start_position_in_gamespace = glm::vec2(0, 0);
@@ -86,7 +90,7 @@ Uint32 start_time_ms;
 Uint32 last_frame_time_ms;
 
 //palete
-int palete_length = 16;
+
 int currentBrush = 0;
 GamestateBrush* palete;
 IntPair palete_screen_start;
@@ -149,10 +153,10 @@ SDL_Window* window;
 void load_editor_level_stateful(std::string to_load)
 {
 	std::cout << to_load << std::endl;
+	memory_clear(editor_memory);
 	TimeMachineEditorStartState* res = parse_deserialize_timemachine(to_load, permanent_memory, frame_memory);
-	time_machine_start_state = res;
-	gamestate_timemachine_editor_initialise_from_start(timeMachine, time_machine_start_state);
-	timeMachine->current_number_of_actions = 0;
+	editor_scene_state = editorscene_setup_with_start_state(editor_memory, camera_viewport, res);
+	editor_scene_state->timeMachine->current_number_of_actions = 0;
 	std::cout << "ALL DONE!" << std::endl;
 }
 void resize_screen_stateful(int next_width, int next_height)
@@ -189,7 +193,7 @@ void resize_screen_stateful(int next_width, int next_height)
 void setup_world_screen_stateful()
 {
 	memory_clear(world_memory);
-	world_scene_state = setup_world_scene(timeMachine, world_memory);
+	world_scene_state = setup_world_scene(editor_scene_state->timeMachine, world_memory);
 	scene = ST_PLAY_WORLD;
 	ui_state.time_since_scene_started = 0;
 	//setup world camera.
@@ -569,7 +573,7 @@ void mainloopfunction()
 			if (ui_state.type == ECS_BRUSH)
 			{
 				if (ui_state.mouse_left_click_down)
-					MaybeApplyBrush(palete, currentBrush, &ui_state, timeMachine, ui_state.mouseGamePos);
+					MaybeApplyBrush(palete, currentBrush, &ui_state,editor_scene_state->timeMachine, ui_state.mouseGamePos);
 				else
 					ui_state.type = ECS_NEUTRAL;
 			}
@@ -597,7 +601,7 @@ void mainloopfunction()
 				if (ui_state.letters['p' - 'a'].pressed_this_frame)
 				{
 
-					std::string to_print = parse_serialize_timemachine(timeMachine, frame_memory, frame_memory);
+					std::string to_print = parse_serialize_timemachine(editor_scene_state->timeMachine, frame_memory, frame_memory);
 					save_puzzle_file(to_print);
 					std::cout << to_print << std::endl;
 					//TimeMachineEditorStartState* res = parse_deserialize_timemachine(to_print, permanent_memory, frame_memory);
@@ -609,71 +613,71 @@ void mainloopfunction()
 				//HANDLE expanding width.
 				if (ui_state.letters['w' - 'a'].pressed_this_frame)
 				{
-					int index_clicked = gamestate_timemachine_get_click_collision(timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
-						GameState* state = timeMachine->gamestates[index_clicked];
-						IntPair state_start = timeMachine->gamestates_positions[index_clicked];
+						GameState* state = editor_scene_state->timeMachine->gamestates[index_clicked];
+						IntPair state_start = editor_scene_state->timeMachine->gamestates_positions[index_clicked];
 						IntPair grid_clicked = calculate_floor_cell_clicked(state, state_start, ui_state.mouseGamePos);
 						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
-						GameState* next = gamestate_add_row(state, timeMachine->gamestate_memory, grid_clicked.x, grid_clicked.y);
-						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, &timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
-						gamestate_timemachine_editor_take_action(timeMachine, NULL, action);
+						GameState* next = gamestate_add_row(state, editor_scene_state->timeMachine->gamestate_memory, grid_clicked.x, grid_clicked.y);
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, &editor_scene_state->timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
+						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 
 				}
 				//HANDLE exapnding height.
 				if (ui_state.letters['h' - 'a'].pressed_this_frame)
 				{
-					int index_clicked = gamestate_timemachine_get_click_collision(timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
-						GameState* state = timeMachine->gamestates[index_clicked];
-						IntPair state_start = timeMachine->gamestates_positions[index_clicked];
+						GameState* state = editor_scene_state->timeMachine->gamestates[index_clicked];
+						IntPair state_start = editor_scene_state->timeMachine->gamestates_positions[index_clicked];
 						IntPair grid_clicked = calculate_floor_cell_clicked(state, state_start, ui_state.mouseGamePos);
 						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
 						GameState* next = gamestate_add_column(state, permanent_memory, grid_clicked.x, grid_clicked.y);
-						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, &timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
-						gamestate_timemachine_editor_take_action(timeMachine, NULL, action);
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, &editor_scene_state->timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
+						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 				}
 				//HANDLE surrounding level with crates.
 				if (ui_state.letters['c' - 'a'].pressed_this_frame)
 				{
-					int index_clicked = gamestate_timemachine_get_click_collision(timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
-						GameState* state = timeMachine->gamestates[index_clicked];
+						GameState* state = editor_scene_state->timeMachine->gamestates[index_clicked];
 						GameState* next = gamestate_surround_with_walls(state, permanent_memory);
-						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, &timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
-						gamestate_timemachine_editor_take_action(timeMachine, NULL, action);
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, &editor_scene_state->timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
+						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 				}
 				//HANDLE DELETE GAMESTATE
 				if (ui_state.click_left_down_this_frame && ui_state.control_key_down)
 				{
-					int index_clicked = gamestate_timemachine_get_click_collision(timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
-						GameState* currentState = timeMachine->gamestates[index_clicked];
+						GameState* currentState = editor_scene_state->timeMachine->gamestates[index_clicked];
 						TimeMachineEditorAction action = gamestate_timemachineaction_create_delete_gamestate(index_clicked);
-						gamestate_timemachine_editor_take_action(timeMachine, NULL, action);
+						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 						left_click_action_resolved = true;
 					}
 				}
 				//HANDLE play mode clicking on a gamestate.
 				if (ui_state.click_left_down_this_frame && ui_state.alt_key_down && !left_click_action_resolved)
 				{
-					int index_clicked = gamestate_timemachine_get_click_collision(timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
 						//get the gamestate we want. 
-						GameState* start_state = timeMachine->gamestates[index_clicked];
+						GameState* start_state = editor_scene_state->timeMachine->gamestates[index_clicked];
 
 						//create the play_scene_state scene based on that gamestate.
 						play_scene_state.timeMachine = gamestate_timemachine_create(start_state, play_memory, max_actions_in_puzzle);
 						play_scene_state.timeMachine_edit = gamestate_timemachine_create(start_state, play_memory, max_actions_in_puzzle);
-						play_scene_state.loc = timeMachine->gamestates_positions[index_clicked];
+						play_scene_state.loc = editor_scene_state->timeMachine->gamestates_positions[index_clicked];
 						play_scene_state.loc_edit = play_scene_state.loc;
 						play_scene_state.loc_edit.x += (start_state->w + 2);
 						play_scene_state.editor_position_in_time_machine = index_clicked;
@@ -682,8 +686,8 @@ void mainloopfunction()
 							play_scene_state.game_name[i] = 0;
 						}
 						play_scene_state.game_name_length = 0;
-						strcpy_s(play_scene_state.game_name, &timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
-						play_scene_state.game_name_length = (int) strlen(&timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
+						strcpy_s(play_scene_state.game_name, &editor_scene_state->timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
+						play_scene_state.game_name_length = (int) strlen(&editor_scene_state->timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
 						//switch our scene to that gamestate.
 						scene = ST_EDIT_LEVEL;
 						ui_state.time_since_scene_started = 0;
@@ -693,19 +697,19 @@ void mainloopfunction()
 				//HANDLE clicking on a gamestate.
 				if (ui_state.click_left_down_this_frame && !ui_state.shift_key_down && !left_click_action_resolved)
 				{
-					left_click_action_resolved = MaybeApplyBrush(palete, currentBrush, &ui_state, timeMachine, ui_state.mouseGamePos);
+					left_click_action_resolved = MaybeApplyBrush(palete, currentBrush, &ui_state, editor_scene_state->timeMachine, ui_state.mouseGamePos);
 				}
 				//HANDLE clicking on a gamestates edge.
 				if (ui_state.mouse_left_click_down && !ui_state.shift_key_down && !left_click_action_resolved)
 				{
 					//determine if we are clicking on a gamestate border.
-					for (int i = 0; i < timeMachine->current_number_of_gamestates; i++)
+					for (int i = 0; i < editor_scene_state->timeMachine->current_number_of_gamestates; i++)
 					{
-						float box_left = (float) timeMachine->gamestates_positions[i].x;
-						float box_width = (float) timeMachine->gamestates[i]->w;
+						float box_left = (float)editor_scene_state->timeMachine->gamestates_positions[i].x;
+						float box_width = (float)editor_scene_state->timeMachine->gamestates[i]->w;
 						float box_right = box_left + box_width;
-						float box_down = (float) timeMachine->gamestates_positions[i].y;
-						float box_height = (float) timeMachine->gamestates[i]->h;
+						float box_down = (float)editor_scene_state->timeMachine->gamestates_positions[i].y;
+						float box_height = (float)editor_scene_state->timeMachine->gamestates[i]->h;
 						float box_up = box_down + box_height;
 						AABB left = math_AABB_create(box_left - OUTLINE_DRAW_SIZE,
 							box_down - OUTLINE_DRAW_SIZE,
@@ -753,7 +757,7 @@ void mainloopfunction()
 				//HANDLE shift clicking on a gamestate
 				if (ui_state.mouse_left_click_down && ui_state.shift_key_down)
 				{
-					int index_clicked = gamestate_timemachine_get_click_collision(timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
 						ui_state.type = ECS_MOVE_GAMESTATE;
@@ -775,7 +779,7 @@ void mainloopfunction()
 					TimeMachineEditorAction action;
 					action.action = TM_UNDO;
 					action.u.remove.gamestate_index = -1;
-					gamestate_timemachine_editor_take_action(timeMachine, time_machine_start_state, action);
+					gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, editor_scene_state->time_machine_start_state, action);
 					left_click_action_resolved = true;
 				}
 
@@ -788,8 +792,8 @@ void mainloopfunction()
 					//determine (using ints to round down) how far away from the starting position we are.
 					glm::vec2 offset = ui_state.mouseGamePos - dragging_start_position_in_gamespace;
 					//get the width and height of the targetted gamestate.
-					IntPair targetted_gamestate_position = timeMachine->gamestates_positions[ui_state.un.resize.dragging_gamestate_index];
-					GameState* targetted_gamestate = timeMachine->gamestates[ui_state.un.resize.dragging_gamestate_index];
+					IntPair targetted_gamestate_position = editor_scene_state->timeMachine->gamestates_positions[ui_state.un.resize.dragging_gamestate_index];
+					GameState* targetted_gamestate = editor_scene_state->timeMachine->gamestates[ui_state.un.resize.dragging_gamestate_index];
 					int targetted_gamestate_width = targetted_gamestate->w;
 					int targetted_gamestate_height = targetted_gamestate->h;
 
@@ -866,11 +870,11 @@ void mainloopfunction()
 					if (changeOccured)
 					{
 						AABB* boxes = gamestate_create_colliders(frame_memory,
-							timeMachine->gamestates,
-							timeMachine->gamestates_positions,
-							timeMachine->current_number_of_gamestates,
+							editor_scene_state->timeMachine->gamestates,
+							editor_scene_state->timeMachine->gamestates_positions,
+							editor_scene_state->timeMachine->current_number_of_gamestates,
 							ui_state.un.resize.dragging_gamestate_index);
-						bool changeValid = !math_AABB_is_colliding(next, boxes, timeMachine->current_number_of_gamestates - 1);
+						bool changeValid = !math_AABB_is_colliding(next, boxes, editor_scene_state->timeMachine->current_number_of_gamestates - 1);
 						if (changeValid)
 						{
 							IntPair next_size;
@@ -881,7 +885,7 @@ void mainloopfunction()
 							displacement.y = (int) (-next.y + targetted_gamestate_position.y);
 							TimeMachineEditorAction action =
 								gamestate_timemachineaction_create_resize_gamsestate(ui_state.un.resize.dragging_gamestate_index, next, displacement);
-							gamestate_timemachine_editor_take_action(timeMachine, NULL, action);
+							gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 						}
 
 					}
@@ -894,13 +898,13 @@ void mainloopfunction()
 				if (ui_state.click_left_up_this_frame)
 				{
 					//calculate the space we are currently under
-					AABB next = calculate_outline_from_move_info(frame_memory, timeMachine, ui_state);
+					AABB next = calculate_outline_from_move_info(frame_memory, editor_scene_state->timeMachine, ui_state);
 					AABB* boxes = gamestate_create_colliders(frame_memory,
-						timeMachine->gamestates,
-						timeMachine->gamestates_positions,
-						timeMachine->current_number_of_gamestates,
+						editor_scene_state->timeMachine->gamestates,
+						editor_scene_state->timeMachine->gamestates_positions,
+						editor_scene_state->timeMachine->current_number_of_gamestates,
 						ui_state.un.move.moving_gamestate_index);
-					bool changeValid = !math_AABB_is_colliding(next, boxes, timeMachine->current_number_of_gamestates - 1);
+					bool changeValid = !math_AABB_is_colliding(next, boxes, editor_scene_state->timeMachine->current_number_of_gamestates - 1);
 					if (changeValid)
 					{
 						//calculate the distance between that space and the starting space.
@@ -909,7 +913,7 @@ void mainloopfunction()
 						IntPair offset = math_intpair_create((int)distance.x, (int)distance.y);
 						//create a move action, and apply it to the timeMachine.
 						TimeMachineEditorAction action = gamestate_timemachineaction_create_move_gamestate(ui_state.un.move.moving_gamestate_index, offset);
-						gamestate_timemachine_editor_take_action(timeMachine, NULL, action);
+						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 
 
@@ -923,17 +927,17 @@ void mainloopfunction()
 				if (ui_state.click_left_up_this_frame)
 				{
 					//calculate the space we are currently under
-					AABB next = calculate_outline_from_create_info(frame_memory, timeMachine, ui_state);
+					AABB next = calculate_outline_from_create_info(frame_memory, editor_scene_state->timeMachine, ui_state);
 					AABB* boxes = gamestate_create_colliders(frame_memory,
-						timeMachine->gamestates,
-						timeMachine->gamestates_positions,
-						timeMachine->current_number_of_gamestates);
-					bool successful_plant = !math_AABB_is_colliding(next, boxes, timeMachine->current_number_of_gamestates);
+						editor_scene_state->timeMachine->gamestates,
+						editor_scene_state->timeMachine->gamestates_positions,
+						editor_scene_state->timeMachine->current_number_of_gamestates);
+					bool successful_plant = !math_AABB_is_colliding(next, boxes, editor_scene_state->timeMachine->current_number_of_gamestates);
 					if (successful_plant)
 					{
-						AABB current_outline = calculate_outline_from_create_info(frame_memory, timeMachine, ui_state);
+						AABB current_outline = calculate_outline_from_create_info(frame_memory, editor_scene_state->timeMachine, ui_state);
 						TimeMachineEditorAction action = gamestate_timemachineaction_create_create_action((int) current_outline.x, (int) current_outline.y, (int) current_outline.w, (int) current_outline.h);
-						gamestate_timemachine_editor_take_action(timeMachine, NULL, action);
+						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 					ui_state.type = ECS_NEUTRAL;
 				}
@@ -977,7 +981,7 @@ void mainloopfunction()
 					int num_states = play_scene_state.timeMachine_edit->num_gamestates_stored;
 					GameState* state_to_insert = gamestate_clone(&play_scene_state.timeMachine_edit->state_array[num_states - 1], permanent_memory);
 					TimeMachineEditorAction action = gamestate_timemachineaction_create_replace_gamestate(state_to_insert, play_scene_state.editor_position_in_time_machine, play_scene_state.game_name);
-					gamestate_timemachine_editor_take_action(timeMachine, NULL, action);
+					gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 				}
 				if (ui_state.shift_key_down_this_frame)
 				{
@@ -1173,16 +1177,16 @@ void mainloopfunction()
 				if (ui_state.type == ECS_RESIZE_GAMESTATE)
 				{
 					skip_index = ui_state.un.resize.dragging_gamestate_index;
-					outline = calculate_outline_position_from_drag_info(frame_memory, timeMachine, ui_state, dragging_start_position_in_gamespace);
+					outline = calculate_outline_position_from_drag_info(frame_memory, editor_scene_state->timeMachine, ui_state, dragging_start_position_in_gamespace);
 				}
 				if (ui_state.type == ECS_MOVE_GAMESTATE)
 				{
-					outline = calculate_outline_from_move_info(frame_memory, timeMachine, ui_state);
+					outline = calculate_outline_from_move_info(frame_memory, editor_scene_state->timeMachine, ui_state);
 					skip_index = ui_state.un.move.moving_gamestate_index;
 				}
 				if (ui_state.type == ECS_CREATE_GAMESTATE)
 				{
-					outline = calculate_outline_from_create_info(frame_memory, timeMachine, ui_state);
+					outline = calculate_outline_from_create_info(frame_memory, editor_scene_state->timeMachine, ui_state);
 				}
 				if (skip_index >= 0 || ui_state.type == ECS_CREATE_GAMESTATE)
 				{
@@ -1201,9 +1205,9 @@ void mainloopfunction()
 			//parse gamestate outlines.
 			{
 				draw_gamestates_outlines_to_gamespace(
-					timeMachine->gamestates,
-					timeMachine->gamestates_positions,
-					timeMachine->current_number_of_gamestates,
+					editor_scene_state->timeMachine->gamestates,
+					editor_scene_state->timeMachine->gamestates_positions,
+					editor_scene_state->timeMachine->current_number_of_gamestates,
 					&fullspriteDraw,
 					skip_index);
 			}
@@ -1229,14 +1233,14 @@ void mainloopfunction()
 			//parse gamestates
 			{
 				draw_layers_to_gamespace(
-					timeMachine->gamestates,
-					timeMachine->gamestates_positions,
-					timeMachine->current_number_of_gamestates,
+					editor_scene_state->timeMachine->gamestates,
+					editor_scene_state->timeMachine->gamestates_positions,
+					editor_scene_state->timeMachine->current_number_of_gamestates,
 					layer_draw);
 
-				draw_curse_to_gamespace(timeMachine->gamestates,
-					timeMachine->gamestates_positions,
-					timeMachine->current_number_of_gamestates,
+				draw_curse_to_gamespace(editor_scene_state->timeMachine->gamestates,
+					editor_scene_state->timeMachine->gamestates_positions,
+					editor_scene_state->timeMachine->current_number_of_gamestates,
 					layer_draw);
 			}
 			//parse palette data to gpu form
@@ -1245,18 +1249,18 @@ void mainloopfunction()
 			{
 				for (int z = 0; z < skip_index; z++)
 				{
-					int w = timeMachine->gamestates[z]->w;
-					int h = timeMachine->gamestates[z]->h;
-					IntPair startPos = timeMachine->gamestates_positions[z];
+					int w = editor_scene_state->timeMachine->gamestates[z]->w;
+					int h = editor_scene_state->timeMachine->gamestates[z]->h;
+					IntPair startPos = editor_scene_state->timeMachine->gamestates_positions[z];
 					dotted_positions_cpu[dotted_total_drawn] = glm::vec3(startPos.x - 0.15f, startPos.y - 0.15f, 8);
 					dotted_scale_cpu[dotted_total_drawn] = glm::vec2(w + 0.30f, h + 0.30f);
 					dotted_total_drawn++;
 				}
-				for (int z = skip_index + 1; z < timeMachine->current_number_of_gamestates; z++)
+				for (int z = skip_index + 1; z < editor_scene_state->timeMachine->current_number_of_gamestates; z++)
 				{
-					int w = timeMachine->gamestates[z]->w;
-					int h = timeMachine->gamestates[z]->h;
-					IntPair startPos = timeMachine->gamestates_positions[z];
+					int w = editor_scene_state->timeMachine->gamestates[z]->w;
+					int h = editor_scene_state->timeMachine->gamestates[z]->h;
+					IntPair startPos = editor_scene_state->timeMachine->gamestates_positions[z];
 					dotted_positions_cpu[dotted_total_drawn] = glm::vec3(startPos.x - 0.15f, startPos.y - 0.15f, 8);
 					dotted_scale_cpu[dotted_total_drawn] = glm::vec2(w + 0.30f, h + 0.30f);
 					dotted_total_drawn++;
@@ -1265,12 +1269,12 @@ void mainloopfunction()
 			//draw text.
 			{
 				//draw_text_to_screen(glm::vec3(0, 0, 0), "FINALLY!", text_draw_info.string_matrix_cpu, text_draw_info.string_atlas_cpu, text_draw_info.true_font_reference, text_draw_info.text_positions, text_draw_info.text_positions_normalized, &string_total_drawn, SCREEN_STARTING_HEIGHT / ui_state.game_height_current);
-				int len = timeMachine->current_number_of_gamestates;
+				int len = editor_scene_state->timeMachine->current_number_of_gamestates;
 				for (int i = 0; i < len; i++)
 				{
-					char* name = &timeMachine->names[i * GAME_LEVEL_NAME_MAX_SIZE];
-					float x_pos = (float)timeMachine->gamestates_positions[i].x;
-					float y_pos = (float)(timeMachine->gamestates_positions[i].y + timeMachine->gamestates[i]->h) + 0.2f;
+					char* name = &editor_scene_state->timeMachine->names[i * GAME_LEVEL_NAME_MAX_SIZE];
+					float x_pos = (float)editor_scene_state->timeMachine->gamestates_positions[i].x;
+					float y_pos = (float)(editor_scene_state->timeMachine->gamestates_positions[i].y + editor_scene_state->timeMachine->gamestates[i]->h) + 0.2f;
 					glm::vec3 draw_pos = glm::vec3(x_pos, y_pos, 0);
 					//draw_text_to_screen(draw_pos, name, string_matrix_cpu, string_atlas_cpu, string_true_font_reference, text_positions, text_positions_normalized, &string_total_drawn, SCREEN_STARTING_HEIGHT / ui_state.game_height_current);
 					draw_text_to_screen(draw_pos, glm::vec2(1, 1), name, &text_draw_info);
@@ -1565,6 +1569,7 @@ int main(int argc, char *argv[])
 	printf("Hello world abc\n");
 	frame_memory = memory_create(1000000);
 	permanent_memory = memory_create(10000000);
+	editor_memory = memory_create(10000000);
 	play_memory = memory_create(3000000);
 	world_memory = memory_create(10000000);
 	level_memory = memory_create(10000000);
@@ -2144,21 +2149,10 @@ int main(int argc, char *argv[])
 		scene = ST_EDITOR;
 		//PlayScene play_scene_state;
 		world_scene_state = NULL;
-
-		//time machine setup
-		timeMachine = gamestate_timemachine_editor_create(permanent_memory, memory_create(10000000));
-		time_machine_start_state = (TimeMachineEditorStartState *) memory_alloc(permanent_memory,sizeof(TimeMachineEditorStartState));
-		gamestate_timemachine_startstate_empty_init(time_machine_start_state);
-		gamestate_timemachine_editor_initialise_from_start(timeMachine,time_machine_start_state);
-
-
-		//glm::vec2 dragging_start_position_in_gamespace = glm::vec2(0, 0);
-
+		//setup ui
 		ui_state = click_ui_init(permanent_memory);
-
-		//frame clock state:
-		//Uint32 start_time_ms = SDL_GetTicks();
-		//Uint32 last_frame_time_ms = SDL_GetTicks();
+		//time machine setup
+		editor_scene_state = editorscene_setup(editor_memory, camera_viewport);
 
 
 		palete = (GamestateBrush*) memory_alloc(permanent_memory, sizeof(GamestateBrush) * palete_length);

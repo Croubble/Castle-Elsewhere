@@ -259,5 +259,8 @@
     <ClInclude Include="MenuScene.h">
       <Filter>Source Files\EditorFilter</Filter>
     </ClInclude>
+    <ClInclude Include="EditorScene.h">
+      <Filter>Source Files\EditorFilter</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
