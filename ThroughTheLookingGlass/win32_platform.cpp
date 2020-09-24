@@ -154,7 +154,7 @@ void load_editor_level_stateful(std::string to_load)
 {
 	std::cout << to_load << std::endl;
 	memory_clear(editor_memory);
-	TimeMachineEditorStartState* res = parse_deserialize_timemachine(to_load, permanent_memory, frame_memory);
+	TimeMachineEditorStartState* res = parse_deserialize_timemachine(to_load, editor_memory, frame_memory);
 	editor_scene_state = editorscene_setup_with_start_state(editor_memory, camera_viewport, res);
 	editor_scene_state->timeMachine->current_number_of_actions = 0;
 	std::cout << "ALL DONE!" << std::endl;

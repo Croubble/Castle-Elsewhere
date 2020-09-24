@@ -18,7 +18,6 @@ EditorScene* editorscene_setup_with_start_state(Memory* editor_memory, ViewPortC
 	EditorScene* result = (EditorScene*)memory_alloc(editor_memory, sizeof(EditorScene));
 	result->timeMachine = gamestate_timemachine_editor_create(editor_memory, memory_create(10000000));
 	result->time_machine_start_state = start_state;
-	gamestate_timemachine_startstate_empty_init(result->time_machine_start_state);
 	gamestate_timemachine_editor_initialise_from_start(result->timeMachine, result->time_machine_start_state);
 
 	result->palete = (GamestateBrush*)memory_alloc(editor_memory, sizeof(GamestateBrush) * palete_length);
