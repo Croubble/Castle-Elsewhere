@@ -91,9 +91,9 @@ Uint32 last_frame_time_ms;
 
 //palete
 
-int currentBrush = 0;
-GamestateBrush* palete;
-IntPair palete_screen_start;
+//int currentBrush = 0;
+//GamestateBrush* palete;
+//IntPair palete_screen_start;
 
 //Shader nonsense
 Shader spriteShader;
@@ -512,7 +512,7 @@ void mainloopfunction()
 			//HANDLE clicking on the palette.
 			if (ui_state.click_left_down_this_frame && !ui_state.shift_key_down && !left_click_action_resolved)
 			{
-				glm::vec2 palete_gamespace_start = math_screenspace_to_gamespace(palete_screen_start, camera_game, camera_viewport, ui_state.game_height_current);
+				glm::vec2 palete_gamespace_start = math_screenspace_to_gamespace(editor_scene_state->palete_screen_start, camera_game, camera_viewport, ui_state.game_height_current);
 				bool clickedPalete = math_click_is_inside_AABB(
 					palete_gamespace_start.x,
 					palete_gamespace_start.y,
@@ -525,7 +525,7 @@ void mainloopfunction()
 					//calculate what palete cell we actually clicked;
 					float percentageX = percent_between_two_points(ui_state.mouseGamePos.x, palete_gamespace_start.x, palete_gamespace_start.x + palete_length);
 					int palete_cell_clicked = (int)(percentageX * palete_length);
-					currentBrush = palete_cell_clicked;
+					editor_scene_state->currentBrush = palete_cell_clicked;
 					//apply the brush.
 					left_click_action_resolved = true;
 
@@ -573,7 +573,7 @@ void mainloopfunction()
 			if (ui_state.type == ECS_BRUSH)
 			{
 				if (ui_state.mouse_left_click_down)
-					MaybeApplyBrush(palete, currentBrush, &ui_state,editor_scene_state->timeMachine, ui_state.mouseGamePos);
+					MaybeApplyBrush(editor_scene_state->palete,editor_scene_state->currentBrush, &ui_state,editor_scene_state->timeMachine, ui_state.mouseGamePos);
 				else
 					ui_state.type = ECS_NEUTRAL;
 			}
@@ -697,7 +697,7 @@ void mainloopfunction()
 				//HANDLE clicking on a gamestate.
 				if (ui_state.click_left_down_this_frame && !ui_state.shift_key_down && !left_click_action_resolved)
 				{
-					left_click_action_resolved = MaybeApplyBrush(palete, currentBrush, &ui_state, editor_scene_state->timeMachine, ui_state.mouseGamePos);
+					left_click_action_resolved = MaybeApplyBrush(editor_scene_state->palete, editor_scene_state->currentBrush, &ui_state, editor_scene_state->timeMachine, ui_state.mouseGamePos);
 				}
 				//HANDLE clicking on a gamestates edge.
 				if (ui_state.mouse_left_click_down && !ui_state.shift_key_down && !left_click_action_resolved)
@@ -953,7 +953,7 @@ void mainloopfunction()
 			if (ui_state.type == ECS_BRUSH)
 			{
 				if (ui_state.mouse_left_click_down)
-					bool left_click_action_resolved = MaybeApplyBrushInPlayMode(play_memory, palete, currentBrush, &ui_state, play_scene_state.timeMachine_edit, play_scene_state.loc_edit, ui_state.mouseGamePos);
+					bool left_click_action_resolved = MaybeApplyBrushInPlayMode(play_memory, editor_scene_state->palete, editor_scene_state->currentBrush, &ui_state, play_scene_state.timeMachine_edit, play_scene_state.loc_edit, ui_state.mouseGamePos);
 				else
 					ui_state.type = ECS_NEUTRAL;
 			}
@@ -970,7 +970,7 @@ void mainloopfunction()
 				}
 				if (ui_state.mouse_left_click_down)
 				{
-					bool left_click_action_resolved = MaybeApplyBrushInPlayMode(play_memory, palete, currentBrush, &ui_state, play_scene_state.timeMachine_edit, play_scene_state.loc_edit, ui_state.mouseGamePos);
+					bool left_click_action_resolved = MaybeApplyBrushInPlayMode(play_memory, editor_scene_state->palete, editor_scene_state->currentBrush, &ui_state, play_scene_state.timeMachine_edit, play_scene_state.loc_edit, ui_state.mouseGamePos);
 					if (left_click_action_resolved)
 						ui_state.type = ECS_BRUSH;
 				}
@@ -1244,7 +1244,7 @@ void mainloopfunction()
 					layer_draw);
 			}
 			//parse palette data to gpu form
-			draw_palette(palete_screen_start, camera_game, camera_viewport, &ui_state, palete_length, palete, layer_draw);
+			draw_palette(editor_scene_state->palete_screen_start, camera_game, camera_viewport, &ui_state, palete_length, editor_scene_state->palete, layer_draw);
 			//parse dotted data to gpu form.
 			{
 				for (int z = 0; z < skip_index; z++)
@@ -1286,7 +1286,7 @@ void mainloopfunction()
 		{
 #pragma region send draw data to gpu
 			{
-				draw_palette(palete_screen_start, camera_game, camera_viewport, &ui_state, palete_length, palete, layer_draw);
+				draw_palette(editor_scene_state->palete_screen_start, camera_game, camera_viewport, &ui_state, palete_length, editor_scene_state->palete, layer_draw);
 
 				GameState* play_draw = &play_scene_state.timeMachine->state_array[play_scene_state.timeMachine->num_gamestates_stored - 1];
 				GameState* edit_draw = &play_scene_state.timeMachine_edit->state_array[play_scene_state.timeMachine_edit->num_gamestates_stored - 1];
@@ -2153,31 +2153,6 @@ int main(int argc, char *argv[])
 		ui_state = click_ui_init(permanent_memory);
 		//time machine setup
 		editor_scene_state = editorscene_setup(editor_memory, camera_viewport);
-
-
-		palete = (GamestateBrush*) memory_alloc(permanent_memory, sizeof(GamestateBrush) * palete_length);
-		palete_screen_start = math_intpair_create(camera_viewport.left + 60, camera_viewport.up - 120);
-		{ 
-			int i = 0;
-			palete[i++] = gamestate_brush_create(true,F_NONE,true,P_NONE);
-			palete[i++] = gamestate_brush_create(true, F_TARGET, false, P_NONE);
-			palete[i++] = gamestate_brush_create(true, F_START, false, P_NONE);
-			palete[i++] = gamestate_brush_create(true, F_CURSE, false, P_NONE);
-			palete[i++] = gamestate_brush_create(true, F_CLEANSE, false, P_NONE);
-			palete[i++] = gamestate_brush_create(true, F_LURKING_WALL, false, P_NONE);
-			palete[i++] = gamestate_brush_create(false, F_NONE, true, Piece::P_NONE);
-			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_WALL);
-			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_WALL_ALT);
-			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRUMBLE);
-			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE);
-			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_PULL_CRATE);
-			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_PLAYER);
-			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CURSED_CRATE);
-			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CURSED_PULL_CRATE);
-			palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CURSED_PLAYER);
-			if (i != palete_length)
-				abort();
-		}
 	#pragma endregion
 
 #ifdef EMSCRIPTEN
