@@ -13,7 +13,7 @@ Animations* animation_build_from_world(GameActionJournal* journal, GamestateTime
 	return animations_build(journal, to_draw, draw_position, animation_memory, Z_POSITION_STARTING_LAYER + LN_PIECE);
 }
 
-void world_player_action(WorldScene* scene, Direction action, Memory* level_memory)
+WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory* level_memory)
 {
 	//grab some useful information that we will reuse.
 	IntPair move = direction_to_intpair(action);
@@ -75,7 +75,7 @@ void world_player_action(WorldScene* scene, Direction action, Memory* level_memo
 			if (!found_move)
 			{
 				//if there isn't anywhere to move, there is no more work to be done, just leave the function and return.
-				return;
+				return NULL;
 			}
 		}
 	}
@@ -87,7 +87,7 @@ void world_player_action(WorldScene* scene, Direction action, Memory* level_memo
 		if (next_state->layers[LN_PIECE][next_square_position_1d] != P_NONE)
 		{
 			//we can't make the action, its invalid. Just reeturn.
-			return;
+			return NULL;
 		}
 	}
 
@@ -114,10 +114,17 @@ void world_player_action(WorldScene* scene, Direction action, Memory* level_memo
 				GameState* next_scene_before_extrude = scene->level_state[scene->current_level];
 				GameState* next_scene = gamestate_clone(next_scene_before_extrude, level_memory);
 				gamestate_extrude_lurking_walls(next_scene);
-				scene->maybe_time_machine = gamestate_timemachine_create(next_scene, level_memory, 1024);
+				WorldPlayScene* result = (WorldPlayScene*) memory_alloc(level_memory, sizeof(WorldPlayScene));
+				//result->draw_position;
+				//scene->maybe_time_machine = gamestate_timemachine_create(next_scene, level_memory, 1024);
+				result->time_machine = gamestate_timemachine_create(next_scene, level_memory, 1024);
+				result->draw_position = scene->level_position[next_square_level];
+				result->maybe_animation = NULL;
+				return result;
 			}
 		}
 	}
+	return NULL;
 }
 
 WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene_memory)

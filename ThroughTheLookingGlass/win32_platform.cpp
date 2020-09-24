@@ -54,6 +54,7 @@ Memory* text_memory;
 SCENE_TYPE scene;
 PlayScene play_scene_state;
 WorldScene* world_scene_state;
+WorldPlayScene* world_play_scene_state;
 TextScene* text_scene_state;
 Direction last_move_taken = NO_DIRECTION;
 int screen_width = 800;
@@ -1023,7 +1024,7 @@ void mainloopfunction()
 			Direction to_take = action_to_direction(action);
 			if (to_take != Direction::NO_DIRECTION)
 			{
-				world_player_action(world_scene_state, to_take, level_memory);
+				world_play_scene_state = world_player_action(world_scene_state, to_take, level_memory);
 				ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
 				ui_state.time_since_last_player_action = 0;
 			}
@@ -1035,13 +1036,12 @@ void mainloopfunction()
 			}
 
 			//after taking an action, if there's suddenly a time machine, that means its time to switch scenes!
-			if (world_scene_state->maybe_time_machine)
+			if (world_play_scene_state != NULL)
 			{
 				//scene = SCENE_TYPE::ST_PLAY_LEVEL;
 				scene = SCENE_TYPE::ST_SHOW_TEXT;
 				ui_state.time_since_scene_started = 0;
 				ui_state.time_since_last_player_action = 0;
-				world_scene_state->maybe_animation = NULL;
 				text_scene_state = level_popup(&world_scene_state->level_names[world_scene_state->current_level * GAME_LEVEL_NAME_MAX_SIZE], text_memory, ui_state.total_time_passed);
 			}
 
@@ -1074,7 +1074,7 @@ void mainloopfunction()
 #pragma endregion 
 #pragma region handle events
 			//if we should be allowed to take actions:
-				handle_next_action_stateful(world_scene_state->maybe_time_machine, world_scene_state->level_position[world_scene_state->current_level], &world_scene_state->maybe_animation);
+				handle_next_action_stateful(world_play_scene_state->time_machine,world_play_scene_state->draw_position, &world_play_scene_state->maybe_animation);
 
 #pragma endregion
 #pragma region handle_state_update
@@ -1101,26 +1101,26 @@ void mainloopfunction()
 			world_camera = math_camera_move_towards_lerp(world_camera_start, world_camera_goal, world_camera_lerp, CAMERA_LERP_TIME);
 			//camera = camera_make_matrix(world_camera);
 			//handle win update.
-			if (gamestate_is_in_win_condition(&world_scene_state->maybe_time_machine->state_array[world_scene_state->maybe_time_machine->num_gamestates_stored - 1]))
+			if (gamestate_is_in_win_condition(&world_play_scene_state->time_machine->state_array[world_play_scene_state->time_machine->num_gamestates_stored - 1]))
 			{
 				world_scene_state->level_solved[world_scene_state->current_level] = true;
-				int num_states = world_scene_state->maybe_time_machine->num_gamestates_stored;
-				GameState* current_state = &world_scene_state->maybe_time_machine->state_array[num_states - 1];
+				int num_states = world_play_scene_state->time_machine->num_gamestates_stored;
+				GameState* current_state = &world_play_scene_state->time_machine->state_array[num_states - 1];
 				GameState* cloned_state = gamestate_clone(current_state, world_memory);
 				gamestate_crumble(cloned_state);
 				world_scene_state->level_state[world_scene_state->current_level] = cloned_state;
-
-				world_scene_state->maybe_time_machine = NULL;
+				world_play_scene_state->time_machine = NULL;
 			}
 			//handle returning to world map by request.
 			if (ui_state.backspace_key_down_this_frame)
 			{
-				world_scene_state->maybe_time_machine = NULL;
+				world_play_scene_state->time_machine = NULL;
 			}
 			//handle returning to world map by level finished.
-			if (!world_scene_state->maybe_time_machine)
+			if (!world_play_scene_state->time_machine)
 			{
 				scene = SCENE_TYPE::ST_PLAY_WORLD;
+				world_play_scene_state = NULL;
 				ui_state.time_since_scene_started = 0;
 			}
 #pragma endregion
@@ -1317,26 +1317,27 @@ void mainloopfunction()
 			int world_index_to_draw = world_scene_state->current_level;
 			//draw the static gamestate, or draw the gamestate animation.
 			{
-				int gamestate_index_to_draw = world_scene_state->maybe_time_machine->num_gamestates_stored;
-				GameState* to_draw = &world_scene_state->maybe_time_machine->state_array[gamestate_index_to_draw - 1];
+				int gamestate_index_to_draw = world_play_scene_state->time_machine->num_gamestates_stored;
+				GameState* to_draw = &world_play_scene_state->time_machine->state_array[gamestate_index_to_draw - 1];
 				int current_level = world_scene_state->current_level;
-				IntPair* to_draw_position = &world_scene_state->level_position[current_level];
-				bool can_draw_movement = world_scene_state->maybe_animation && world_scene_state->maybe_animation->maybe_movement_animation;
-				bool can_draw_curse = world_scene_state->maybe_animation && world_scene_state->maybe_animation->curse_animation;
+				IntPair* to_draw_position = &world_play_scene_state->draw_position;
+				//IntPair* to_draw_position = &world_scene_state->level_position[current_level];
+				bool can_draw_movement = world_play_scene_state->maybe_animation && world_play_scene_state->maybe_animation->maybe_movement_animation;
+				bool can_draw_curse = world_play_scene_state->maybe_animation && world_play_scene_state->maybe_animation->curse_animation;
 				if (can_draw_movement)
 				{
 					draw_layer_to_gamespace(&to_draw, to_draw_position, 1, layer_draw, LN_FLOOR);
 					bool done_animating_movement = true;
-					done_animating_movement = draw_animation_to_gamespace(world_scene_state->maybe_animation->maybe_movement_animation, layer_draw, LN_PIECE, ui_state.time_since_last_player_action);
+					done_animating_movement = draw_animation_to_gamespace(world_play_scene_state->maybe_animation->maybe_movement_animation, layer_draw, LN_PIECE, ui_state.time_since_last_player_action);
 					if (done_animating_movement)
 					{
-						draw_piece_curses_to_gamespace(&to_draw, to_draw_position, 1, layer_draw, LN_PIECE, world_scene_state->maybe_animation->curse_animation, ui_state.time_since_last_player_action);
+						draw_piece_curses_to_gamespace(&to_draw, to_draw_position, 1, layer_draw, LN_PIECE, world_play_scene_state->maybe_animation->curse_animation, ui_state.time_since_last_player_action);
 					}
 					else
 					{
-						draw_stationary_piece_curses_to_gamespace(world_scene_state->maybe_animation->maybe_movement_animation,
-							world_scene_state->maybe_animation->curse_animation,
-							&world_scene_state->maybe_animation->old_state,
+						draw_stationary_piece_curses_to_gamespace(world_play_scene_state->maybe_animation->maybe_movement_animation,
+							world_play_scene_state->maybe_animation->curse_animation,
+							&world_play_scene_state->maybe_animation->old_state,
 							to_draw_position,
 							1,
 							layer_draw,
@@ -1358,9 +1359,9 @@ void mainloopfunction()
 				}
 				else if (can_draw_curse && !can_draw_movement)
 				{
-					draw_stationary_piece_curses_to_gamespace(world_scene_state->maybe_animation->maybe_movement_animation,
-						world_scene_state->maybe_animation->curse_animation,
-						&world_scene_state->maybe_animation->old_state,
+					draw_stationary_piece_curses_to_gamespace(world_play_scene_state->maybe_animation->maybe_movement_animation,
+						world_play_scene_state->maybe_animation->curse_animation,
+						&world_play_scene_state->maybe_animation->old_state,
 						to_draw_position,
 						1,
 						layer_draw,
