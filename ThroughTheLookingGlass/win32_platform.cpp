@@ -4,7 +4,7 @@
 #include "string.h"
 #include "SaveLoad.h"
 #include "TextScene.h"
-
+#include "MenuScene.h"
 void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, glm::mat4* camera, bool mouse_moved_this_frame, SCENE_TYPE scene)
 {
 	bool left_click_action_resolved = false;
@@ -56,6 +56,7 @@ PlayScene play_scene_state;
 WorldScene* world_scene_state;
 WorldPlayScene* world_play_scene_state;
 TextScene* text_scene_state;
+MenuScene* menu_scene_state;
 Direction last_move_taken = NO_DIRECTION;
 int screen_width = 800;
 int screen_height = 600;
@@ -202,6 +203,21 @@ void setup_world_screen_stateful()
 	world_camera_lerp = CAMERA_LERP_TIME;
 }
 
+void menu_action_new_game()
+{
+	//TODO:
+	//load using the default level name, the default world. into the world editor. (construct the world edit scene)
+	//convert that default world to a world, then load the world scene.
+}
+void menu_action_continue_game()
+{
+	//TODO:
+	//for now, we are just going to be exactly the same as new game. 
+}
+void menu_action_level_editor()
+{
+	//TODO: we open the level editor scene with an empty scene. Real easy.
+}
 /// we want to statefully calculate what action the player should take based upon two things.
 /// 1. the editor UI, i.e. what buttons have been pressed recently.
 /// 2. Action last_action_taken, i.e. what action did we last take?

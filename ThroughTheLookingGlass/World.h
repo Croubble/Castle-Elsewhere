@@ -14,8 +14,6 @@ struct WorldScene
 	GameState* level_state[MAX_NUMBER_GAMESTATES];
 	IntPair level_position[MAX_NUMBER_GAMESTATES];
 	bool level_solved[MAX_NUMBER_GAMESTATES];
-	GamestateTimeMachine* maybe_time_machine;
-	Animations* maybe_animation;
 };
 
 struct WorldPlayScene

@@ -226,6 +226,7 @@
     <ClInclude Include="MainHelpers.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Memory.h" />
+    <ClInclude Include="MenuScene.h" />
     <ClInclude Include="Parse.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="PreludeIncludes.h" />

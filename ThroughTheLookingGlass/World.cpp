@@ -132,8 +132,6 @@ WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene
 	WorldScene* result = (WorldScene*)memory_alloc(world_scene_memory, sizeof(WorldScene));
 	const int num_gamestates = build_from->current_number_of_gamestates;
 	result->num_levels = num_gamestates;
-	result->maybe_time_machine = NULL;
-	result->maybe_animation = NULL;
 	for (int i = 0; i < num_gamestates; i++)
 	{
 		result->level_position[i] = build_from->gamestates_positions[i];
