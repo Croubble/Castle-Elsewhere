@@ -47,6 +47,7 @@ bool keep_running_infinite_loop = false;
 //Memory variables.
 Memory* frame_memory;
 Memory* permanent_memory;
+Memory* menu_memory;
 Memory* editor_memory;
 Memory* play_memory;
 Memory* world_memory;
@@ -90,10 +91,6 @@ Uint32 start_time_ms;
 Uint32 last_frame_time_ms;
 
 //palete
-
-//int currentBrush = 0;
-//GamestateBrush* palete;
-//IntPair palete_screen_start;
 
 //Shader nonsense
 Shader spriteShader;
@@ -152,6 +149,11 @@ SDL_Window* window;
 //these functions are also embarassingly global, they are going into our big class later.
 void load_editor_level_stateful(std::string to_load)
 {
+	int bar = 3;
+	{
+		int bar = 4;
+		bar++;
+	}
 	std::cout << to_load << std::endl;
 	memory_clear(editor_memory);
 	TimeMachineEditorStartState* res = parse_deserialize_timemachine(to_load, editor_memory, frame_memory);
@@ -510,7 +512,7 @@ void mainloopfunction()
 		{
 			HandleSharedEvents(&ui_state, &camera_game, &camera, mouse_moved_this_frame, scene);
 			//HANDLE clicking on the palette.
-			if (ui_state.click_left_down_this_frame && !ui_state.shift_key_down && !left_click_action_resolved)
+			if (ui_state.click_left_down_this_frame && !ui_state.shift_key_down && !left_click_action_resolved && scene == SCENE_TYPE::ST_EDITOR)
 			{
 				glm::vec2 palete_gamespace_start = math_screenspace_to_gamespace(editor_scene_state->palete_screen_start, camera_game, camera_viewport, ui_state.game_height_current);
 				bool clickedPalete = math_click_is_inside_AABB(
@@ -1166,6 +1168,29 @@ void mainloopfunction()
 		}
 #pragma endregion
 		}
+		else if (scene == ST_MENU)
+		{
+#pragma region handle_events
+		//handle the player pressing up arrow // 'w', or down arrow // 's', which changes menu.
+		if (ui_state.letters['w' - 'a'].pressed_this_frame)
+		{
+			menu_scene_state->current_highlighted_button += 1;
+			menu_scene_state->current_highlighted_button = mini(menu_scene_state->current_highlighted_button, menu_scene_state->num_buttons);
+		
+		}
+		//handle the player pressing enter, or the action key 'x', which routes the current buttons callback to 
+		if (ui_state.letters['s' - 'a'].pressed_this_frame)
+		{
+			menu_scene_state->current_highlighted_button -= 1;
+			menu_scene_state->current_highlighted_button = maxi(menu_scene_state->current_highlighted_button, 0);
+		}
+		if (ui_state.letters['x' - 'a'].pressed_this_frame)
+		{
+			int current_button = menu_scene_state->current_highlighted_button;
+			menu_scene_state->buttons[current_button].callback();
+		}
+#pragma endregion
+		}
 
 		if (scene == ST_EDITOR)
 		{
@@ -1399,6 +1424,16 @@ void mainloopfunction()
 			draw_black_box_over_screen(world_camera, &fullspriteDraw);
 #pragma endregion
 		}
+		if (scene == ST_MENU)
+		{
+#pragma region send draw data to gpu
+		//draw the first text
+			for (int i = 0; i < menu_scene_state->num_buttons; i++)
+			{
+				//TODO: actually draw.
+			}
+#pragma endregion
+		}
 #pragma region draw gpu data
 
 		//update camera.
@@ -1569,6 +1604,7 @@ int main(int argc, char *argv[])
 	printf("Hello world abc\n");
 	frame_memory = memory_create(1000000);
 	permanent_memory = memory_create(10000000);
+	menu_memory = memory_create(1000000);
 	editor_memory = memory_create(10000000);
 	play_memory = memory_create(3000000);
 	world_memory = memory_create(10000000);
@@ -2146,13 +2182,14 @@ int main(int argc, char *argv[])
 	#pragma endregion
 #pragma region MAIN_LOOP_INIT
 		//MAIN LOOP
-		scene = ST_EDITOR;
-		//PlayScene play_scene_state;
-		world_scene_state = NULL;
+		//	scene = ST_EDITOR;
+
+		scene = ST_MENU;
+		menu_scene_state = setup_main_menu(menu_memory, menu_action_new_game, menu_action_continue_game, menu_action_level_editor);
 		//setup ui
 		ui_state = click_ui_init(permanent_memory);
 		//time machine setup
-		editor_scene_state = editorscene_setup(editor_memory, camera_viewport);
+		//editor_scene_state = editorscene_setup(editor_memory, camera_viewport);
 	#pragma endregion
 
 #ifdef EMSCRIPTEN
