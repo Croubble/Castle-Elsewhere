@@ -12,7 +12,7 @@ struct Memory
 
 void* memory_alloc(Memory* memory, int numBytes)
 {
-	int bytesToAddToMemoryToConserveAlignment = numBytes % alignBoundary;
+	int bytesToAddToMemoryToConserveAlignment = (alignBoundary -  (numBytes % alignBoundary)) % alignBoundary;
 	int finalBytes = numBytes + bytesToAddToMemoryToConserveAlignment;
 
 	//check for overflow memory.

@@ -262,5 +262,8 @@
     <ClInclude Include="EditorScene.h">
       <Filter>Source Files\EditorFilter</Filter>
     </ClInclude>
+    <ClInclude Include="TextDraw.h">
+      <Filter>Source Files\EditorFilter</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

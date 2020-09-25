@@ -238,6 +238,7 @@
     <ClInclude Include="Side.h" />
     <ClInclude Include="Sprites.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="TextDraw.h" />
     <ClInclude Include="TextScene.h" />
     <ClInclude Include="TextureAtlas.h" />
     <ClInclude Include="tinyfiledialogs.h" />

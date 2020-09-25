@@ -136,6 +136,7 @@ glm::vec2* dotted_scale_cpu;
 GLuint string_VAO;
 GLuint string_atlas_buffer;
 GLuint string_matrix_buffer;
+GLuint string_color_buffer;
 TextDrawInfo text_draw_info;
 
 GamespriteDrawInfo gamespriteDrawInfo;
@@ -219,10 +220,17 @@ void menu_action_continue_game()
 {
 	//TODO:
 	//for now, we are just going to be exactly the same as new game. 
+	std::string to_load = resource_load_puzzle_file("world3");
+	load_editor_level_stateful(to_load);
+	setup_world_screen_stateful();
+	std::cout << "TRIGGERING COUNTINUE GAME" << std::endl;
 }
 void menu_action_level_editor()
 {
 	//TODO: we open the level editor scene with an empty scene. Real easy.
+	std::cout << "TRIGGERING LEVEL EDITOR" << std::endl;
+	scene = SCENE_TYPE::ST_EDITOR;
+	editor_scene_state = editorscene_setup(editor_memory, camera_viewport);
 }
 /// we want to statefully calculate what action the player should take based upon two things.
 /// 1. the editor UI, i.e. what buttons have been pressed recently.
@@ -1428,11 +1436,23 @@ void mainloopfunction()
 		{
 #pragma region send draw data to gpu
 		//draw the first text
-			for (int i = 0; i < menu_scene_state->num_buttons; i++)
 			{
-				//TODO: actually draw.
+				//draw all the text.
+				//get the camera, and break it into i + 2 chunks.
+				GameSpaceCamera camera_fifth;
+				float fifth_w = (camera_game.left + camera_game.right) / 5.0f;
+				camera_fifth.left = camera_game.left + fifth_w;
+				camera_fifth.right = camera_game.right - fifth_w;
+				float fifth_h = (camera_game.up - camera_game.down) / 5.0f;
+				camera_fifth.down = camera_game.down + fifth_h;
+				camera_fifth.up = camera_fifth.down + fifth_h;
+				for (int i = 0; i < menu_scene_state->num_buttons; i++)
+				{
+					draw_text_maximized_centered_to_screen(camera_fifth, menu_scene_state->buttons[i].button_text, &text_draw_info);
+					camera_fifth.down += fifth_h;
+					camera_fifth.up += fifth_h;
+				}
 			}
-#pragma endregion
 		}
 #pragma region draw gpu data
 
@@ -1537,7 +1557,8 @@ void mainloopfunction()
 			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4) * *text_draw_info.current_number_drawn, text_draw_info.string_atlas_cpu);
 			glBindBuffer(GL_ARRAY_BUFFER, string_matrix_buffer);
 			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::mat4) * *text_draw_info.current_number_drawn, text_draw_info.string_matrix_cpu);
-
+			glBindBuffer(GL_ARRAY_BUFFER, string_color_buffer);
+			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4)** text_draw_info.current_number_drawn, text_draw_info.string_color_cpu);
 			glBindTexture(GL_TEXTURE_2D, string_texture);
 			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, *text_draw_info.current_number_drawn);
 
@@ -1951,9 +1972,12 @@ int main(int argc, char *argv[])
 	#pragma endregion
 	#pragma region string GPU setup
 		shader_use(stringShader);
+
 		text_draw_info.current_number_drawn = (int*) memory_alloc(permanent_memory,sizeof(int));
+		*text_draw_info.current_number_drawn = 0;
 		text_draw_info.string_atlas_cpu = (glm::vec4*) memory_alloc(permanent_memory, MAX_NUM_CHARACTERS * sizeof(glm::vec4));
 		text_draw_info.string_matrix_cpu = (glm::mat4*) memory_alloc(permanent_memory, MAX_NUM_CHARACTERS * sizeof(glm::mat4));
+		text_draw_info.string_color_cpu = (glm::vec4*) memory_alloc(permanent_memory, MAX_NUM_CHARACTERS * sizeof(glm::vec4));
 		{
 			glGenVertexArrays(1, &string_VAO);
 			std::cout << glGetError() << ":261" << std::endl;
@@ -1973,8 +1997,8 @@ int main(int argc, char *argv[])
 			glGenBuffers(1, &string_matrix_buffer);
 			glBindBuffer(GL_ARRAY_BUFFER, string_matrix_buffer);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4)* MAX_NUM_CHARACTERS, NULL, GL_DYNAMIC_DRAW);
-
-			int matrixOffset = 3;	//value hardcoded from text.vs
+			
+			int matrixOffset = 4;	//value hardcoded from text.vs
 			glVertexAttribPointer(matrixOffset, 4, GL_FLOAT, false, 16 * sizeof(float), (void*)0);
 			glVertexAttribPointer(matrixOffset + 1, 4, GL_FLOAT, false, 16 * sizeof(float), (void*)(4 * sizeof(float)));
 
@@ -1989,14 +2013,24 @@ int main(int argc, char *argv[])
 			glVertexAttribDivisor(matrixOffset + 2, 1);
 			glVertexAttribDivisor(matrixOffset + 3, 1);
 
+			int atlasOffset = 2;
+
 			glGenBuffers(1, &string_atlas_buffer);
 			glBindBuffer(GL_ARRAY_BUFFER, string_atlas_buffer);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4)* MAX_NUM_CHARACTERS, NULL, GL_DYNAMIC_DRAW);
 
-			int atlasOffset = 2;
 			glVertexAttribPointer(atlasOffset, 4, GL_FLOAT, false, 4 * sizeof(float), (void*)(0));
 			glEnableVertexAttribArray(atlasOffset);
 			glVertexAttribDivisor(atlasOffset, 1);
+
+			int textColor = 3;
+			
+			glGenBuffers(1, &string_color_buffer);
+			glBindBuffer(GL_ARRAY_BUFFER, string_color_buffer);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4)* MAX_NUM_CHARACTERS, NULL, GL_DYNAMIC_DRAW);
+
+			glVertexAttribPointer(textColor, 4, GL_FLOAT, false, 4 * sizeof(float), (void*)(0));
+			glEnableVertexAttribArray(textColor);
 		}
 	#pragma endregion 
 	#pragma region Camera Setup And UtilStructs
@@ -2193,9 +2227,7 @@ int main(int argc, char *argv[])
 	#pragma endregion
 
 #ifdef EMSCRIPTEN
-		std::string to_load = resource_load_puzzle_file("world3");
-		load_editor_level_stateful(to_load);
-		setup_world_screen_stateful();
+
 		emscripten_set_main_loop(mainloopfunction, 0, 0);
 #else
 		while (true)
@@ -2273,46 +2305,7 @@ float draw_text_to_screen(glm::vec3 start_position,
 }
 */
 
-float draw_text_to_screen(glm::vec3 start_position, glm::vec2 scale, const char* c_string, TextDrawInfo* info)
-{
-	//TODO: get info.current_number_drawn to replace the other number we were using.
-	glm::vec3 next_position = start_position;
-	int draw = *info->current_number_drawn;
-	for (; c_string[0]; c_string++)
-	{
-		char c = c_string[0];
 
-		//handle the position of the character.
-		float horizontal_space = info->text_positions[c].w / FONT_CHARACTER_HEIGHT;
-
-		float x_start = (next_position.x + info->true_font_reference[c].Bearing.x) / float(FONT_CHARACTER_HEIGHT);
-		float y_start = (next_position.y - (info->true_font_reference[c].Size.y - info->true_font_reference[c].Bearing.y) * scale.y) / float(FONT_CHARACTER_HEIGHT);
-		float w = (info->true_font_reference[c].Size.x) / float(FONT_CHARACTER_HEIGHT);
-		float h = info->true_font_reference[c].Size.y / float(FONT_CHARACTER_HEIGHT);
-
-		if (c != ' ')
-		{
-			glm::vec3 start_position = glm::vec3(next_position.x + x_start, next_position.y + y_start, next_position.z);
-			info->string_matrix_cpu[draw] = glm::mat4(1.0f);
-			info->string_matrix_cpu[draw] = glm::translate(info->string_matrix_cpu[draw], start_position);
-			info->string_matrix_cpu[draw] = glm::scale(info->string_matrix_cpu[draw], glm::vec3(w * scale.x, h * scale.y, 1));
-
-			//handle what character should be drawn.
-			AABB box = info->text_positions_normalized[c];
-			glm::vec4 to_atlas_output = glm::vec4(box.x, box.y, box.x + box.w, box.y + box.h);
-			info->string_atlas_cpu[draw] = to_atlas_output;
-
-			draw++;
-		}
-
-		//we always increment the draw foward, even when we don't draw stuff like an empty space.
-		float x_pixels_in_gamespace = (info->true_font_reference[c].advance >> 6) / float(FONT_CHARACTER_HEIGHT);
-		next_position.x += (x_pixels_in_gamespace * scale.x);
-
-	}
-	*info->current_number_drawn = draw;
-	return next_position.x - start_position.x;
-}
 AABB calculate_outline_from_create_info(Memory* frame_memory, TimeMachineEditor* timeMachine, EditorUIState ui_state)
 {
 	IntPair current_position = math_intpair_create((int) floor(ui_state.mouseGamePos.x), (int) floor(ui_state.mouseGamePos.y));
