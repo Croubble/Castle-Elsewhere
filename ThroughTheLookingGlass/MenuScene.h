@@ -35,7 +35,7 @@ MenuScene* setup_main_menu(Memory* menu_memory, ButtonCallback new_game, ButtonC
 	result->buttons = (MenuButton*) memory_alloc(menu_memory, sizeof(MenuButton) * 3);
 	char* first = char_alloc(menu_memory, "New Game");
 	result->buttons[0].button_text = first;
-	result->buttons[1].button_text = char_alloc(menu_memory,"Continue");
+	result->buttons[1].button_text = char_alloc(menu_memory,"Continuey");
 	result->buttons[2].button_text = char_alloc(menu_memory,"Level Editor");
 	result->buttons[0].callback = new_game;
 	result->buttons[1].callback = continue_game;

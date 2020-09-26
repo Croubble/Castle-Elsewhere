@@ -127,9 +127,11 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 	return NULL;
 }
 
-WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene_memory)
+WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene_memory, SCENE_TYPE go_to_on_backspace)
 {
 	WorldScene* result = (WorldScene*)memory_alloc(world_scene_memory, sizeof(WorldScene));
+	result->go_to_on_backspace = go_to_on_backspace;
+
 	const int num_gamestates = build_from->current_number_of_gamestates;
 	result->num_levels = num_gamestates;
 	for (int i = 0; i < num_gamestates; i++)
@@ -171,4 +173,21 @@ WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene
 		}
 	}
 	return result;
+}
+
+bool any_levels_left_active(WorldScene* to_check)
+{
+	for (int i = 0; i < to_check->num_levels; i++)
+	{
+		GameState* state = to_check->level_state[i];
+		int w = state->w;
+		int h = state->h;
+		int len = w * h;
+		for (int z = 0; z < len; z++)
+		{
+			if (state->layers[LN_FLOOR][z] == Floor::F_START)
+				return true;
+		}
+	}
+	return false;
 }

@@ -193,10 +193,10 @@ void resize_screen_stateful(int next_width, int next_height)
 	//if we are in world scene mode, resize the world camera goal and snap the world camera start to that position as well.
 
 }
-void setup_world_screen_stateful()
+void setup_world_screen_stateful(SCENE_TYPE go_to_on_backspace)
 {
 	memory_clear(world_memory);
-	world_scene_state = setup_world_scene(editor_scene_state->timeMachine, world_memory);
+	world_scene_state = setup_world_scene(editor_scene_state->timeMachine, world_memory, go_to_on_backspace);
 	scene = ST_PLAY_WORLD;
 	ui_state.time_since_scene_started = 0;
 	//setup world camera.
@@ -222,7 +222,7 @@ void menu_action_continue_game()
 	//for now, we are just going to be exactly the same as new game. 
 	std::string to_load = resource_load_puzzle_file("world3");
 	load_editor_level_stateful(to_load);
-	setup_world_screen_stateful();
+	setup_world_screen_stateful(SCENE_TYPE::ST_MENU);
 	std::cout << "TRIGGERING COUNTINUE GAME" << std::endl;
 }
 void menu_action_level_editor()
@@ -592,7 +592,7 @@ void mainloopfunction()
 				//HANDLE entering game.
 				if (ui_state.letters['m' - 'a'].pressed_this_frame)
 				{
-					setup_world_screen_stateful();
+					setup_world_screen_stateful(SCENE_TYPE::ST_EDITOR);
 				}
 				//HANDLE opening game file.
 				if (ui_state.letters['o' - 'a'].pressed_this_frame)
@@ -1060,7 +1060,7 @@ void mainloopfunction()
 			}
 			if (ui_state.backspace_key_down_this_frame)
 			{
-				scene = ST_EDITOR;
+				scene = world_scene_state->go_to_on_backspace;
 				ui_state.time_since_scene_started = 0;
 				ui_state.time_since_last_player_action = 0;
 			}
@@ -1105,6 +1105,14 @@ void mainloopfunction()
 #pragma region handle events
 			//if we should be allowed to take actions:
 				handle_next_action_stateful(world_play_scene_state->time_machine,world_play_scene_state->draw_position, &world_play_scene_state->maybe_animation);
+			//if we have solved all the levels, finish.
+				if (any_levels_left_active(world_scene_state))
+				{
+					scene = SCENE_TYPE::ST_SHOW_TEXT;
+					ui_state.time_since_scene_started = 0;
+					ui_state.time_since_last_player_action = 0;
+					text_scene_state = level_popup_customtime("Winner! Thanks for playing.", text_memory, ui_state.total_time_passed,5.0f);
+				}
 
 #pragma endregion
 #pragma region handle_state_update
@@ -1183,7 +1191,7 @@ void mainloopfunction()
 		if (ui_state.letters['w' - 'a'].pressed_this_frame)
 		{
 			menu_scene_state->current_highlighted_button += 1;
-			menu_scene_state->current_highlighted_button = mini(menu_scene_state->current_highlighted_button, menu_scene_state->num_buttons);
+			menu_scene_state->current_highlighted_button = mini(menu_scene_state->current_highlighted_button, menu_scene_state->num_buttons - 1);
 		
 		}
 		//handle the player pressing enter, or the action key 'x', which routes the current buttons callback to 
@@ -1449,6 +1457,8 @@ void mainloopfunction()
 				for (int i = 0; i < menu_scene_state->num_buttons; i++)
 				{
 					draw_text_maximized_centered_to_screen(camera_fifth, menu_scene_state->buttons[i].button_text, &text_draw_info);
+					if (i == menu_scene_state->current_highlighted_button)
+						draw_black_box_over_screen(camera_fifth, &fullspriteDraw);
 					camera_fifth.down += fifth_h;
 					camera_fifth.up += fifth_h;
 				}
@@ -1460,7 +1470,7 @@ void mainloopfunction()
 		{
 			if (scene == ST_PLAY_WORLD || scene == ST_PLAY_LEVEL || scene == ST_SHOW_TEXT)
 				camera = camera_make_matrix(world_camera);
-			if (scene == ST_EDITOR || scene == ST_EDIT_LEVEL)
+			if (scene == ST_EDITOR || scene == ST_EDIT_LEVEL || scene == ST_MENU)
 				camera = camera_make_matrix(camera_game);
 			glUseProgram(spriteShader);
 			shader_set_uniform_mat4(spriteShader, "viewProjectionMatrix", camera);
