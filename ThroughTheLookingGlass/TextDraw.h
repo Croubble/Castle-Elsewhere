@@ -152,21 +152,9 @@ void draw_text_maximized_centered_to_screen(GameSpaceCamera camera, char* string
 	LineBounds bounds = get_linebounds_space_consumed_by_text(screen_center, glm::vec2(1, 1), string_to_draw, text_draw_info);
 	float text_width = get_horizontal_space_consumed_by_text(screen_center, glm::vec2(1, 1), string_to_draw, text_draw_info);
 	float text_height = bounds.y_top - bounds.y_bot;
-	Line camera_line;
-	Line unscaled_text_line;
+	
 
-	camera_line.bot = camera.down;
-	camera_line.top = camera.up;
-	camera_line.length = camera.up - camera.down;
-	camera_line.center = (camera.up + camera.down) / 2.0f;
 
-	unscaled_text_line.bot = bounds.y_bot;
-	unscaled_text_line.top = bounds.y_top;
-	unscaled_text_line.length = bounds.y_top - bounds.y_bot;
-	unscaled_text_line.center = (bounds.y_top + bounds.y_bot) / 2.0f;
-
-	float max_scale_x_screenspace;
-	float max_scale_y_screenspace;
 	float x_dist = camera.right - camera.left;
 	float y_dist = camera.up - camera.down;
 	float x_scale = x_dist / text_width;
@@ -175,9 +163,12 @@ void draw_text_maximized_centered_to_screen(GameSpaceCamera camera, char* string
 
 	float start_text_y_true_start;
 	{
-		float scaled_text_line_length = unscaled_text_line.length * scale;
+		float camera_length = camera.up - camera.down;
+		float unscaled_text_line_length = bounds.y_top - bounds.y_bot;
 
-		float vertical_space = camera_line.length - scaled_text_line_length;
+		float scaled_text_line_length = unscaled_text_line_length * scale;
+
+		float vertical_space = y_dist - scaled_text_line_length;
 		float half_vertical_space = vertical_space / 2.0f;
 
 		float start_ratio = percentage_between(bounds.y_bot, bounds.y_top, 0);

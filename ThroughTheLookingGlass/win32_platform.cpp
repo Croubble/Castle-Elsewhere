@@ -1070,7 +1070,15 @@ void mainloopfunction()
 				ui_state.time_since_scene_started = 0;
 				ui_state.time_since_last_player_action = 0;
 			}
-
+			
+			//if we have solved all the levels, finish.
+			if (!any_levels_left_active(world_scene_state))
+			{
+				scene = SCENE_TYPE::ST_SHOW_TEXT;
+				ui_state.time_since_scene_started = 0;
+				ui_state.time_since_last_player_action = 0;
+				text_scene_state = build_text_scene("Winner! Thanks for playing.", SCENE_TYPE::ST_MENU, text_memory, ui_state.total_time_passed, 5.0f);
+			}
 			//after taking an action, if there's suddenly a time machine, that means its time to switch scenes!
 			if (world_play_scene_state != NULL)
 			{
@@ -1111,14 +1119,7 @@ void mainloopfunction()
 #pragma region handle events
 			//if we should be allowed to take actions:
 				handle_next_action_stateful(world_play_scene_state->time_machine,world_play_scene_state->draw_position, &world_play_scene_state->maybe_animation);
-			//if we have solved all the levels, finish.
-				if (any_levels_left_active(world_scene_state))
-				{
-					scene = SCENE_TYPE::ST_SHOW_TEXT;
-					ui_state.time_since_scene_started = 0;
-					ui_state.time_since_last_player_action = 0;
-					text_scene_state = level_popup_customtime("Winner! Thanks for playing.", text_memory, ui_state.total_time_passed,5.0f);
-				}
+
 
 #pragma endregion
 #pragma region handle_state_update
@@ -2231,15 +2232,10 @@ int main(int argc, char *argv[])
 
 	#pragma endregion
 #pragma region MAIN_LOOP_INIT
-		//MAIN LOOP
-		//	scene = ST_EDITOR;
-
 		scene = ST_MENU;
 		menu_scene_state = setup_main_menu(menu_memory, menu_action_new_game, menu_action_continue_game, menu_action_level_editor);
 		//setup ui
 		ui_state = click_ui_init(permanent_memory);
-		//time machine setup
-		//editor_scene_state = editorscene_setup(editor_memory, camera_viewport);
 	#pragma endregion
 
 #ifdef EMSCRIPTEN
