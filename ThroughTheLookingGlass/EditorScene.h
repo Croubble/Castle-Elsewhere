@@ -50,5 +50,6 @@ EditorScene* editorscene_setup(Memory* editor_memory, ViewPortCamera camera_view
 {
 	memory_clear(editor_memory);
 	TimeMachineEditorStartState* pass = (TimeMachineEditorStartState*)memory_alloc(editor_memory, sizeof(TimeMachineEditorStartState));
+	gamestate_timemachine_startstate_empty_init(pass);
 	return editorscene_setup_with_start_state(editor_memory, camera_viewport, pass);
 }

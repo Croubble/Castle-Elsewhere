@@ -569,6 +569,12 @@ void mainloopfunction()
 #pragma region handle_events
 			//now that we've polled all the events, we try and find out what we need to do.
 			bool mouse_moved_this_frame = ui_state.mousePos.x != ui_state.mouse_last_pos.x || ui_state.mousePos.y != ui_state.mouse_last_pos.y;
+			if (ui_state.backspace_key_down_this_frame)
+			{
+				scene = SCENE_TYPE::ST_MENU;
+				ui_state.time_since_scene_started = 0;
+				ui_state.time_since_last_player_action = 0;
+			}
 			if (ui_state.update_actual_screen_size)
 			{
 				//rebuild the editor camera. 
