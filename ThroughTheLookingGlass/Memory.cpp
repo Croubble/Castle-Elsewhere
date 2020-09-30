@@ -39,3 +39,12 @@ Memory* memory_create(int numBytes)
 	memory->memoryStart = malloc(numBytes);
 	return memory;
 }
+
+void memory_pop_stack(Memory* memory, void* pointer)
+{
+	char* ptr_core = (char*) memory->memoryStart;
+	char* ptr_bigger = (char*) pointer;
+	int distance = (int) (ptr_bigger - ptr_core);
+	int result = (int)distance;
+	memory->currentOffset = distance;
+}

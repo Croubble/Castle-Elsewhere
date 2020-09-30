@@ -176,7 +176,7 @@ void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scop
 /*****************************GAMESTATE TIME MACHINE******************/
 /*********************************************************************/
 void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scope_memory);
-void gamestate_timemachine_undo(GamestateTimeMachine* timeMachine);
+void* gamestate_timemachine_undo(GamestateTimeMachine* timeMachine);
 GameState* gamestate_timemachine_get_latest_gamestate(GamestateTimeMachine* timeMachine);
 GamestateTimeMachine* gamestate_timemachine_create(GameState* start_state, Memory* memory, int max_num_gamestates);
 GameActionJournal* gamestate_timemachine_take_action(GamestateTimeMachine* timeMachine, Direction action, Memory* scope_memory, Memory* temp_memory);

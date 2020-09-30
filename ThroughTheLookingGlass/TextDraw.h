@@ -49,7 +49,6 @@ float get_horizontal_space_consumed_by_text(glm::vec3 start_position, glm::vec2 
 	*info->current_number_drawn = draw;
 	return next_position.x - start_position.x;
 }
-
 LineBounds get_linebounds_space_consumed_by_text(glm::vec3 start_position, glm::vec2 scale, const char* c_string, TextDrawInfo* info)
 {
 	//TODO: get info.current_number_drawn to replace the other number we were using.
@@ -83,7 +82,6 @@ LineBounds get_linebounds_space_consumed_by_text(glm::vec3 start_position, glm::
 	result.line_length = next_position.x - start_position.x;
 	return result;
 }
-
 float draw_text_to_screen(glm::vec3 start_position, glm::vec2 scale, const char* c_string, TextDrawInfo* info)
 {
 	//TODO: get info.current_number_drawn to replace the other number we were using.
@@ -191,3 +189,99 @@ void draw_text_maximized_centered_to_screen(GameSpaceCamera camera, char* string
 //	float x_start = screen_center.x - (text_width * x_scale) / 2.0f;
 	draw_text_to_screen(glm::vec3(start_text_x_true_start, start_text_y_true_start, screen_center.z), glm::vec2(x_scale, x_scale), string_to_draw, text_draw_info);
 }
+
+GameSpaceCamera* break_camera_into_columns(GameSpaceCamera area, int column, Memory* scope_memory)
+{
+	GameSpaceCamera* result = (GameSpaceCamera*) memory_alloc(scope_memory, sizeof(GameSpaceCamera) * column);
+	float length = area.right - area.down;
+	float split_length = length / (float)column;
+	for (int i = 0; i < column; i++)
+	{
+		result[i].up = area.up;
+		result[i].down = area.down;
+		result[i].left = area.left + split_length * i;
+		result[i].right = area.left + split_length * (i + 1);
+		result[i].closePoint = area.closePoint;
+		result[i].farPoint = area.farPoint;
+	}
+	return result;
+}
+
+GameSpaceCamera* break_camera_into_rows(GameSpaceCamera area, int rows, Memory* scope_memory)
+{
+	GameSpaceCamera* result = (GameSpaceCamera*)memory_alloc(scope_memory, sizeof(GameSpaceCamera) * rows);
+	float length = area.up - area.down;
+	float split_length = length / (float) rows;
+	for (int i = 0; i < rows; i++)
+	{
+		result[i].up = area.down + split_length * (i + 1);
+		result[i].down = area.down + split_length * i;
+		result[i].left = area.left;
+		result[i].right = area.right;
+		result[i].closePoint = area.closePoint;
+		result[i].farPoint = area.farPoint;
+	}
+	return result;
+}
+
+GameSpaceCamera* break_camera_into_weighted_columns(GameSpaceCamera area, int* column_ratio, int length, Memory* scope_memory)
+{
+	GameSpaceCamera* result = (GameSpaceCamera*)memory_alloc(scope_memory, sizeof(GameSpaceCamera) * length);
+	float x_width = area.right - area.left;
+	float y_height = area.up - area.down;
+	int total = 0;
+	for (int i = 0; i < length; i++)
+	{
+		total += column_ratio[i];
+	}
+	float totalf = (float)total;
+	float start = 0;
+	for (int i = 0; i < length; i++)
+	{
+		float our_start = start;
+		float next_ratio = column_ratio[i] / totalf;
+		float our_end = our_start + next_ratio * x_width;
+		start += next_ratio;
+
+		result[i].left = our_start;
+		result[i].right = our_end;
+		result[i].up = area.up;
+		result[i].down = area.down;
+		result[i].farPoint = area.farPoint;
+		result[i].closePoint = area.closePoint;
+	}
+	return result;
+}
+
+GameSpaceCamera* break_camera_into_weighted_rows(GameSpaceCamera area, int* row_ratio, int length, Memory* scope_memory)
+{
+	GameSpaceCamera* result = (GameSpaceCamera*)memory_alloc(scope_memory, sizeof(GameSpaceCamera) * length);
+	float x_width = area.right - area.left;
+	float y_height = area.up - area.down;
+	int total = 0;
+	for (int i = 0; i < length; i++)
+	{
+		total += row_ratio[i];
+	}
+	float totalf = (float)total;
+	float start = 0;
+	for (int i = 0; i < length; i++)
+	{
+		float our_start = start;
+		float next_ratio = row_ratio[i] / totalf;
+		float our_end = our_start + next_ratio * y_height;
+		start += next_ratio;
+
+		result[i].left = area.left;
+		result[i].right = area.down;
+		result[i].up = our_start;
+		result[i].down = our_end;
+		result[i].farPoint = area.farPoint;
+		result[i].closePoint = area.closePoint;
+	}
+	return result;
+}
+
+
+//break the camera into six columns
+//break the sixth camera into a 5/1/5

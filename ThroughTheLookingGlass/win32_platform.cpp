@@ -299,7 +299,9 @@ void handle_next_action_stateful(GamestateTimeMachine* maybe_time_machine, IntPa
 
 	if (next_action == A_UNDO)
 	{
-		gamestate_timemachine_undo(maybe_time_machine);
+		
+	    void* memory_cleared = gamestate_timemachine_undo(maybe_time_machine);
+		memory_pop_stack(level_memory, memory_cleared);
 		ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
 		*maybe_animation = NULL;
 	}

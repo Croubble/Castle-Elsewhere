@@ -3,9 +3,15 @@
 #include "Memory.h"
 #include "TextDraw.h"
 typedef void (*ButtonCallback)();
+
+struct MenuText
+{
+	GameSpaceCamera draw_area;
+	char* text;
+};
 struct MenuButton
 {
-	int blah;
+	GameSpaceCamera draw_area;
 	char* button_text;
 	ButtonCallback callback;
 };
@@ -14,6 +20,7 @@ struct MenuScene
 	int num_buttons;
 	int current_highlighted_button;
 	MenuButton* buttons;
+	
 };
 
 char* char_alloc(Memory* memory, std::string to_alloc)

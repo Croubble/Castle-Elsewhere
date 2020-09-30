@@ -270,10 +270,14 @@ GamestateTimeMachine* gamestate_timemachine_create(GameState* start_state, Memor
 	return result;
 }
 
-void gamestate_timemachine_undo(GamestateTimeMachine* timeMachine)
+void* gamestate_timemachine_undo(GamestateTimeMachine* timeMachine)
 {
 	if (timeMachine->num_gamestates_stored > 1)
+	{
 		timeMachine->num_gamestates_stored--;
+		return timeMachine->state_array[timeMachine->num_gamestates_stored].layers;
+	}
+	return NULL;
 }
 GameState* gamestate_timemachine_get_latest_gamestate(GamestateTimeMachine* timeMachine)
 {
