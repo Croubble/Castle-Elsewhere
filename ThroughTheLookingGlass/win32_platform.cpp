@@ -7,6 +7,7 @@
 #include "MenuScene.h"
 #include "EditorScene.h"
 
+
 void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, glm::mat4* camera, bool mouse_moved_this_frame, SCENE_TYPE scene)
 {
 	bool left_click_action_resolved = false;
@@ -1944,7 +1945,8 @@ int main(int argc, char *argv[])
 	#pragma region fullsprite GPU setup
 		fullspriteDraw.atlas_mapper = floor_atlas_mapper;
 		fullsprite_generate(fullSpriteShader, permanent_memory, vertices_VBO, vertices_EBO, floor_atlas_mapper, &fullspriteDraw);
-	//	fullsprite_generate(fullSpriteShader, permanent_memory, vertices_VBO, vertices_EBO, floor_atlas_mapper, &fullspriteDraw);
+		//glm::vec4* ui_texture_atlas = resource_load_texcoords_ui(permanent_memory, frame_memory);
+		fullsprite_generate(uiShader, permanent_memory, vertices_VBO, vertices_EBO, ui_atlas_mapper, &uiDraw);
 
 	#pragma endregion 
 	#pragma region dotted GPU setup

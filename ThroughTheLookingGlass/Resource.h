@@ -12,5 +12,6 @@ int resource_layer_value_to_layer_sprite_value(int layer_value, int layer_num);
 std::string resource_load_puzzle_file(std::string filePath);
 std::string resource_load_text_file(std::string filePath);
 unsigned int resource_load_image_from_file_onto_gpu(std::string filePath);	//returns GLuint reference to gpu texture.
+glm::vec4* resource_load_texcoords_ui(Memory* memory, Memory* tempMemory);
 glm::vec4* resource_load_texcoords_floor(Memory* memory, Memory* tempMemory);
 glm::vec4* resource_load_texcoords_pieces(Memory* memory, Memory* tempMemory);
