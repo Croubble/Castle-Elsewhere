@@ -1907,12 +1907,10 @@ int main(int argc, char *argv[])
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices_EBO);
 			
 			int position = glGetAttribLocation(uiShader, "pos");
-			std::cout << glGetError() << " this is our position value" << std::endl;
 			glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 			glEnableVertexAttribArray(position);
 
 			int texCoord = glGetAttribLocation(uiShader, "inputTexCoord");
-			std::cout << glGetError() << " this is our texCoord value" << std::endl;
 			glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 			glEnableVertexAttribArray(texCoord);
 

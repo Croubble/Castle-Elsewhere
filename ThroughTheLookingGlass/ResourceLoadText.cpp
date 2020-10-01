@@ -122,7 +122,7 @@ unsigned int resource_load_image_from_file_onto_gpu(std::string file_path)
 glm::vec4* resource_load_texcoords_pieces(Memory* memory, Memory* tempMemory)
 {
 	std::string file = resource_load_text_file("FinalPiece.json");
-	AtlasData* data = GetAtlasPosition(memory, file, LNR_PIECE);
+	AtlasData* data = GetAtlasPositionFunced(memory, file, resource_texturenames_to_pieceenum_names_internal);
 	glm::vec4* result = (glm::vec4*) memory_alloc(memory, sizeof(glm::vec4) * data->length);
 
 	int totalW = data->metaWidth;
@@ -151,8 +151,11 @@ glm::vec4* resource_load_texcoords_pieces(Memory* memory, Memory* tempMemory)
 
 glm::vec4* resource_load_texcoords_ui(Memory* memory, Memory* tempMemory)
 {
+	//TODO:
+	return NULL;
+	/*
 	std::string file = resource_load_text_file("FinalUI.json");
-	AtlasData* data = GetAtlasPosition(memory, file, LNR_FLOOR);
+	AtlasData* data = GetAtlasPositionFunced(memory, file, LNR_FLOOR);
 
 	glm::vec4* result = (glm::vec4*) memory_alloc(memory, sizeof(glm::vec4) * data->length);
 	int totalH = data->metaHeight;
@@ -178,11 +181,12 @@ glm::vec4* resource_load_texcoords_ui(Memory* memory, Memory* tempMemory)
 	}
 
 	return result;
+	*/
 }
 glm::vec4* resource_load_texcoords_floor(Memory* memory, Memory* tempMemory)
 {
 	std::string file = resource_load_text_file("FinalFloor.json");
-	AtlasData* data = GetAtlasPosition(memory, file, LNR_FLOOR);
+	AtlasData* data = GetAtlasPositionFunced(memory, file, resource_texturenames_to_floorsprite_enum_names_internal);
 
 	glm::vec4* result = (glm::vec4*) memory_alloc(memory, sizeof(glm::vec4) * data->length);
 	int totalH = data->metaHeight;

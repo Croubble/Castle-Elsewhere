@@ -67,7 +67,8 @@ std::string parse_between_quotes(Tokenizer* t, Memory* temp_memory)
 
 /***************************************************************************/
 /***************************EXTERNAL FUNCTIONS********************/
-AtlasData* GetAtlasPosition(Memory* temp_memory, std::string atlas, int layer_name)
+
+AtlasData* GetAtlasPositionFunced(Memory* temp_memory, std::string atlas, get_atlas_number_from_name func_atlas)
 {
 	char* input = &(atlas[0]);
 	AtlasData* result = (AtlasData*)memory_alloc(temp_memory, sizeof(AtlasData));
@@ -111,12 +112,7 @@ AtlasData* GetAtlasPosition(Memory* temp_memory, std::string atlas, int layer_na
 			}
 			//eat whitespace
 			//parse a "" encapsulated string, returning the string found.
-			if (layer_name == LNR_FLOOR)
-				result->enum_corrospoding_values[i] = resource_texturenames_to_floorsprite_enum_names_internal(quoted_name);
-			else if (layer_name == LNR_PIECE)
-				result->enum_corrospoding_values[i] = resource_texturenames_to_pieceenum_names_internal(quoted_name);
-			else
-				result->enum_corrospoding_values[i] = resource_texturenames_to_floorsprite_enum_names_internal(quoted_name);
+				result->enum_corrospoding_values[i] = func_atlas(quoted_name);
 
 			result->positions[i].x = *x;
 			result->positions[i].y = *y;
@@ -144,6 +140,7 @@ AtlasData* GetAtlasPosition(Memory* temp_memory, std::string atlas, int layer_na
 		}
 		return result;
 	}
+
 }
 
 int resource_texturenames_to_pieceenum_names_internal(std::string s)

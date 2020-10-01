@@ -35,7 +35,10 @@ struct AtlasData
 int resource_texturenames_to_pieceenum_names_internal(std::string s);
 
 int resource_texturenames_to_floorsprite_enum_names_internal(std::string s);
+
+typedef int (*get_atlas_number_from_name) (std::string);
 AtlasData* GetAtlasPosition(Memory* temp_memory, std::string atlas, int layer_name);
+AtlasData* GetAtlasPositionFunced(Memory* temp_memory, std::string atlas, get_atlas_number_from_name func_atlas);
 /*
 AtlasData* GetAtlasPosition_old(Memory* memory, std::string atlas, int layer_name)
 {
