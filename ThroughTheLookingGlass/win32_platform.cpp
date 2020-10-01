@@ -123,9 +123,6 @@ int piece_total_drawn = 0;
 
 UiDrawInfo ui_draw_info;
 
-GLuint fullsprite_VAO;
-GLuint fullspriteMatrixBuffer;
-GLuint fullspriteAtlasBuffer;
 
 GamefullspriteDrawInfo fullspriteDraw;
 
@@ -1498,12 +1495,12 @@ void mainloopfunction()
 		{
 			//send it on over to gpu!
 			glUseProgram(fullSpriteShader);
-			glBindVertexArray(fullsprite_VAO);
-			glBindBuffer(GL_ARRAY_BUFFER, fullspriteAtlasBuffer);
+			glBindVertexArray(fullspriteDraw.fullsprite_VAO);
+			glBindBuffer(GL_ARRAY_BUFFER, fullspriteDraw.fullspriteAtlasBuffer);
 			std::cout << "buffer_attempt" << std::endl;
 			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4) * fullspriteDraw.num_sprites_drawn, fullspriteDraw.atlas_cpu);
 
-			glBindBuffer(GL_ARRAY_BUFFER, fullspriteMatrixBuffer);
+			glBindBuffer(GL_ARRAY_BUFFER, fullspriteDraw.fullspriteMatrixBuffer);
 			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::mat4) * fullspriteDraw.num_sprites_drawn, fullspriteDraw.final_cpu);
 
 			glBindTexture(GL_TEXTURE_2D, floorAtlas);
@@ -1952,9 +1949,9 @@ int main(int argc, char *argv[])
 		shader_use(fullSpriteShader);
 		//just use floor_atlas_mapper for fullsprite_atlas_mapper
 		{
-			glGenVertexArrays(1, &fullsprite_VAO);
+			glGenVertexArrays(1, &fullspriteDraw.fullsprite_VAO);
 			std::cout << glGetError() << ":261" << std::endl;
-			glBindVertexArray(fullsprite_VAO);
+			glBindVertexArray(fullspriteDraw.fullsprite_VAO);
 
 			glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices_EBO);
@@ -1970,8 +1967,8 @@ int main(int argc, char *argv[])
 			glEnableVertexAttribArray(texCoord);
 
 
-			glGenBuffers(1, &fullspriteMatrixBuffer);
-			glBindBuffer(GL_ARRAY_BUFFER, fullspriteMatrixBuffer);
+			glGenBuffers(1, &fullspriteDraw.fullspriteMatrixBuffer);
+			glBindBuffer(GL_ARRAY_BUFFER, fullspriteDraw.fullspriteMatrixBuffer);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * MAX_NUM_FULL_SPRITES, NULL, GL_DYNAMIC_DRAW);
 
 			int matrixOffset = 3;	//value hardcoded from fullsprite.vs
@@ -1991,8 +1988,8 @@ int main(int argc, char *argv[])
 			glVertexAttribDivisor(matrixOffset + 2, 1);
 			glVertexAttribDivisor(matrixOffset + 3, 1);
 
-			glGenBuffers(1, &fullspriteAtlasBuffer);
-			glBindBuffer(GL_ARRAY_BUFFER, fullspriteAtlasBuffer);
+			glGenBuffers(1, &fullspriteDraw.fullspriteAtlasBuffer);
+			glBindBuffer(GL_ARRAY_BUFFER, fullspriteDraw.fullspriteAtlasBuffer);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4)* MAX_NUM_FULL_SPRITES, NULL, GL_DYNAMIC_DRAW);
 
 			int atlasOffset = glGetAttribLocation(fullSpriteShader, "atlasCoord");

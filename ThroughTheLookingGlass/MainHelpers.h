@@ -15,7 +15,7 @@
 #include "Animation.h"
 #include "TextureAtlas.h"
 #include "TextDraw.h"
-
+#include "HelperGL.h"
 #include FT_FREETYPE_H  
 
 
@@ -43,12 +43,7 @@ struct GamespriteDrawInfo {
 	int* piece_total_drawn;
 	glm::vec4* piece_atlas_mapper;
 };
-struct GamefullspriteDrawInfo {
-	int num_sprites_drawn;
-	glm::vec4* atlas_mapper;
-	glm::vec4* atlas_cpu;
-	glm::mat4* final_cpu;
-};
+
 
 struct UiDrawInfo {
 	GLuint texture_to_draw;
@@ -68,7 +63,7 @@ const int SCREEN_STARTING_WIDTH = 800;
 const int SCREEN_STARTING_HEIGHT = 600;
 const float SCREEN_RATIO = ((float)SCREEN_STARTING_WIDTH / (float)SCREEN_STARTING_HEIGHT);
 const int MAX_NUM_FLOOR_SPRITES = 5000;
-const int MAX_NUM_FULL_SPRITES = 100;
+
 
 const float CAMERA_LERP_TIME = 0.8f;
 const float CAMERA_ZOOM_SPEED = 3.0f;
