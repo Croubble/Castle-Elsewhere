@@ -148,6 +148,37 @@ glm::vec4* resource_load_texcoords_pieces(Memory* memory, Memory* tempMemory)
 
 	return result;
 }
+
+glm::vec4* resource_load_texcoords_ui(Memory* memory, Memory* tempMemory)
+{
+	std::string file = resource_load_text_file("FinalUI.json");
+	AtlasData* data = GetAtlasPosition(memory, file, LNR_FLOOR);
+
+	glm::vec4* result = (glm::vec4*) memory_alloc(memory, sizeof(glm::vec4) * data->length);
+	int totalH = data->metaHeight;
+	int totalW = data->metaWidth;
+
+	for (int i = 0; i < data->length; i++)
+	{
+		Position p = data->positions[i];
+		//flip the starting coordinates into our actual coordinate system.
+		p.y = totalH - 1 - p.y;
+		p.y -= p.h - 1;
+
+		//turn w/h into x2/y2
+		p.w += p.x - 1;
+		p.h += p.y - 1;
+
+		int next_index = data->enum_corrospoding_values[i];
+		//convert from int to floats between 0 and 1
+		result[next_index].x = (float)p.x / (totalW - 1);
+		result[next_index].y = (float)p.y / (totalH - 1);
+		result[next_index].z = (float)p.w / (totalW - 1);
+		result[next_index].w = (float)p.h / (totalH - 1);
+	}
+
+	return result;
+}
 glm::vec4* resource_load_texcoords_floor(Memory* memory, Memory* tempMemory)
 {
 	std::string file = resource_load_text_file("FinalFloor.json");

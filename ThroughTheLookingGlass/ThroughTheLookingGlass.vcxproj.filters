@@ -265,5 +265,8 @@
     <ClInclude Include="TextDraw.h">
       <Filter>Source Files\EditorFilter</Filter>
     </ClInclude>
+    <ClInclude Include="HelperGL.h">
+      <Filter>Source Files\Main</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -50,7 +50,19 @@ struct GamefullspriteDrawInfo {
 	glm::mat4* final_cpu;
 };
 
+struct UiDrawInfo {
+	GLuint texture_to_draw;
+	GLuint VAO;
+	GLuint MatrixBuffer;
+	GLuint AtlasBuffer;
 
+	int num_sprites_drawn;
+	glm::vec4* atlas_mapper;
+	glm::vec4* atlas_cpu;
+	glm::mat4* matrix_cpu;
+
+
+};
 // settings
 const int SCREEN_STARTING_WIDTH = 800;
 const int SCREEN_STARTING_HEIGHT = 600;

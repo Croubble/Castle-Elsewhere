@@ -98,10 +98,11 @@ Shader fullSpriteShader;
 Shader dottedShader;
 Shader textShader;
 Shader stringShader;
-
+Shader uiShader;
 unsigned int floorAtlas;
 unsigned int pieceAtlas;
-
+unsigned int uiAtlas;
+glm::vec4* ui_atlas_mapper;
 LayerDrawGPUData* layer_draw;
 
 GLuint floor_VAO;
@@ -119,6 +120,8 @@ glm::vec4* piece_atlas_cpu;
 glm::vec3* piece_positions_cpu;
 glm::vec4* piece_atlas_mapper;
 int piece_total_drawn = 0;
+
+UiDrawInfo ui_draw_info;
 
 GLuint fullsprite_VAO;
 GLuint fullspriteMatrixBuffer;
@@ -1696,8 +1699,11 @@ int main(int argc, char *argv[])
 		dottedShader = shader_compile_program("dottedlines.vs", "dottedlines.f");
 		textShader = shader_compile_program("text.vs", "sprite.f");
 		stringShader = shader_compile_program("string.vs", "string.f");
+		uiShader = shader_compile_program("ui.vs", "ui.f");
 		floorAtlas = resource_load_image_from_file_onto_gpu("FinalFloor.png");
 		pieceAtlas = resource_load_image_from_file_onto_gpu("FinalPiece.png");
+		uiAtlas = resource_load_image_from_file_onto_gpu("FinalUI.png");
+		//ui_atlas_mapper = resource_load_texcoords_ui(permanent_memory, frame_memory);
 		glUseProgram(spriteShader);
 
 		unsigned int vertices_VBO;	
@@ -1887,6 +1893,59 @@ int main(int argc, char *argv[])
 			glVertexAttribDivisor(atlasOffset, 1);
 		}
 	#pragma endregion 
+	#pragma region UI GPU setup
+		ui_draw_info.num_sprites_drawn = 0;
+		ui_draw_info.atlas_cpu = (glm::vec4*) memory_alloc(permanent_memory, MAX_NUM_FULL_SPRITES * sizeof(glm::vec4));
+		ui_draw_info.atlas_mapper = ui_atlas_mapper;
+		ui_draw_info.matrix_cpu = (glm::mat4*) memory_alloc(permanent_memory, MAX_NUM_FULL_SPRITES * sizeof(glm::mat4));
+		shader_use(uiShader);
+		{
+			glGenVertexArrays(1, &ui_draw_info.VAO);
+			glBindVertexArray(ui_draw_info.VAO);
+
+			glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices_EBO);
+			
+			int position = glGetAttribLocation(uiShader, "pos");
+			std::cout << glGetError() << " this is our position value" << std::endl;
+			glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+			glEnableVertexAttribArray(position);
+
+			int texCoord = glGetAttribLocation(uiShader, "inputTexCoord");
+			std::cout << glGetError() << " this is our texCoord value" << std::endl;
+			glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+			glEnableVertexAttribArray(texCoord);
+
+			glGenBuffers(1, &ui_draw_info.MatrixBuffer);
+			glBindBuffer(GL_ARRAY_BUFFER,ui_draw_info.MatrixBuffer);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4)* MAX_NUM_FULL_SPRITES, NULL, GL_DYNAMIC_DRAW);
+
+			int matrixOffset = 3;	//value hardcoded from ui.vs
+			glVertexAttribPointer(matrixOffset, 4, GL_FLOAT, false, 16 * sizeof(float), (void*)0);
+			glVertexAttribPointer(matrixOffset + 1, 4, GL_FLOAT, false, 16 * sizeof(float), (void*)(4 * sizeof(float)));
+			glVertexAttribPointer(matrixOffset + 2, 4, GL_FLOAT, false, 16 * sizeof(float), (void*)(8 * sizeof(float)));
+			glVertexAttribPointer(matrixOffset + 3, 4, GL_FLOAT, false, 16 * sizeof(float), (void*)(12 * sizeof(float)));
+
+			glEnableVertexAttribArray(matrixOffset);
+			glEnableVertexAttribArray(matrixOffset + 1);
+			glEnableVertexAttribArray(matrixOffset + 2);
+			glEnableVertexAttribArray(matrixOffset + 3);
+
+			glVertexAttribDivisor(matrixOffset, 1);
+			glVertexAttribDivisor(matrixOffset + 1, 1);
+			glVertexAttribDivisor(matrixOffset + 2, 1);
+			glVertexAttribDivisor(matrixOffset + 3, 1);
+
+			glGenBuffers(1, &ui_draw_info.AtlasBuffer);
+			glBindBuffer(GL_ARRAY_BUFFER, ui_draw_info.AtlasBuffer);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4)* MAX_NUM_FULL_SPRITES, NULL, GL_DYNAMIC_DRAW);
+
+			int atlasOffset = glGetAttribLocation(uiShader, "atlasCoord");
+			glVertexAttribPointer(atlasOffset, 4, GL_FLOAT, false, 4 * sizeof(float), (void*)(0));
+			glEnableVertexAttribArray(atlasOffset);
+			glVertexAttribDivisor(atlasOffset, 1);
+		}
+	#pragma endregion
 	#pragma region fullsprite GPU setup
 		fullspriteDraw.num_sprites_drawn = 0;
 		fullspriteDraw.atlas_cpu = (glm::vec4*) memory_alloc(permanent_memory, MAX_NUM_FULL_SPRITES * sizeof(glm::vec4));
