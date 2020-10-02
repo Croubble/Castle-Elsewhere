@@ -41,7 +41,8 @@ void fullsprite_generate(Shader shader, Memory* permanent_memory, GLuint vertice
 	fullspriteDraw->num_sprites_drawn = 0;
 	fullspriteDraw->atlas_cpu = (glm::vec4*) memory_alloc(permanent_memory, MAX_NUM_FULL_SPRITES * sizeof(glm::vec4));
 	fullspriteDraw->atlas_mapper = atlas_mapper;
-	fullspriteDraw->final_cpu = (glm::mat4*) memory_alloc(permanent_memory, MAX_NUM_FULL_SPRITES * sizeof(glm::mat4));;
+	fullspriteDraw->final_cpu = (glm::mat4*) memory_alloc(permanent_memory, MAX_NUM_FULL_SPRITES * sizeof(glm::mat4));
+	fullspriteDraw->color_cpu = (glm::vec4*) memory_alloc(permanent_memory, MAX_NUM_FULL_SPRITES * sizeof(glm::vec4));
 	shader_use(shader);
 	//just use floor_atlas_mapper for fullsprite_atlas_mapper
 	{

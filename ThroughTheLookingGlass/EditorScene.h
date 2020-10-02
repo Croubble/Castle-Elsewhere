@@ -42,7 +42,10 @@ EditorScene* editorscene_setup_with_start_state(Memory* editor_memory, ViewPortC
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CURSED_PULL_CRATE);
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CURSED_PLAYER);
 		if (i != palete_length)
-			abort();
+		{
+			crash_err("you need the number of elements in the palete to be teh same as the length of the palete");
+		}
+			
 		return result;
 	}
 }

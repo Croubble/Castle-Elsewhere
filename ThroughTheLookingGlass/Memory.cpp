@@ -1,6 +1,6 @@
 #include <stdlib.h>     /* malloc, free, rand */
 #include <iostream>
-
+#include "Constants.h"
 const unsigned int alignBoundary = 8;
 
 struct Memory
@@ -18,8 +18,7 @@ void* memory_alloc(Memory* memory, int numBytes)
 	//check for overflow memory.
 	if (finalBytes + memory->currentOffset >= memory->size)
 	{
-		std::cout << "we have overflowed our memory. Rats!" << std::endl;
-		abort();
+		crash_err("we have overflowed our memory. Rats!");
 		return nullptr;
 	}
 	void* result = (void*) (((char*) memory->memoryStart) + memory->currentOffset);

@@ -198,31 +198,31 @@ int resource_texturenames_to_floorsprite_enum_names_internal(std::string s)
 
 int resource_texturenames_to_uisprite_enum_names_internal(std::string s)
 {
-	if (s == "ButtonCenter")
+	if (s == "ButtonCenter.png")
 	{
 		return UI_SPRITE_NAME::BUTTON_CENTER;
 	}
-	if (s == "ButtonLeftHalf")
+	if (s == "ButtonLeftHalf.png")
 	{
 		return UI_SPRITE_NAME::BUTTON_LEFT;
 	}
-	if (s == "ButtonRightHalf")
+	if (s == "ButtonRightHalf.png")
 	{
 		return UI_SPRITE_NAME::BUTTON_RIGHT;
 	}
-	if (s == "DownArrow")
+	if (s == "DownArrow.png")
 	{
 		return UI_SPRITE_NAME::DOWN_ARROW;
 	}
-	if (s == "RightArrow")
+	if (s == "RightArrow.png")
 	{
 		return UI_SPRITE_NAME::RIGHT_ARROW;
 	}
-	if (s == "LeftArrow")
+	if (s == "LeftArrow.png")
 	{
 		return UI_SPRITE_NAME::LEFT_ARROW;
 	}
-	if (s == "UpArrow")
+	if (s == "UpArrow.png")
 	{
 		return UI_SPRITE_NAME::UP_ARROW;
 	}

@@ -500,8 +500,8 @@ int curse_entity(int entity_value, CursedDirection curse_to_apply)
 			return P_CURSED_PULL_CRATE;
 		return P_PULL_CRATE;
 	}
-	std::cout << "we appear to be trying to curse an entity that can't be cursed. This is would indicate an error in the code we wrote. Abort." << std::endl;
-	abort();
+	crash_err("we appear to be trying to curse an entity that can't be cursed. This is would indicate an error in the code we wrote. Abort.");
+	return P_CRATE;
 }
 
 GameState* gamestate_resize_with_allocate(GameState* input_state, Memory* output_memory, int output_w, int output_h, IntPair displacement_from_input_to_output)
@@ -538,8 +538,7 @@ void  gamestate_clone_to(GameState* input_state, GameState* output_state)
 	int h = input_state->h;
 	if (output_state->w != w || output_state->h != h)
 	{
-		std::cout << "You fool! You tried to use gamestate_clone_to on an input_state that didn't have the correct amount of memory. This would be a memory leak. It's now a crash. Enjoy.";
-		abort();
+		crash_err("You fool! You tried to use gamestate_clone_to on an input_state that didn't have the correct amount of memory. This would be a memory leak. It's now a crash. Enjoy.");
 	}
 	output_state->w = w;
 	output_state->h = h;

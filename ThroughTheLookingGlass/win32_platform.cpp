@@ -123,7 +123,6 @@ glm::vec3* piece_positions_cpu;
 glm::vec4* piece_atlas_mapper;
 int piece_total_drawn = 0;
 
-UiDrawInfo ui_draw_info;
 
 
 GamefullspriteDrawInfo fullspriteDraw;
@@ -1467,6 +1466,7 @@ void mainloopfunction()
 				camera_fifth.up = camera_fifth.down + fifth_h;
 				for (int i = 0; i < menu_scene_state->num_buttons; i++)
 				{
+					draw_button_to_gamespace(camera_fifth, &uiDraw);
 					draw_text_maximized_centered_to_screen(camera_fifth, menu_scene_state->buttons[i].button_text, &text_draw_info);
 					if (i == menu_scene_state->current_highlighted_button)
 						draw_black_box_over_screen(camera_fifth, &fullspriteDraw);
@@ -1492,6 +1492,8 @@ void mainloopfunction()
 			shader_set_uniform_float(dottedShader, "time", total_time);
 			glUseProgram(stringShader);
 			shader_set_uniform_mat4(stringShader, "viewProjectionMatrix", camera);
+			glUseProgram(uiShader); 
+			shader_set_uniform_mat4(uiShader, "viewProjectionMatrix", camera); 
 		}
 		//draw full sprites.
 		{
@@ -1507,6 +1509,21 @@ void mainloopfunction()
 
 			glBindTexture(GL_TEXTURE_2D, floorAtlas);
 			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, fullspriteDraw.num_sprites_drawn);
+		}
+		//draw uiShader.
+		{
+			//send it on over to gpu!
+			glUseProgram(uiShader); CHK
+			glBindVertexArray(uiDraw.fullsprite_VAO); CHK
+			glBindBuffer(GL_ARRAY_BUFFER, uiDraw.fullspriteAtlasBuffer); CHK
+			std::cout << "buffer_attempt" << std::endl; CHK 
+			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4) * uiDraw.num_sprites_drawn, uiDraw.atlas_cpu); CHK
+
+			glBindBuffer(GL_ARRAY_BUFFER, uiDraw.fullspriteMatrixBuffer); CHK
+			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::mat4) * uiDraw.num_sprites_drawn, uiDraw.final_cpu); CHK
+
+			glBindTexture(GL_TEXTURE_2D, uiAtlas); CHK
+			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, uiDraw.num_sprites_drawn); CHK
 		}
 
 		//draw layers
@@ -1599,6 +1616,7 @@ void mainloopfunction()
 		fullspriteDraw.num_sprites_drawn = 0;
 		dotted_total_drawn = 0;
 		*text_draw_info.current_number_drawn = 0;
+		uiDraw.num_sprites_drawn = 0;
 		memory_clear(frame_memory);
 #pragma endregion 
 		//return running;
@@ -1897,6 +1915,7 @@ int main(int argc, char *argv[])
 	#pragma region fullsprite and UI GPU setup
 		fullspriteDraw.atlas_mapper = floor_atlas_mapper;
 		fullsprite_generate(fullSpriteShader, permanent_memory, vertices_VBO, vertices_EBO, floor_atlas_mapper, &fullspriteDraw);
+		ui_atlas_mapper = resource_load_texcoords_ui(permanent_memory, frame_memory);
 		fullsprite_generate(uiShader, permanent_memory, vertices_VBO, vertices_EBO, ui_atlas_mapper, &uiDraw);
 
 	#pragma endregion 
@@ -2397,10 +2416,6 @@ void draw_outline_to_gamespace(AABB outline, GamefullspriteDrawInfo* info)
 	info->atlas_cpu[info->num_sprites_drawn] = info->atlas_mapper[F_ZBLACK];
 	info->num_sprites_drawn++;
 }
-void draw_ui_to_gamespace(AABB outline, GamefullspriteDrawInfo* info)
-{
-
-}
 void draw_gamestates_outlines_to_gamespace(GameState** gamestates,IntPair* offsets,int length_function_input,GamefullspriteDrawInfo* info,int skip_index)
 {
 	for (int z = 0; z < skip_index; z++)
@@ -2428,21 +2443,51 @@ void draw_gamestates_outlines_to_gamespace(GameState** gamestates,IntPair* offse
 		info->num_sprites_drawn++;
 	}
 }
-void draw_button_to_gamespace(GameSpaceCamera draw_area, GamefullspriteDrawInfo* ui_draw)
+void draw_ui_to_gamespace(GameSpaceCamera draw_area, int index, GamefullspriteDrawInfo* draw_info, glm::vec4 color = glm::vec4(1, 1, 1, 1))
 {
-	//to be legal, width must be less than half.
-	float w = draw_area.right - draw_area.left;
-	float h = draw_area.up - draw_area.down;
-	if (h > w)
-	{
-		crash_err("");
-	}
+	int current_draw = draw_info->num_sprites_drawn;
+	draw_info->atlas_cpu[current_draw] = draw_info->atlas_mapper[index];
+	draw_info->final_cpu[current_draw] = glm::mat4(1.0f);
+	draw_info->final_cpu[current_draw] = glm::translate(draw_info->final_cpu[current_draw], glm::vec3(draw_area.left, draw_area.down, 1));
+	float width = draw_area.right - draw_area.left;
+	float height = draw_area.up - draw_area.down;
+	draw_info->final_cpu[current_draw] = glm::scale(draw_info->final_cpu[current_draw], glm::vec3(width, height, 1));
+	draw_info->color_cpu[current_draw] = color;
+	draw_info->num_sprites_drawn++;
+
+};
+void draw_button_to_gamespace(GameSpaceCamera draw_area, GamefullspriteDrawInfo* ui_draw, glm::vec4 color)
+{
 	//draw the left half.
-	//calculate the height.
-	//calculate the width.
+	float width = draw_area.right - draw_area.left;
+	float height = draw_area.up - draw_area.down;
+	if (height >= width)
+	{
+		crash_err("we can't draw a button if it isn't at least 1x1, the draw won't work");
+
+	}
+	//draw left.
+	{
+		GameSpaceCamera left_draw = draw_area;
+		left_draw.right = left_draw.left + 0.5f * height;
+		draw_ui_to_gamespace(left_draw, UI_SPRITE_NAME::BUTTON_LEFT, ui_draw,color);
+	}
 	//(maybe) draw the middle half.
+	{
+		GameSpaceCamera middle_draw = draw_area;
+		middle_draw.left += 0.5f * height;
+		middle_draw.right -= 0.5f * height;
+		draw_ui_to_gamespace(middle_draw, UI_SPRITE_NAME::BUTTON_CENTER, ui_draw,color);
+	}
+	if (height != width)
+	{
+		GameSpaceCamera right_draw = draw_area;
+		right_draw.left = right_draw.right - 0.5f * height;
+		draw_ui_to_gamespace(right_draw, UI_SPRITE_NAME::BUTTON_RIGHT, ui_draw,color);
+	}
 	//draw the right half.
 }
+
 void draw_stationary_piece_curses_to_gamespace(MovementAnimation* animation, 
 	DrawCurseAnimation* curse_animation,
 	GameState** gamestates, 

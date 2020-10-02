@@ -45,19 +45,6 @@ struct GamespriteDrawInfo {
 };
 
 
-struct UiDrawInfo {
-	GLuint texture_to_draw;
-	GLuint VAO;
-	GLuint MatrixBuffer;
-	GLuint AtlasBuffer;
-
-	int num_sprites_drawn;
-	glm::vec4* atlas_mapper;
-	glm::vec4* atlas_cpu;
-	glm::mat4* matrix_cpu;
-
-
-};
 // settings
 const int SCREEN_STARTING_WIDTH = 800;
 const int SCREEN_STARTING_HEIGHT = 600;
@@ -106,6 +93,7 @@ void draw_palette(IntPair palete_screen_start,
 	LayerDrawGPUData* layer_draw);
 void draw_black_box_over_screen(GameSpaceCamera screen, GamefullspriteDrawInfo* info);
 void draw_outline_to_gamespace(AABB outline, GamefullspriteDrawInfo* info);
+void draw_button_to_gamespace(GameSpaceCamera draw_area, GamefullspriteDrawInfo* ui_draw, glm::vec4 color = glm::vec4(1,1,1,1));
 
 /***********************************************************/
 /*********camera functions**********************************/
