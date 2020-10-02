@@ -8,6 +8,7 @@
 #include "EditorScene.h"
 
 
+
 void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, glm::mat4* camera, bool mouse_moved_this_frame, SCENE_TYPE scene)
 {
 	bool left_click_action_resolved = false;
@@ -1734,7 +1735,9 @@ int main(int argc, char *argv[])
 				glUseProgram(spriteShader);
 				std::cout << "Layer draw setup begins." << std::endl;
 				glGenVertexArrays(1, &layer_draw[i].VAO);
+
 				std::cout << glGetError() << std::endl;
+				gl_check_err(__FILE__, __LINE__);
 				glBindVertexArray(layer_draw[i].VAO);
 
 				glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO);
@@ -1891,61 +1894,9 @@ int main(int argc, char *argv[])
 			glVertexAttribDivisor(atlasOffset, 1);
 		}
 	#pragma endregion 
-	#pragma region UI GPU setup
-		ui_draw_info.num_sprites_drawn = 0;
-		ui_draw_info.atlas_cpu = (glm::vec4*) memory_alloc(permanent_memory, MAX_NUM_FULL_SPRITES * sizeof(glm::vec4));
-		ui_draw_info.atlas_mapper = ui_atlas_mapper;
-		ui_draw_info.matrix_cpu = (glm::mat4*) memory_alloc(permanent_memory, MAX_NUM_FULL_SPRITES * sizeof(glm::mat4));
-		shader_use(uiShader);
-		{
-			glGenVertexArrays(1, &ui_draw_info.VAO);
-			glBindVertexArray(ui_draw_info.VAO);
-
-			glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices_EBO);
-			
-			int position = glGetAttribLocation(uiShader, "pos");
-			glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-			glEnableVertexAttribArray(position);
-
-			int texCoord = glGetAttribLocation(uiShader, "inputTexCoord");
-			glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-			glEnableVertexAttribArray(texCoord);
-
-			glGenBuffers(1, &ui_draw_info.MatrixBuffer);
-			glBindBuffer(GL_ARRAY_BUFFER,ui_draw_info.MatrixBuffer);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4)* MAX_NUM_FULL_SPRITES, NULL, GL_DYNAMIC_DRAW);
-
-			int matrixOffset = 3;	//value hardcoded from ui.vs
-			glVertexAttribPointer(matrixOffset, 4, GL_FLOAT, false, 16 * sizeof(float), (void*)0);
-			glVertexAttribPointer(matrixOffset + 1, 4, GL_FLOAT, false, 16 * sizeof(float), (void*)(4 * sizeof(float)));
-			glVertexAttribPointer(matrixOffset + 2, 4, GL_FLOAT, false, 16 * sizeof(float), (void*)(8 * sizeof(float)));
-			glVertexAttribPointer(matrixOffset + 3, 4, GL_FLOAT, false, 16 * sizeof(float), (void*)(12 * sizeof(float)));
-
-			glEnableVertexAttribArray(matrixOffset);
-			glEnableVertexAttribArray(matrixOffset + 1);
-			glEnableVertexAttribArray(matrixOffset + 2);
-			glEnableVertexAttribArray(matrixOffset + 3);
-
-			glVertexAttribDivisor(matrixOffset, 1);
-			glVertexAttribDivisor(matrixOffset + 1, 1);
-			glVertexAttribDivisor(matrixOffset + 2, 1);
-			glVertexAttribDivisor(matrixOffset + 3, 1);
-
-			glGenBuffers(1, &ui_draw_info.AtlasBuffer);
-			glBindBuffer(GL_ARRAY_BUFFER, ui_draw_info.AtlasBuffer);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4)* MAX_NUM_FULL_SPRITES, NULL, GL_DYNAMIC_DRAW);
-
-			int atlasOffset = glGetAttribLocation(uiShader, "atlasCoord");
-			glVertexAttribPointer(atlasOffset, 4, GL_FLOAT, false, 4 * sizeof(float), (void*)(0));
-			glEnableVertexAttribArray(atlasOffset);
-			glVertexAttribDivisor(atlasOffset, 1);
-		}
-	#pragma endregion
-	#pragma region fullsprite GPU setup
+	#pragma region fullsprite and UI GPU setup
 		fullspriteDraw.atlas_mapper = floor_atlas_mapper;
 		fullsprite_generate(fullSpriteShader, permanent_memory, vertices_VBO, vertices_EBO, floor_atlas_mapper, &fullspriteDraw);
-		//glm::vec4* ui_texture_atlas = resource_load_texcoords_ui(permanent_memory, frame_memory);
 		fullsprite_generate(uiShader, permanent_memory, vertices_VBO, vertices_EBO, ui_atlas_mapper, &uiDraw);
 
 	#pragma endregion 
@@ -2446,6 +2397,10 @@ void draw_outline_to_gamespace(AABB outline, GamefullspriteDrawInfo* info)
 	info->atlas_cpu[info->num_sprites_drawn] = info->atlas_mapper[F_ZBLACK];
 	info->num_sprites_drawn++;
 }
+void draw_ui_to_gamespace(AABB outline, GamefullspriteDrawInfo* info)
+{
+
+}
 void draw_gamestates_outlines_to_gamespace(GameState** gamestates,IntPair* offsets,int length_function_input,GamefullspriteDrawInfo* info,int skip_index)
 {
 	for (int z = 0; z < skip_index; z++)
@@ -2473,7 +2428,21 @@ void draw_gamestates_outlines_to_gamespace(GameState** gamestates,IntPair* offse
 		info->num_sprites_drawn++;
 	}
 }
-
+void draw_button_to_gamespace(GameSpaceCamera draw_area, GamefullspriteDrawInfo* ui_draw)
+{
+	//to be legal, width must be less than half.
+	float w = draw_area.right - draw_area.left;
+	float h = draw_area.up - draw_area.down;
+	if (h > w)
+	{
+		crash_err("");
+	}
+	//draw the left half.
+	//calculate the height.
+	//calculate the width.
+	//(maybe) draw the middle half.
+	//draw the right half.
+}
 void draw_stationary_piece_curses_to_gamespace(MovementAnimation* animation, 
 	DrawCurseAnimation* curse_animation,
 	GameState** gamestates, 

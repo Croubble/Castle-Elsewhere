@@ -178,6 +178,7 @@
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Click.cpp" />
+    <ClCompile Include="Constants.cpp" />
     <ClCompile Include="EditorTimeMachine.cpp" />
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="Grid.cpp" />
@@ -209,6 +210,8 @@
     <None Include="assets\string.f" />
     <None Include="assets\string.vs" />
     <None Include="assets\text.vs" />
+    <None Include="assets\ui.f" />
+    <None Include="assets\ui.vs" />
     <None Include="draw_to_screen.vs" />
     <None Include="gl_text.fs" />
     <None Include="gl_text.vs" />
