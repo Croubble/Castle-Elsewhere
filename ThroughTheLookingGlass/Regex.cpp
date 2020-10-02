@@ -195,3 +195,37 @@ int resource_texturenames_to_floorsprite_enum_names_internal(std::string s)
 	std::cout << "UH OH! UH OH! UH OH! WE GOT A PROBLEM in resource_texturenames_to_floorsprite_enum_names_internal ZZZZZZZZZZZZZZZ all hail doggo's!." << std::endl;
 	return F_NONE;
 }
+
+int resource_texturenames_to_uisprite_enum_names_internal(std::string s)
+{
+	if (s == "ButtonCenter")
+	{
+		return UI_SPRITE_NAME::BUTTON_CENTER;
+	}
+	if (s == "ButtonLeftHalf")
+	{
+		return UI_SPRITE_NAME::BUTTON_LEFT;
+	}
+	if (s == "ButtonRightHalf")
+	{
+		return UI_SPRITE_NAME::BUTTON_RIGHT;
+	}
+	if (s == "DownArrow")
+	{
+		return UI_SPRITE_NAME::DOWN_ARROW;
+	}
+	if (s == "RightArrow")
+	{
+		return UI_SPRITE_NAME::RIGHT_ARROW;
+	}
+	if (s == "LeftArrow")
+	{
+		return UI_SPRITE_NAME::LEFT_ARROW;
+	}
+	if (s == "UpArrow")
+	{
+		return UI_SPRITE_NAME::UP_ARROW;
+	}
+	std::cout << "UH OH! UH OH! UH OH! WE GOT A PROBLEM in resource_texturenames_to_floorsprite_enum_names_internal ZZZZZZZZZZZZZZZ all hail doggo's!." << std::endl;
+	return UP_ARROW;
+}

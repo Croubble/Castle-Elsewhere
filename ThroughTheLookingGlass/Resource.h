@@ -4,6 +4,7 @@
 #include "Memory.h"
 #include "GameState.h"
 
+typedef int (*get_atlas_number_from_name) (std::string);
 
 PIECE_IMAGE resource_cursed_direction_to_piece_sprite(CursedDirection dir);
 FLOOR_IMAGE resource_floor_to_floor_sprite(Floor floor);
