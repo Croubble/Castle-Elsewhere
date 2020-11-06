@@ -114,6 +114,12 @@ inline bool math_click_is_inside_AABB(IntPair mini, IntPair maxi, IntPair click)
 /************************************* ARRAY LOGIC ******************************/
 /********************************************************************************/
 
+//array format visually displayed.
+//4,9,14
+//3,8,13
+//2,7,12
+//1,6,11
+//0,5,10
 //from 2 dimension to 1 dimension.
 inline int f2D(int x, int y, int w, int h)
 {

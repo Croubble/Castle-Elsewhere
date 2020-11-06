@@ -10,7 +10,7 @@ layout (location = 4) in mat4 positionScaleRotate;	//a matrix that takes into ac
 uniform mat4 viewProjectionMatrix;
 
 out vec2 TexCoord;
-
+out vec4 color;
 void main()
 {
 	//gl_Position = viewProjectionMatrix * vec4(pos,1.0);
@@ -20,4 +20,5 @@ void main()
 	float xPos = inputTexCoord.x * atlasCoord.z + (1.0 - inputTexCoord.x) * atlasCoord.x;
 	float yPos = inputTexCoord.y * atlasCoord.w + (1.0 - inputTexCoord.y) * atlasCoord.y;
 	TexCoord = vec2(xPos,yPos);
+	color = myInputColor;
 }

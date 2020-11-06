@@ -179,9 +179,11 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Click.cpp" />
     <ClCompile Include="Constants.cpp" />
+    <ClCompile Include="draw.cpp" />
     <ClCompile Include="EditorTimeMachine.cpp" />
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="Grid.cpp" />
+    <ClCompile Include="HelperGL.cpp" />
     <ClCompile Include="IntPair.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Parse.cpp" />
@@ -218,9 +220,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
+    <ClInclude Include="CatGameState.h" />
     <ClInclude Include="Click.h" />
     <ClInclude Include="Clock.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="draw.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="EditorScene.h" />
     <ClInclude Include="Fonts.h" />
@@ -232,6 +236,7 @@
     <ClInclude Include="Math.h" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="MenuScene.h" />
+    <ClInclude Include="NuGameState.h" />
     <ClInclude Include="Parse.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="PreludeIncludes.h" />
@@ -244,7 +249,6 @@
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="TextDraw.h" />
     <ClInclude Include="TextScene.h" />
-    <ClInclude Include="TextureAtlas.h" />
     <ClInclude Include="tinyfiledialogs.h" />
     <ClInclude Include="TrueFontCharacter.h" />
     <ClInclude Include="World.h" />

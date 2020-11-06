@@ -13,9 +13,9 @@
 #include "Parse.h"
 #include "World.h"
 #include "Animation.h"
-#include "TextureAtlas.h"
 #include "TextDraw.h"
 #include "HelperGL.h"
+#include "draw.h"
 #include FT_FREETYPE_H  
 
 
@@ -45,55 +45,11 @@ struct GamespriteDrawInfo {
 };
 
 
-// settings
-const int SCREEN_STARTING_WIDTH = 800;
-const int SCREEN_STARTING_HEIGHT = 600;
-const float SCREEN_RATIO = ((float)SCREEN_STARTING_WIDTH / (float)SCREEN_STARTING_HEIGHT);
-const int MAX_NUM_FLOOR_SPRITES = 5000;
 
-
-const float CAMERA_LERP_TIME = 0.8f;
-const float CAMERA_ZOOM_SPEED = 3.0f;
-const float CAMERA_MOVE_MULT = 0.02f;
-//const float MAX_ZOOM = 3.0f;
-const float MAX_ZOOM = 2.0f;
-const float MAX_ZOOM_OUT_TO_STILL_DISPLAY_OUTLINES = 22.0f;
-const int MAX_NUM_DOTTED_SPRITES = 200;
-const int MAX_NUM_CHARACTERS = 200;
-const float OUTLINE_DRAW_SIZE = 0.3f;
-
-
-
-const int max_actions_in_puzzle = 1024;
-
-const float WAIT_BETWEEN_PLAYER_MOVE_REPEAT = 0.13f;
-const float DRAW_TITLE_TIME = 2.0f;
 //helper functions.
 
 /************************************************************/
 /**********draw functions************************************/
-void draw_curse_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info);
-void draw_stationary_piece_curses_to_gamespace(MovementAnimation* animation, DrawCurseAnimation* curse, GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index, float time_since_last_action);
-void draw_piece_curses_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index, DrawCurseAnimation* curse, float time_since_last_action);
-bool draw_animation_to_gamespace(MovementAnimation* animation, LayerDrawGPUData* info_array, int layer_index, float time_since_last_action);
-void draw_layer_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index);
-void draw_layers_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info);
-void draw_gamestates_outlines_to_gamespace(
-	GameState** gamestates,
-	IntPair* offsets,
-	int length_function_input,
-	GamefullspriteDrawInfo* info,
-	int index);
-void draw_palette(IntPair palete_screen_start,
-	GameSpaceCamera camera_game,
-	ViewPortCamera camera_viewport,
-	EditorUIState* ui_state,
-	int palete_length,
-	GamestateBrush* palete,
-	LayerDrawGPUData* layer_draw);
-void draw_black_box_over_screen(GameSpaceCamera screen, GamefullspriteDrawInfo* info);
-void draw_outline_to_gamespace(AABB outline, GamefullspriteDrawInfo* info);
-void draw_button_to_gamespace(GameSpaceCamera draw_area, GamefullspriteDrawInfo* ui_draw, glm::vec4 color = glm::vec4(1,1,1,1));
 
 /***********************************************************/
 /*********camera functions**********************************/

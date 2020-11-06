@@ -126,6 +126,12 @@
     <ClCompile Include="Constants.cpp">
       <Filter>Source Files\Main</Filter>
     </ClCompile>
+    <ClCompile Include="draw.cpp">
+      <Filter>Source Files\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="HelperGL.cpp">
+      <Filter>Source Files\Main</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="gl_text.vs">
@@ -229,9 +235,6 @@
     <ClInclude Include="TrueFontCharacter.h">
       <Filter>Source Files\Text</Filter>
     </ClInclude>
-    <ClInclude Include="TextureAtlas.h">
-      <Filter>Source Files\Main</Filter>
-    </ClInclude>
     <ClInclude Include="GamestateAI.h">
       <Filter>Source Files\GamestateFilter</Filter>
     </ClInclude>
@@ -276,6 +279,15 @@
     </ClInclude>
     <ClInclude Include="Constants.h">
       <Filter>Source Files\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="draw.h">
+      <Filter>Source Files\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="NuGameState.h">
+      <Filter>Source Files\GamestateFilter</Filter>
+    </ClInclude>
+    <ClInclude Include="CatGameState.h">
+      <Filter>Source Files\GamestateFilter</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

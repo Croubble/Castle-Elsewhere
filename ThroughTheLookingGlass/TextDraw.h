@@ -142,7 +142,7 @@ float lerp(float start, float end, float percentage)
 {
 	return percentage * end + (1.0f - percentage) * start;
 }
-void draw_text_maximized_centered_to_screen(GameSpaceCamera camera, char* string_to_draw, TextDrawInfo* text_draw_info)
+void draw_text_maximized_centered_to_screen(GameSpaceCamera camera, const char* string_to_draw, TextDrawInfo* text_draw_info)
 {
 	//draw the text.
 	glm::vec3 screen_center = glm::vec3((camera.left + camera.right) / 2.0f, (camera.up + camera.down) / 2.0f, 15);
@@ -190,6 +190,17 @@ void draw_text_maximized_centered_to_screen(GameSpaceCamera camera, char* string
 	draw_text_to_screen(glm::vec3(start_text_x_true_start, start_text_y_true_start, screen_center.z), glm::vec2(x_scale, x_scale), string_to_draw, text_draw_info);
 }
 
+GameSpaceCamera area_get_grid_element(float x, float y, float width, float height, GameSpaceCamera area)
+{
+	GameSpaceCamera result;
+	result.left = lerp(area.left, area.right, x / width);
+	result.down = lerp(area.down, area.up, y / height);
+	
+	result.right = lerp(area.left, area.right, (x + 1) / width);
+	result.up = lerp(area.down, area.up, (y + 1) / height);
+
+	return result;
+}
 GameSpaceCamera* break_camera_into_columns(GameSpaceCamera area, int column, Memory* scope_memory)
 {
 	GameSpaceCamera* result = (GameSpaceCamera*) memory_alloc(scope_memory, sizeof(GameSpaceCamera) * column);

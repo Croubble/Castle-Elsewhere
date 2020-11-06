@@ -40,12 +40,13 @@ bool try_parse_char(Tokenizer* t, char c);
 int* try_parse_number_comma_pair(Tokenizer* t, Memory* temp_memory);
 void consume_whitespace(Tokenizer* t);
 
-
+bool try_parse_bools(Tokenizer* t, bool* result, Memory* final_memory, Memory* temp_memory);
+int* try_parse_current_level(Tokenizer* t, Memory* temp_memory);
 int* try_parse_num_gamestates(Tokenizer* t, Memory* temp_memory);
-bool try_parse_positions(Tokenizer* t, TimeMachineEditorStartState* result, Memory* temp_memory);
-bool try_parse_layer(Tokenizer* t, TimeMachineEditorStartState* result, Memory* final_memory, Memory* temp_memory);
-bool try_parse_names(Tokenizer* t, TimeMachineEditorStartState* result, Memory* final_memory, Memory* temp_memory);
+bool try_parse_positions(Tokenizer* t, IntPair * result, Memory* temp_memory);
+bool try_parse_layer(Tokenizer* t, GameState** result, Memory* final_memory, Memory* temp_memory);
+bool try_parse_names(Tokenizer* t, char* result, Memory* final_memory, Memory* temp_memory);
 TimeMachineEditorStartState* parse_deserialize_timemachine(std::string input_string, Memory* final_memory, Memory* temp_memory);
 
-
+void parse_serialize_gamestate_layers(char* output, int* output_consumed, int max_output_length, int length, GameState** states);
 std::string parse_serialize_timemachine(TimeMachineEditor* timeMachine, Memory* final_memory, Memory* temp_memory);

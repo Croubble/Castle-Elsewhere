@@ -5,7 +5,7 @@
 #include "tinyfiledialogs.h"
 #endif
 #include <iostream>
-
+#include "Constants.h"
 std::string load_puzzle_from_assets(std::string level_name)
 {
 	std::cout << "level file we are trying to open:" << level_name << std::endl;
@@ -33,8 +33,7 @@ std::string load_puzzle_from_assets(std::string level_name)
 	}
 	if (i >= buffer_size)
 	{
-		std::cout << "our level files are finally to big for our buffer in saveload load function. Go in, implement it using memory_alloc instead of the current hacky way." << std::endl;
-		abort();
+		crash_err("our level files are finally to big for our buffer in saveload load function. Go in, implement it using memory_alloc instead of the current hacky way.");
 	}
 	if(i > 0)
 		buffer[i - 1] = '\0';
@@ -45,7 +44,7 @@ std::string load_puzzle_from_assets(std::string level_name)
 int save_puzzle_file(std::string to_save)
 {
 	return 1;
-}
+} 
 #else
 int save_puzzle_file(std::string to_save)
 {
@@ -106,6 +105,50 @@ int save_puzzle_file(std::string to_save)
 }
 #endif
 
+void save_continue_file(std::string to_save)
+{
+	FILE* lIn;
+	const char* save_name = ".\\assets\\puzzles\\save1.game";
+	lIn = fopen(save_name, "w");
+	if (!lIn)
+	{
+		crash_err("tried to save continue file. It failed!");
+	}
+	fputs(to_save.c_str(), lIn);
+	fclose(lIn);
+}
+
+std::string get_continue_file(Memory* temp_memory)
+{
+	const char* to_load = ".\\assets\\puzzles\\save1.game";
+	FILE* lIn = fopen(to_load, "r");
+	if (!lIn)
+	{
+		std::cout << "no continue file to load" << std::endl;
+		return	"";
+	}
+	int size = 0;
+	while(!feof(lIn))
+	{
+		fgetc(lIn);
+		size++;
+	}
+	fseek(lIn, 0, SEEK_SET); // seek back to beginning of file
+	
+	char* result = (char*) memory_alloc(temp_memory, sizeof(char) * (size + 1));
+	for (int i = 0; i < size; i++)
+	{
+		result[i] = (char)fgetc(lIn);
+		if (feof(lIn))
+		{
+			result[i] = NULL;
+			break;
+		}
+	}
+	result[size] = NULL;
+	std::cout << result << std::endl;
+	return std::string(result);
+}
 #ifndef EMSCRIPTEN
 std::string load_puzzle_file()
 {

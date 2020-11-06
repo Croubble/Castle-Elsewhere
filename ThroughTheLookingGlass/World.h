@@ -28,3 +28,5 @@ Animations* animation_build_from_world(GameActionJournal* journal, GamestateTime
 WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory* level_memory);
 WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene_memory, SCENE_TYPE go_to_on_backspace);
 bool any_levels_left_active(WorldScene* to_check);
+std::string world_serialize(WorldScene* world, Memory* scope, Memory* temp);
+WorldScene* world_deserialize(std::string world, Memory* scope, Memory* temp);

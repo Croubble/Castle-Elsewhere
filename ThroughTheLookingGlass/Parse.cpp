@@ -147,6 +147,27 @@ void consume_whitespace(Tokenizer* t)
 		t->at++;
 }
 
+int* try_parse_current_level(Tokenizer* t, Memory* temp_memory)
+{
+	char* on_fail = t->at;
+	bool parse_finished = false;
+	bool found_num_gamestates = try_parse_string(t, "current_level:");
+	if (found_num_gamestates)
+	{
+		int* maybe_num = try_parse_number(t, temp_memory);
+		try_parse_char(t, ';');
+		if (maybe_num)
+		{
+			return maybe_num;
+		}
+		else
+		{
+			crash_err("we failed to parse the current level value, when we'd already found the current_level tag, uh oh.");
+		}
+	}
+	t->at = on_fail;
+	return NULL;
+}
 int* try_parse_num_gamestates(Tokenizer* t, Memory* temp_memory)
 {
 	char* on_fail = t->at;
@@ -174,7 +195,7 @@ int* try_parse_num_gamestates(Tokenizer* t, Memory* temp_memory)
 
 }
 
-bool try_parse_positions(Tokenizer* t, TimeMachineEditorStartState* result, Memory* temp_memory)
+bool try_parse_positions(Tokenizer* t, IntPair * result, Memory* temp_memory)
 {
 	char* on_fail = t->at;
 	bool found_positions = try_parse_string(t, "positions:");
@@ -192,8 +213,8 @@ bool try_parse_positions(Tokenizer* t, TimeMachineEditorStartState* result, Memo
 				std::cout << "okay. Okay. Wow. Our position array is ill formatted. Something gone wrong. Better crash." << std::endl;
 				abort();
 			}
-			result->gamestates_positions[num_positions_parsed].x = *nextW;
-			result->gamestates_positions[num_positions_parsed].y = *nextH;
+			result[num_positions_parsed].x = *nextW;
+			result[num_positions_parsed].y = *nextH;
 			num_positions_parsed++;
 
 			reached_end = try_parse_char(t, ';');
@@ -205,7 +226,7 @@ bool try_parse_positions(Tokenizer* t, TimeMachineEditorStartState* result, Memo
 
 }
 
-bool try_parse_layer(Tokenizer* t, TimeMachineEditorStartState* result, Memory* final_memory, Memory* temp_memory)
+bool try_parse_layer(Tokenizer* t, GameState** result, Memory* final_memory, Memory* temp_memory)
 {
 	char* on_fail = t->at;
 	bool is_layer_parse_start = try_parse_string(t, "layer");
@@ -235,8 +256,8 @@ bool try_parse_layer(Tokenizer* t, TimeMachineEditorStartState* result, Memory* 
 			int w = *wp;
 			int h = *hp;
 			int len = w * h;
-			if (result->gamestates[num_gamestates] == NULL)
-				result->gamestates[num_gamestates] = gamestate_create(final_memory, w, h);
+			if (result[num_gamestates] == NULL)
+				result[num_gamestates] = gamestate_create(final_memory, w, h);
 			for (int i = 0; i < len; i++)
 			{
 				int* nextp = try_parse_number_comma_pair(t, temp_memory);
@@ -246,7 +267,7 @@ bool try_parse_layer(Tokenizer* t, TimeMachineEditorStartState* result, Memory* 
 					abort();
 				}
 				int next = *nextp;
-				result->gamestates[num_gamestates]->layers[layer_num][i] = next;
+				result[num_gamestates]->layers[layer_num][i] = next;
 			}
 
 			num_gamestates++;
@@ -257,8 +278,33 @@ bool try_parse_layer(Tokenizer* t, TimeMachineEditorStartState* result, Memory* 
 	t->at = on_fail;
 	return false;
 }
+bool try_parse_bools(Tokenizer* t, bool* result, Memory* final_memory, Memory* temp_memory)
+{
+	char* on_fail = t->at;
+	bool is_name_parse = try_parse_string(t, "solved:");
+	if (!is_name_parse)
+	{
+		t->at = on_fail;
+		return false;
+	}
+	int num_gamestates = 0;
+	while (!try_parse_char(t, ';'))
+	{
+		int* bool_val = try_parse_number(t, temp_memory);
+		if (!bool_val || *bool_val > 1 || *bool_val < 0)
+		{
+			crash_err("we tried to parse a comma seperated list of bools, but we ran into something that wasn't a bool");
+		}
+		bool succeed = try_parse_char(t, ',');
+		if (!succeed)
+			crash_err("we tried to parse a comma seperated list of bools, but we ran into something that wasn't a comma");
 
-bool try_parse_names(Tokenizer* t, TimeMachineEditorStartState* result, Memory* final_memory, Memory* temp_memory)
+		result[num_gamestates] = bool_val;
+		num_gamestates++;
+	}
+	return true;
+}
+bool try_parse_names(Tokenizer* t, char* result, Memory* final_memory, Memory* temp_memory)
 {
 	char* on_fail = t->at;
 	bool is_names_parse = try_parse_string(t, "names:");
@@ -280,13 +326,13 @@ bool try_parse_names(Tokenizer* t, TimeMachineEditorStartState* result, Memory* 
 				std::cout << "parse failed, we've run across a hideous, hideous thing, we've run across" << std::endl;
 				abort();
 			}
-			result->names[num_gamestates * GAME_LEVEL_NAME_MAX_SIZE + i] = t->at[0];
+			result[num_gamestates * GAME_LEVEL_NAME_MAX_SIZE + i] = t->at[0];
 			i++;
 			t->at++;
 		}
 		int z = num_gamestates * GAME_LEVEL_NAME_MAX_SIZE;
 		for (; i < (num_gamestates + 1) * GAME_LEVEL_NAME_MAX_SIZE; i++)
-			result->names[z + i] = '\0';
+			result[z + i] = '\0';
 
 		t->at++;
 		num_gamestates++;
@@ -327,9 +373,9 @@ TimeMachineEditorStartState* parse_deserialize_timemachine(std::string input_str
 			result->number_of_gamestates = *maybe_num_gamestates;
 			continue;
 		}
-		bool parsed_positions = try_parse_positions(&tokenizer, result, temp_memory);
-		bool parsed_layer = try_parse_layer(&tokenizer, result, final_memory, temp_memory);
-		bool parsed_names = try_parse_names(&tokenizer, result, final_memory, temp_memory);
+		bool parsed_positions = try_parse_positions(&tokenizer, result->gamestates_positions, temp_memory);
+		bool parsed_layer = try_parse_layer(&tokenizer, result->gamestates, final_memory, temp_memory);
+		bool parsed_names = try_parse_names(&tokenizer, result->names, final_memory, temp_memory);
 		if (!maybe_num_gamestates && !parsed_positions && !parsed_layer && !parsed_names)
 		{
 			std::cout << "uh oh, we've failed to parse something and the parsing isn't over. Better crash!" << std::endl;
@@ -352,6 +398,31 @@ TimeMachineEditorStartState* parse_deserialize_timemachine(std::string input_str
 	return result;
 }
 
+void parse_serialize_gamestate_layers(char* output, int* output_consumed, int max_output_length, int length, GameState** states)
+{
+	for (int z = 0; z < GAME_NUM_LAYERS; z++)
+	{
+		*output_consumed += sprintf_s(output + *output_consumed, max_output_length, "layer%i:", z);
+		for (int i = 0; i < length; i++)
+		{
+			GameState* state = states[i];
+			//serialize the gamestate.
+			{
+				const int w = state->w;
+				const int h = state->h;
+				const int layer_len = w * h;
+				*output_consumed += sprintf_s(output + *output_consumed, max_output_length, "%d,%d", w, h);
+				for (int j = 0; j < layer_len; j++)
+				{
+					*output_consumed += sprintf_s(output + *output_consumed, max_output_length, ",%d", state->layers[z][j]);
+				}
+				*output_consumed += sprintf_s(output + *output_consumed, max_output_length, ",");
+			}
+		}
+		//put a little ';' at the end of that serialized gamestate.
+		*output_consumed += sprintf_s(output + *output_consumed, max_output_length, ";\n");
+	}
+}
 std::string parse_serialize_timemachine(TimeMachineEditor* timeMachine, Memory* final_memory, Memory* temp_memory)
 {
 	const int max_length = 10000;
@@ -373,6 +444,8 @@ std::string parse_serialize_timemachine(TimeMachineEditor* timeMachine, Memory* 
 		output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
 	}
 	//serialize all the gamestates layers.
+	parse_serialize_gamestate_layers(output, &output_consumed, max_length, num_gamestates, timeMachine->gamestates);
+	/*
 	{
 		for (int z = 0; z < GAME_NUM_LAYERS; z++)
 		{
@@ -397,6 +470,7 @@ std::string parse_serialize_timemachine(TimeMachineEditor* timeMachine, Memory* 
 			output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
 		}
 	}
+	*/
 	//serialize the gamestates names.
 	{
 		output_consumed += sprintf_s(output + output_consumed, max_length, "names:");

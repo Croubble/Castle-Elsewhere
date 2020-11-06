@@ -123,10 +123,9 @@ glm::vec3* piece_positions_cpu;
 glm::vec4* piece_atlas_mapper;
 int piece_total_drawn = 0;
 
-
-
 GamefullspriteDrawInfo fullspriteDraw;
 GamefullspriteDrawInfo uiDraw;
+
 GLuint dotted_VAO;
 GLuint dotted_positions_buffer;
 GLuint dotted_scale_buffer;
@@ -156,7 +155,6 @@ void load_editor_level_stateful(std::string to_load)
 		int bar = 4;
 		bar++;
 	}
-	std::cout << to_load << std::endl;
 	memory_clear(editor_memory);
 	TimeMachineEditorStartState* res = parse_deserialize_timemachine(to_load, editor_memory, frame_memory);
 	editor_scene_state = editorscene_setup_with_start_state(editor_memory, camera_viewport, res);
@@ -210,20 +208,42 @@ void setup_world_screen_stateful(SCENE_TYPE go_to_on_backspace)
 	world_camera_goal = world_camera;
 	world_camera_lerp = CAMERA_LERP_TIME;
 }
+void setup_world_screen_continue_stateful(std::string to_load)
+{
+	memory_clear(world_memory);
+	world_scene_state = world_deserialize(to_load, world_memory, frame_memory);
+	world_scene_state->go_to_on_backspace = ST_MENU;
+	//TODO: merge setup_world_screen's to have less duplicated code, I guess.
+	scene = ST_PLAY_WORLD;
+	ui_state.time_since_scene_started = 0;
+	//setup world camera.
+	//TODO: Compress this code and the world scene camera code into something better.
+	int current_num = world_scene_state->current_level;
+	GameState* current_gamestate = world_scene_state->level_state[current_num];
+	IntPair gamestate_pos = world_scene_state->level_position[current_num];
+	world_camera = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport);
+	world_camera_start = world_camera;
+	world_camera_goal = world_camera;
+	world_camera_lerp = CAMERA_LERP_TIME;
+
+}
 
 void menu_action_new_game()
 {
 	//TODO:
 	//load using the default level name, the default world. into the world editor. (construct the world edit scene)
 	//convert that default world to a world, then load the world scene.
+	std::string to_load = resource_load_puzzle_file("world3");
+	load_editor_level_stateful(to_load);
+	setup_world_screen_stateful(SCENE_TYPE::ST_MENU);
+	std::cout << "TRIGGERING NEW GAME" << std::endl;
 }
 void menu_action_continue_game()
 {
 	//TODO:
 	//for now, we are just going to be exactly the same as new game. 
-	std::string to_load = resource_load_puzzle_file("world3");
-	load_editor_level_stateful(to_load);
-	setup_world_screen_stateful(SCENE_TYPE::ST_MENU);
+	std::string to_load = get_continue_file(frame_memory);
+	setup_world_screen_continue_stateful(to_load);
 	std::cout << "TRIGGERING COUNTINUE GAME" << std::endl;
 }
 void menu_action_level_editor()
@@ -964,7 +984,6 @@ void mainloopfunction()
 
 			}
 #pragma endregion
-
 		}
 		else if (scene == ST_EDIT_LEVEL)
 		{
@@ -1073,6 +1092,15 @@ void mainloopfunction()
 				ui_state.time_since_scene_started = 0;
 				ui_state.time_since_last_player_action = 0;
 			}
+			if (ui_state.letters['p' - 'a'].pressed_this_frame)
+			{
+				std::string parsed = world_serialize(world_scene_state, permanent_memory, frame_memory);
+				std::cout << parsed << std::endl;
+				WorldScene* world = world_deserialize(parsed, permanent_memory, frame_memory);
+				save_continue_file(parsed);
+				std::cout << "load test done" << std::endl;
+			}
+			
 			
 			//if we have solved all the levels, finish.
 			if (!any_levels_left_active(world_scene_state))
@@ -1464,17 +1492,84 @@ void mainloopfunction()
 				float fifth_h = (camera_game.up - camera_game.down) / 5.0f;
 				camera_fifth.down = camera_game.down + fifth_h;
 				camera_fifth.up = camera_fifth.down + fifth_h;
+
+				//draw wasd with arrows helper.
+				{
+					GameSpaceCamera bottom_fifth = camera_game;
+					float camera_width = camera_game.right - camera_game.left;
+					float camera_height = camera_game.up - camera_game.down;
+					bottom_fifth.right = bottom_fifth.left + camera_width / 5.0f;
+					bottom_fifth.up = bottom_fifth.down + camera_height / 5.0f;
+
+					float w = bottom_fifth.right - bottom_fifth.left;
+					float h = bottom_fifth.up - bottom_fifth.down;
+
+					float goal_w = (h * 5.0f) / 4.0f;
+
+					if (goal_w > w)
+					{
+						crash_err("foolish mortal, you have made an assumption in your code base (namely, that you will only need to reduce the width, but never reduce the height), and that assumption has failed. Now we are crashing to save you a really mean debug session.");
+					}
+					float width_adjustment = (w - goal_w);
+					bottom_fifth.right -= width_adjustment;
+					//draw left
+					{
+						GameSpaceCamera temp_pos = area_get_grid_element(1, 1, 5, 4, bottom_fifth);
+						draw_text_maximized_centered_to_screen(temp_pos, "A", &text_draw_info);
+					}
+					{
+						GameSpaceCamera temp_pos = area_get_grid_element(0, 1, 5, 4, bottom_fifth);
+						draw_ui_to_gamespace(temp_pos, UI_SPRITE_NAME::LEFT_ARROW, &uiDraw);
+					}
+					//draw up
+					{
+						GameSpaceCamera temp_pos = area_get_grid_element(2, 2, 5, 4, bottom_fifth);
+						draw_text_maximized_centered_to_screen(temp_pos, "W", &text_draw_info);
+					}
+					{
+						GameSpaceCamera temp_pos = area_get_grid_element(2, 3, 5, 4, bottom_fifth);
+						draw_ui_to_gamespace(temp_pos, UI_SPRITE_NAME::UP_ARROW, &uiDraw);
+					}
+					//draw down
+					{
+						GameSpaceCamera temp_pos = area_get_grid_element(2, 1, 5, 4, bottom_fifth);
+						draw_text_maximized_centered_to_screen(temp_pos, "S", &text_draw_info);
+					}
+					{
+						GameSpaceCamera temp_pos = area_get_grid_element(2, 0, 5, 4, bottom_fifth);
+						draw_ui_to_gamespace(temp_pos, UI_SPRITE_NAME::DOWN_ARROW, &uiDraw);
+					}
+					//draw right
+					{
+						GameSpaceCamera temp_pos = area_get_grid_element(3, 1, 5, 4, bottom_fifth);
+						draw_text_maximized_centered_to_screen(temp_pos, "D", &text_draw_info);
+					}
+					{
+						GameSpaceCamera temp_pos = area_get_grid_element(4, 1, 5, 4, bottom_fifth);
+						draw_ui_to_gamespace(temp_pos, UI_SPRITE_NAME::RIGHT_ARROW, &uiDraw);
+					}
+				}
+				//draw buttons and their text.
 				for (int i = 0; i < menu_scene_state->num_buttons; i++)
 				{
-					draw_button_to_gamespace(camera_fifth, &uiDraw);
-					draw_text_maximized_centered_to_screen(camera_fifth, menu_scene_state->buttons[i].button_text, &text_draw_info);
+					GameSpaceCamera camera_fifth_smaller = camera_fifth;
+					float width = camera_fifth_smaller.right - camera_fifth_smaller.left;
+					float height = camera_fifth_smaller.up - camera_fifth_smaller.down;
+					camera_fifth_smaller.left += (width / 5.0f);
+					camera_fifth_smaller.right -= (width / 5.0f);
+					camera_fifth_smaller.up -= (height / 10.0f);
+					camera_fifth_smaller.down += (height / 10.0f);
 					if (i == menu_scene_state->current_highlighted_button)
-						draw_black_box_over_screen(camera_fifth, &fullspriteDraw);
+						draw_button_to_gamespace(camera_fifth, &uiDraw, glm::vec4(0.7, 0.7, 1, 1));
+					else
+						draw_button_to_gamespace(camera_fifth, &uiDraw);
+					draw_text_maximized_centered_to_screen(camera_fifth_smaller, menu_scene_state->buttons[i].button_text, &text_draw_info);
 					camera_fifth.down += fifth_h;
 					camera_fifth.up += fifth_h;
 				}
 			}
 		}
+#pragma endregion
 #pragma region draw gpu data
 
 		//update camera.
@@ -1506,6 +1601,9 @@ void mainloopfunction()
 
 			glBindBuffer(GL_ARRAY_BUFFER, fullspriteDraw.fullspriteMatrixBuffer);
 			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::mat4) * fullspriteDraw.num_sprites_drawn, fullspriteDraw.final_cpu);
+			
+			glBindBuffer(GL_ARRAY_BUFFER, fullspriteDraw.fullspriteColorBuffer);
+			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4) * fullspriteDraw.num_sprites_drawn, fullspriteDraw.color_cpu);
 
 			glBindTexture(GL_TEXTURE_2D, floorAtlas);
 			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, fullspriteDraw.num_sprites_drawn);
@@ -1522,6 +1620,8 @@ void mainloopfunction()
 			glBindBuffer(GL_ARRAY_BUFFER, uiDraw.fullspriteMatrixBuffer); CHK
 			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::mat4) * uiDraw.num_sprites_drawn, uiDraw.final_cpu); CHK
 
+			glBindBuffer(GL_ARRAY_BUFFER, uiDraw.fullspriteColorBuffer);
+			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4)* uiDraw.num_sprites_drawn, uiDraw.color_cpu);
 			glBindTexture(GL_TEXTURE_2D, uiAtlas); CHK
 			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, uiDraw.num_sprites_drawn); CHK
 		}
@@ -1660,6 +1760,7 @@ int main(int argc, char *argv[])
 #endif 
 
 #pragma endregion
+
 #pragma region Memory_AND_TimeMachine_AND_Clock_Setup
 	printf("Hello world abc\n");
 	frame_memory = memory_create(1000000);
@@ -2185,7 +2286,7 @@ int main(int argc, char *argv[])
 					text_draw_info.text_positions_normalized[c].y = text_draw_info.text_positions[c].y / FONT_ATLAS_HEIGHT;
 					text_draw_info.text_positions_normalized[c].w = text_draw_info.text_positions[c].w / FONT_ATLAS_WIDTH;
 					text_draw_info.text_positions_normalized[c].h = text_draw_info.text_positions[c].h / FONT_ATLAS_HEIGHT;
-					//ahhhhh, so. SO!
+
 					//3: actually write the character.
 					AABB temp2 = text_draw_info.text_positions_normalized[c];
 					glm::vec4 temp3 = *(glm::vec4*) & temp2;
@@ -2398,296 +2499,7 @@ AABB calculate_outline_position_from_drag_info(Memory* frame_memory,
 	}
 	return next;
 }
-void draw_black_box_over_screen(GameSpaceCamera screen, GamefullspriteDrawInfo* info)
-{
-	info->final_cpu[info->num_sprites_drawn] = glm::mat4(1.0f);
-	info->final_cpu[info->num_sprites_drawn] = glm::translate(info->final_cpu[info->num_sprites_drawn], glm::vec3(screen.left, screen.down, 10));
-	float height = screen.up - screen.down;
-	float width = screen.right - screen.left;
-	info->final_cpu[info->num_sprites_drawn] = glm::scale(info->final_cpu[info->num_sprites_drawn], glm::vec3(width,height, 1));
-	info->atlas_cpu[info->num_sprites_drawn] = info->atlas_mapper[F_ZBLACK];
-	info->num_sprites_drawn++;
-}
-void draw_outline_to_gamespace(AABB outline, GamefullspriteDrawInfo* info)
-{
-	info->final_cpu[info->num_sprites_drawn] = glm::mat4(1.0f);
-	info->final_cpu[info->num_sprites_drawn] = glm::translate(info->final_cpu[info->num_sprites_drawn], glm::vec3(outline.x, outline.y, 5));
-	info->final_cpu[info->num_sprites_drawn] = glm::scale(info->final_cpu[info->num_sprites_drawn], glm::vec3(outline.w, outline.h, 1));
-	info->atlas_cpu[info->num_sprites_drawn] = info->atlas_mapper[F_ZBLACK];
-	info->num_sprites_drawn++;
-}
-void draw_gamestates_outlines_to_gamespace(GameState** gamestates,IntPair* offsets,int length_function_input,GamefullspriteDrawInfo* info,int skip_index)
-{
-	for (int z = 0; z < skip_index; z++)
-	{
-		int w = gamestates[z]->w;
-		int h = gamestates[z]->h;
-		IntPair startPos = offsets[z];
-		glm::mat4 final = glm::mat4(1.0f);
-		final = glm::translate(final, glm::vec3(startPos.x - OUTLINE_DRAW_SIZE, startPos.y - OUTLINE_DRAW_SIZE, 0));
-		final = glm::scale(final, glm::vec3(w + OUTLINE_DRAW_SIZE * 2, h + OUTLINE_DRAW_SIZE * 2, 1));
-		info->final_cpu[info->num_sprites_drawn] = final;
-		info->atlas_cpu[info->num_sprites_drawn] = info->atlas_mapper[F_ZBLACK];
-		info->num_sprites_drawn++;
-	}
-	for (int z = skip_index+1; z < length_function_input; z++)
-	{
-		int w = gamestates[z]->w;
-		int h = gamestates[z]->h;
-		IntPair startPos = offsets[z];
-		glm::mat4 final = glm::mat4(1.0f);
-		final = glm::translate(final, glm::vec3(startPos.x - OUTLINE_DRAW_SIZE, startPos.y - OUTLINE_DRAW_SIZE, 0));
-		final = glm::scale(final, glm::vec3(w + OUTLINE_DRAW_SIZE * 2, h + OUTLINE_DRAW_SIZE * 2, 1));
-		info->final_cpu[info->num_sprites_drawn] = final;
-		info->atlas_cpu[info->num_sprites_drawn] = info->atlas_mapper[F_ZBLACK];
-		info->num_sprites_drawn++;
-	}
-}
-void draw_ui_to_gamespace(GameSpaceCamera draw_area, int index, GamefullspriteDrawInfo* draw_info, glm::vec4 color = glm::vec4(1, 1, 1, 1))
-{
-	int current_draw = draw_info->num_sprites_drawn;
-	draw_info->atlas_cpu[current_draw] = draw_info->atlas_mapper[index];
-	draw_info->final_cpu[current_draw] = glm::mat4(1.0f);
-	draw_info->final_cpu[current_draw] = glm::translate(draw_info->final_cpu[current_draw], glm::vec3(draw_area.left, draw_area.down, 1));
-	float width = draw_area.right - draw_area.left;
-	float height = draw_area.up - draw_area.down;
-	draw_info->final_cpu[current_draw] = glm::scale(draw_info->final_cpu[current_draw], glm::vec3(width, height, 1));
-	draw_info->color_cpu[current_draw] = color;
-	draw_info->num_sprites_drawn++;
 
-};
-void draw_button_to_gamespace(GameSpaceCamera draw_area, GamefullspriteDrawInfo* ui_draw, glm::vec4 color)
-{
-	//draw the left half.
-	float width = draw_area.right - draw_area.left;
-	float height = draw_area.up - draw_area.down;
-	if (height >= width)
-	{
-		crash_err("we can't draw a button if it isn't at least 1x1, the draw won't work");
-
-	}
-	//draw left.
-	{
-		GameSpaceCamera left_draw = draw_area;
-		left_draw.right = left_draw.left + 0.5f * height;
-		draw_ui_to_gamespace(left_draw, UI_SPRITE_NAME::BUTTON_LEFT, ui_draw,color);
-	}
-	//(maybe) draw the middle half.
-	{
-		GameSpaceCamera middle_draw = draw_area;
-		middle_draw.left += 0.5f * height;
-		middle_draw.right -= 0.5f * height;
-		draw_ui_to_gamespace(middle_draw, UI_SPRITE_NAME::BUTTON_CENTER, ui_draw,color);
-	}
-	if (height != width)
-	{
-		GameSpaceCamera right_draw = draw_area;
-		right_draw.left = right_draw.right - 0.5f * height;
-		draw_ui_to_gamespace(right_draw, UI_SPRITE_NAME::BUTTON_RIGHT, ui_draw,color);
-	}
-	//draw the right half.
-}
-
-void draw_stationary_piece_curses_to_gamespace(MovementAnimation* animation, 
-	DrawCurseAnimation* curse_animation,
-	GameState** gamestates, 
-	IntPair* offsets,
-	int number_of_gamestates,
-	LayerDrawGPUData* info, 
-	int layer_index,
-	float time_since_last_action)
-{
-	int i = layer_index;
-	for (int z = 0; z < number_of_gamestates; z++)
-	{
-		GameState* gamestate = gamestates[z];
-		IntPair offset = offsets[z];
-		int num_elements_in_gamestate = gamestate->w * gamestate->h;
-		for (int k = 0; k < num_elements_in_gamestate; k++)
-		{
-			int ele = gamestate->layers[i][k];
-			CursedDirection curse_status = get_entities_cursed_direction(ele);
-			if (curse_status != CursedDirection::NOTCURSED && 
-				(!animation || (animation->start_offset[k].x == animation->end_offset[k].x && animation->start_offset[k].y == animation->end_offset[k].y)))
-			{
-				int curse_to_draw = resource_cursed_direction_to_piece_sprite(curse_status);
-				info[i].atlas_cpu[info[i].total_drawn] = info[i].atlas_mapper[curse_to_draw];
-				IntPair p = t2D(k, gamestate->w, gamestate->h);
-				info[i].positions_cpu[info[i].total_drawn] = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i + 0.2f);
-				info[i].movement_cpu[info[i].total_drawn] = glm::vec2(0, 0);
-				if (curse_animation->flash[k])
-				{
-					float l = time_since_last_action / WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-					l = minf(1.0f, l);
-					float ln = l * NUM_CURSE_FLASHES * 2;
-					float flash_value = (float) abs(fmod(ln, 2) - 1.0);
-					glm::vec4 color = glm::mix(glm::vec4(0, 0, 0, 0), glm::vec4(1, 1, 1, 1), flash_value);
-					info[i].color_cpu[info[i].total_drawn] = color;
-				}
-				else
-				{
-					info[i].color_cpu[info[i].total_drawn] = glm::vec4(1, 1, 1, 1);
-				}
-				info[i].total_drawn++;
-			}
-
-		}
-	}
-}
-
-void draw_piece_curses_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index, DrawCurseAnimation* curse, float time_since_last_action)
-{
-	int i = layer_index;
-	for (int z = 0; z < number_of_gamestates; z++)
-	{
-		GameState* gamestate = gamestates[z];
-		IntPair offset = offsets[z];
-		int num_elements_in_gamestate = gamestate->w * gamestate->h;
-		for (int k = 0; k < num_elements_in_gamestate; k++)
-		{
-			int ele = gamestate->layers[i][k];
-			CursedDirection curse_status = get_entities_cursed_direction(ele);
-			if (curse_status != CursedDirection::NOTCURSED)
-			{
-				int curse_to_draw = resource_cursed_direction_to_piece_sprite(curse_status);
-				info[i].atlas_cpu[info[i].total_drawn] = info[i].atlas_mapper[curse_to_draw];
-				IntPair p = t2D(k, gamestate->w, gamestate->h);
-				info[i].positions_cpu[info[i].total_drawn] = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i + 0.2f);
-				info[i].movement_cpu[info[i].total_drawn] = glm::vec2(0, 0);
-				if (curse && time_since_last_action < WAIT_BETWEEN_PLAYER_MOVE_REPEAT)
-				{
-					float l = time_since_last_action / WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-					float ln = l * NUM_CURSE_FLASHES * 2;
-					float flash_value = (float) abs(fmod(ln, 2) - 1);
-					glm::vec4 color = glm::mix(glm::vec4(1, 0, 0, 1), glm::vec4(1, 1, 1, 1), flash_value);
-					info[i].color_cpu[info[i].total_drawn] = color;
-				}
-				else
-					info[i].color_cpu[info[i].total_drawn] = glm::vec4(1, 1, 1, 1);
-				info[i].total_drawn++;
-			}
-
-		}
-	}
-}
-bool draw_animation_to_gamespace(MovementAnimation* animation, LayerDrawGPUData* info_array, int layer_index, float time_since_last_action)
-{
-	float l = time_since_last_action / WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-
-	l = maxf(0, l);
-	l = minf(1, l);
-
-	LayerDrawGPUData* info = &info_array[layer_index];
-	int len = animation->num_elements;
-	for (int i = 0; i < len; i++)
-	{
-		int ele = resource_layer_value_to_layer_sprite_value(animation->sprite_value[i],layer_index);
-		if (ele == 0)
-			continue;
-		info->atlas_cpu[info->total_drawn] = info->atlas_mapper[ele];
-		info->positions_cpu[info->total_drawn] = animation->start_position[i];
-		info->movement_cpu[info->total_drawn] = animation->start_offset[i] * (1.0f - l) + animation->end_offset[i] * l;
-		info->color_cpu[info->total_drawn] = glm::vec4(1, 1, 1, 1);
-		info->total_drawn++;
-	}
-
-	return l >= 1;
-}
-void draw_curse_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info)
-{
-	int i = LN_PIECE;
-	for (int z = 0; z < number_of_gamestates; z++)
-	{
-		GameState* gamestate = gamestates[z];
-		IntPair offset = offsets[z];
-		int num_elements_in_gamestate = gamestate->w * gamestate->h;
-		for (int k = 0; k < num_elements_in_gamestate; k++)
-		{
-			int ele = gamestate->layers[i][k];
-			CursedDirection curse_status = get_entities_cursed_direction(ele);
-			if (curse_status != CursedDirection::NOTCURSED)
-			{
-				int curse_to_draw = resource_cursed_direction_to_piece_sprite(curse_status);
-				info[i].atlas_cpu[info[i].total_drawn] = info[i].atlas_mapper[curse_to_draw];
-				IntPair p = t2D(k, gamestate->w, gamestate->h);
-				info[i].positions_cpu[info[i].total_drawn] = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i + 0.2f);
-				info[i].movement_cpu[info[i].total_drawn] = glm::vec2(0, 0);
-				info[i].color_cpu[info[i].total_drawn] = glm::vec4(1, 1, 1, 1);
-				info[i].total_drawn++;
-			}
-
-		}
-	}
-}
-void draw_layer_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index)
-{
-	int i = layer_index;
-	{
-		for (int z = 0; z < number_of_gamestates; z++)
-		{
-			GameState* gamestate = gamestates[z];
-			IntPair offset = offsets[z];
-
-			int num_elements_in_gamestate = gamestate->w * gamestate->h;
-			for (int k = 0; k < num_elements_in_gamestate; k++)
-			{
-				int ele = gamestate->layers[i][k];
-				int ele_image = resource_layer_value_to_layer_sprite_value(ele, i);
-				info[i].atlas_cpu[info[i].total_drawn + k] = info[i].atlas_mapper[ele_image];
-				info[i].movement_cpu[info[i].total_drawn + k] = glm::vec2(0, 0);
-				IntPair p = t2D(k, gamestate->w, gamestate->h);
-				info[i].positions_cpu[info[i].total_drawn + k] = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i);
-				info[i].color_cpu[info[i].total_drawn + k] = glm::vec4(1, 1, 1, 1);
-			}
-			info[i].total_drawn += num_elements_in_gamestate;
-		}
-	}
-}
-void draw_layers_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info)
-{
-	for (int i = 0; i < GAME_NUM_LAYERS; i++)
-	{
-		draw_layer_to_gamespace(gamestates, offsets, number_of_gamestates, info, i);
-	}
-}
-
-void draw_palette(IntPair palete_screen_start, 
-	GameSpaceCamera camera_game, 
-	ViewPortCamera camera_viewport, 
-	EditorUIState* ui_state, 
-	int palete_length, 
-	GamestateBrush* palete,
-	LayerDrawGPUData* layer_draw)
-{
-	//parse palette data to gpu form
-	{
-		//determine what the gamespace position is from the screen position BOTTOM LEFT.
-		glm::vec2 palete_true_start = math_screenspace_to_gamespace(palete_screen_start, camera_game, camera_viewport, ui_state->game_height_current);
-		for (int i = 0; i < palete_length; i++)
-		{
-			if (palete[i].applyFloor)
-			{
-				LayerDrawGPUData* floor = &layer_draw[LN_FLOOR];
-				int ele_image = resource_layer_value_to_layer_sprite_value(palete[i].floor, LN_FLOOR);
-				floor->atlas_cpu[floor->total_drawn] = floor->atlas_mapper[ele_image];
-				floor->positions_cpu[floor->total_drawn] = glm::vec3(palete_true_start.x + i, palete_true_start.y, 4);
-				floor->movement_cpu[floor->total_drawn] = glm::vec2(0, 0);
-				floor->color_cpu[floor->total_drawn] = glm::vec4(1, 1, 1, 1);
-				floor->total_drawn++;
-			}
-			if (palete[i].applyPiece)
-			{
-				LayerDrawGPUData* piece = &layer_draw[LN_PIECE];
-				int ele_image = resource_layer_value_to_layer_sprite_value(palete[i].piece, LN_PIECE);
-				piece->atlas_cpu[piece->total_drawn] = piece->atlas_mapper[ele_image];
-				piece->positions_cpu[piece->total_drawn] = glm::vec3(palete_true_start.x + i, palete_true_start.y, 5);
-				piece->movement_cpu[piece->total_drawn] = glm::vec2(0, 0);
-				piece->color_cpu[piece->total_drawn] = glm::vec4(1, 1, 1, 1);
-				piece->total_drawn++;
-			}
-		}
-	}
-}
 
 IntPair calculate_floor_cell_clicked(GameState* currentState,IntPair position, glm::vec2 mouseGamePos)
 {
