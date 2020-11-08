@@ -193,6 +193,7 @@
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Sprites.cpp" />
+    <ClCompile Include="ThreeGames.cpp" />
     <ClCompile Include="tinyfiledialogs.c" />
     <ClCompile Include="Walk.cpp" />
     <ClCompile Include="win32_platform.cpp" />
@@ -230,6 +231,7 @@
     <ClInclude Include="Fonts.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="GamestateAI.h" />
+    <ClInclude Include="GenericUtil.h" />
     <ClInclude Include="gui.h" />
     <ClInclude Include="HelperGL.h" />
     <ClInclude Include="MainHelpers.h" />
@@ -243,12 +245,14 @@
     <ClInclude Include="Regex.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SaveLoad.h" />
+    <ClInclude Include="Scratch.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Side.h" />
     <ClInclude Include="Sprites.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="TextDraw.h" />
     <ClInclude Include="TextScene.h" />
+    <ClInclude Include="ThreeGames.h" />
     <ClInclude Include="tinyfiledialogs.h" />
     <ClInclude Include="TrueFontCharacter.h" />
     <ClInclude Include="World.h" />

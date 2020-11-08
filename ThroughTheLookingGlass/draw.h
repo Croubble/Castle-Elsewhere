@@ -30,7 +30,6 @@ struct GamefullspriteDrawInfo {
 	GLuint fullspriteMatrixBuffer;
 	GLuint fullspriteAtlasBuffer;
 	GLuint fullspriteColorBuffer;
-	int max_num_sprites;
 	int num_sprites_drawn;
 	glm::vec4* atlas_mapper;
 	glm::vec4* atlas_cpu;

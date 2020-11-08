@@ -4,8 +4,6 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
-/******************************IntPair   ****************************************/
-/********************************************************************************/
 
 //in game space, i.e. the unit of measurement we using, where are the points.
 //we pass this to glm::ortho to make the mat4 camera we actually send to the GPU to make transformations.
@@ -32,7 +30,12 @@ struct IntPair
 	int x;
 	int y;
 };
-
+enum Direction {
+	U, R, D, L, NO_DIRECTION, DIRECTION_COUNT
+};
+Direction direction_reverse(Direction dir);
+Direction direction_rotate_clockwise(Direction dir);
+Direction direction_rotate_anti(Direction dir);
 IntPair math_intpair_create(int x, int y);
 IntPair math_intpair_add(IntPair left, IntPair right);
 IntPair math_intpair_sub(IntPair left, IntPair right);

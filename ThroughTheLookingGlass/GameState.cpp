@@ -3,8 +3,7 @@
 #include <iostream>
 #include "Math.h"
 
-//gamestate static functions, go right at top.
-//TODO: Test apply_direction_moves_to_layer for the four functions below. They 1000000% have bugs.
+//movement functions.
 static inline IntPair move_pos_wrapped_2d_up(IntPair pos, int w, int h)
 {
 	pos.y += 1;
@@ -48,6 +47,8 @@ static inline IntPair move_pos_wrapped_2d(IntPair pos, Direction direction, int 
 	}
 	return pos;
 }
+
+//apply moves 
 static void apply_moves_to_layer_SLOW(Memory* temp_memory, bool* is_moving, int* layer, int w, int h, Direction action)
 {
 	//TODO: No longer need to call this, replace call with faster code, holy moly this is slow.
@@ -168,11 +169,11 @@ static void apply_down_moves_to_layer(Memory* memory, bool* is_moving, int* laye
 		layer[next_final_1d] = (stored_value * is_moving[final_i]) + (layer[next_final_1d] * (1 - is_moving[final_i]));
 	}
 }
-static inline bool can_be_pushed(int piece)
+static __forceinline inline bool can_be_pushed(int piece)
 {
 	return is_normal_crate(piece);
 }
-static inline bool can_be_pulled(int piece)
+static __forceinline inline bool can_be_pulled(int piece)
 {
 	return is_pull_crate(piece);
 }
@@ -214,18 +215,6 @@ Direction action_to_direction(Action action)
 		return Direction::D;
 	if (action == Action::A_LEFT)
 		return Direction::L;
-	return Direction::NO_DIRECTION;
-}
-Direction direction_reverse(Direction dir)
-{
-	if (dir == U)
-		return D;
-	if (dir == L)
-		return R;
-	if (dir == R)
-		return L;
-	if (dir == D)
-		return U;
 	return Direction::NO_DIRECTION;
 }
 static void cancel_blocked_moves(bool* is_moving, int* layer, Direction d, int w, int h)

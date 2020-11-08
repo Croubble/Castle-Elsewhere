@@ -129,9 +129,7 @@ enum Action {
 	A_NONE,
 	A_COUNT
 };
-enum Direction {
-	U,R,D,L,NO_DIRECTION,DIRECTION_COUNT
-};
+
 
 enum AnimationType {
 	AT_NONE,
@@ -169,7 +167,6 @@ struct GameActionJournal
 	CurseAnimation* maybe_cursed_animation;
 };
 Direction action_to_direction(Action action);
-Direction direction_reverse(Direction dir);
 IntPair direction_to_intpair(Direction dir);
 void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scope_memory);
 

@@ -29,9 +29,8 @@ void UpdateGameState(int x, int y, int w, int h, Immobile* permanent_arr, Mobile
 {
 	int arr_len = w * h;
 	//for each mobile element in array, apply the player move action to that element.
-	for (int i = 0; i < length; i++)
-	{
-		//1:find the players current position.
+			
+	//1:find the players current position.
 		//2a:apply any pull moves.
 		//2b:apply any push moves.
 		//2c:apply any side moves.
