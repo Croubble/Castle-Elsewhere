@@ -85,13 +85,13 @@ void draw_black_box_over_screen(GameSpaceCamera screen, GamefullspriteDrawInfo* 
 	info->atlas_cpu[info->num_sprites_drawn] = info->atlas_mapper[F_ZBLACK];
 	info->num_sprites_drawn++;
 }
-void draw_outline_to_gamespace(AABB outline, GamefullspriteDrawInfo* info)
+void draw_outline_to_gamespace(AABB outline, SpriteWrite* info)
 {
-	info->final_cpu[info->num_sprites_drawn] = glm::mat4(1.0f);
-	info->final_cpu[info->num_sprites_drawn] = glm::translate(info->final_cpu[info->num_sprites_drawn], glm::vec3(outline.x, outline.y, 5));
-	info->final_cpu[info->num_sprites_drawn] = glm::scale(info->final_cpu[info->num_sprites_drawn], glm::vec3(outline.w, outline.h, 1));
-	info->atlas_cpu[info->num_sprites_drawn] = info->atlas_mapper[F_ZBLACK];
-	info->num_sprites_drawn++;
+	info->matrix_cpu[info->num_draw] = glm::mat4(1.0f);
+	info->matrix_cpu[info->num_draw] = glm::translate(info->matrix_cpu[info->num_draw], glm::vec3(outline.x, outline.y, 5));
+	info->matrix_cpu[info->num_draw] = glm::scale(info->matrix_cpu[info->num_draw], glm::vec3(outline.w, outline.h, 1));
+	info->atlas_cpu[info->num_draw] = info->atlas_mapper[F_ZBLACK];
+	info->num_draw++;
 }
 void draw_gamestates_outlines_to_gamespace(GameState** gamestates, IntPair* offsets, int length_function_input, GamefullspriteDrawInfo* info, int skip_index)
 {

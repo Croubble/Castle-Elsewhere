@@ -142,7 +142,6 @@ GLuint string_matrix_buffer;
 GLuint string_color_buffer;
 TextWrite text_draw_info;
 
-GamespriteDrawInfo gamespriteDrawInfo;
 
 unsigned int string_texture;
 
@@ -1278,10 +1277,10 @@ void mainloopfunction()
 					outline.h += 0.2f;
 					AABB* outlines_broken = (AABB*)memory_alloc(frame_memory, sizeof(AABB) * 4);
 					math_AABB_break_into_borders(outline, outlines_broken, 0.2f);
-					draw_outline_to_gamespace(outlines_broken[0], &fullspriteDraw);
-					draw_outline_to_gamespace(outlines_broken[1], &fullspriteDraw);
-					draw_outline_to_gamespace(outlines_broken[2], &fullspriteDraw);
-					draw_outline_to_gamespace(outlines_broken[3], &fullspriteDraw);
+					draw_outline_to_gamespace(outlines_broken[0], floor_write);
+					draw_outline_to_gamespace(outlines_broken[1], floor_write);
+					draw_outline_to_gamespace(outlines_broken[2], floor_write);
+					draw_outline_to_gamespace(outlines_broken[3], floor_write);
 				}
 			}
 			//parse gamestate outlines.
@@ -1292,25 +1291,6 @@ void mainloopfunction()
 					editor_scene_state->timeMachine->current_number_of_gamestates,
 					&fullspriteDraw,
 					skip_index);
-			}
-			//parse outline floor data.
-			if (ui_state.game_height_current <= MAX_ZOOM_OUT_TO_STILL_DISPLAY_OUTLINES)
-			{
-				int outline_height = (int)ui_state.game_height_current + 3;
-				int outline_width = (int)(SCREEN_RATIO * outline_height) + 1;
-				IntPair bottom_left_screenspace = math_intpair_create(0, 0);
-				glm::vec2 bottom_left_gamespace = math_screenspace_to_gamespace(bottom_left_screenspace, camera_game, camera_viewport, ui_state.game_height_current);
-				glm::vec2 outlines_start_position = glm::vec2(bottom_left_gamespace.x - 1, bottom_left_gamespace.y - 1);
-				outlines_start_position = glm::vec2((int)outlines_start_position.x, (int)outlines_start_position.y);
-				for (int i = 0; i < outline_width; i++)
-					for (int j = 0; j < outline_height; j++)
-					{
-						int index = f2D(i, j, outline_width, outline_height);
-						Floor f = F_OUTLINE;
-						floor_atlas_cpu[floor_total_drawn + index] = floor_atlas_mapper[f];
-						floor_positions_cpu[floor_total_drawn + index] = glm::vec3(outlines_start_position.x + i, outlines_start_position.y + j, 0);
-					}
-				floor_total_drawn += outline_width * outline_height;
 			}
 			//parse gamestates
 			{
@@ -2189,16 +2169,6 @@ int main(int argc, char *argv[])
 	#pragma endregion 
 	#pragma region Camera Setup And UtilStructs
 		//setup all the information we just initialized into a handy struct.
-		{
-			gamespriteDrawInfo.floor_atlas_cpu = floor_atlas_cpu;
-			gamespriteDrawInfo.floor_atlas_mapper = floor_atlas_mapper;
-			gamespriteDrawInfo.floor_positions_cpu = floor_positions_cpu;
-			gamespriteDrawInfo.floor_total_drawn = &floor_total_drawn;
-			gamespriteDrawInfo.piece_atlas_cpu = piece_atlas_cpu;
-			gamespriteDrawInfo.piece_atlas_mapper = piece_atlas_mapper;
-			gamespriteDrawInfo.piece_positions_cpu = piece_positions_cpu;
-			gamespriteDrawInfo.piece_total_drawn = &piece_total_drawn;
-		}
 
 
 		//calculate the starting camera position.

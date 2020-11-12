@@ -61,7 +61,7 @@ void draw_palette(IntPair palete_screen_start,
 	GamestateBrush* palete,
 	LayerDrawGPUData* layer_draw);
 void draw_black_box_over_screen(GameSpaceCamera screen, GamefullspriteDrawInfo* info);
-void draw_outline_to_gamespace(AABB outline, GamefullspriteDrawInfo* info);
+void draw_outline_to_gamespace(AABB outline, SpriteWrite* info);
 void draw_button_to_gamespace(GameSpaceCamera draw_area, SpriteWrite* ui_draw, glm::vec4 color = glm::vec4(1,1,1,1));
 void draw_ui_to_gamespace(GameSpaceCamera draw_area, int index, SpriteWrite* draw_info, glm::vec4 color = glm::vec4(1, 1, 1, 1));
 
