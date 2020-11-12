@@ -192,7 +192,10 @@
     <ClCompile Include="SaveLoad.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="sprite.cpp" />
     <ClCompile Include="Sprites.cpp" />
+    <ClCompile Include="TextDraw.cpp" />
+    <ClCompile Include="textureAssets.cpp" />
     <ClCompile Include="ThreeGames.cpp" />
     <ClCompile Include="tinyfiledialogs.c" />
     <ClCompile Include="Walk.cpp" />
@@ -248,10 +251,12 @@
     <ClInclude Include="Scratch.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Side.h" />
+    <ClInclude Include="sprite.h" />
     <ClInclude Include="Sprites.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="TextDraw.h" />
     <ClInclude Include="TextScene.h" />
+    <ClInclude Include="textureAssets.h" />
     <ClInclude Include="ThreeGames.h" />
     <ClInclude Include="tinyfiledialogs.h" />
     <ClInclude Include="TrueFontCharacter.h" />

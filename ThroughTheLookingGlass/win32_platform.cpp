@@ -6,8 +6,7 @@
 #include "TextScene.h"
 #include "MenuScene.h"
 #include "EditorScene.h"
-
-
+#include "sprite.h"
 
 void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, glm::mat4* camera, bool mouse_moved_this_frame, SCENE_TYPE scene)
 {
@@ -44,6 +43,12 @@ void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, g
 }
 
 #pragma region EMBARASSINGLY GLOBAL VARIABLES
+
+//Sprite writers
+SpriteWrite* floor_write;
+SpriteWrite* piece_write;
+SpriteWrite* symbol_write;
+SpriteWrite* ui_write;
 
 bool keep_running_infinite_loop = false;
 //Memory variables.
@@ -100,7 +105,6 @@ Shader fullSpriteShader;
 Shader dottedShader;
 Shader textShader;
 Shader stringShader;
-Shader uiShader;
 unsigned int floorAtlas;
 unsigned int pieceAtlas;
 unsigned int uiAtlas;
@@ -124,7 +128,6 @@ glm::vec4* piece_atlas_mapper;
 int piece_total_drawn = 0;
 
 GamefullspriteDrawInfo fullspriteDraw;
-GamefullspriteDrawInfo uiDraw;
 
 GLuint dotted_VAO;
 GLuint dotted_positions_buffer;
@@ -137,7 +140,7 @@ GLuint string_VAO;
 GLuint string_atlas_buffer;
 GLuint string_matrix_buffer;
 GLuint string_color_buffer;
-TextDrawInfo text_draw_info;
+TextWrite text_draw_info;
 
 GamespriteDrawInfo gamespriteDrawInfo;
 
@@ -1512,6 +1515,19 @@ void mainloopfunction()
 					}
 					float width_adjustment = (w - goal_w);
 					bottom_fifth.right -= width_adjustment;
+					/*
+					
+				enum UI
+			{
+				ButtonCenter,
+				ButtonLeftHalf,
+				ButtonRightHalf,
+				DownArrow,
+				LeftArrow,
+				RightArrow,
+				UpArrow
+			};
+					*/
 					//draw left
 					{
 						GameSpaceCamera temp_pos = area_get_grid_element(1, 1, 5, 4, bottom_fifth);
@@ -1519,7 +1535,7 @@ void mainloopfunction()
 					}
 					{
 						GameSpaceCamera temp_pos = area_get_grid_element(0, 1, 5, 4, bottom_fifth);
-						draw_ui_to_gamespace(temp_pos, UI_SPRITE_NAME::LEFT_ARROW, &uiDraw);
+						draw_ui_to_gamespace(temp_pos, textureAssets::UI::LeftArrow, ui_write);
 					}
 					//draw up
 					{
@@ -1528,7 +1544,7 @@ void mainloopfunction()
 					}
 					{
 						GameSpaceCamera temp_pos = area_get_grid_element(2, 3, 5, 4, bottom_fifth);
-						draw_ui_to_gamespace(temp_pos, UI_SPRITE_NAME::UP_ARROW, &uiDraw);
+						draw_ui_to_gamespace(temp_pos, textureAssets::UI::UpArrow, ui_write);
 					}
 					//draw down
 					{
@@ -1537,7 +1553,7 @@ void mainloopfunction()
 					}
 					{
 						GameSpaceCamera temp_pos = area_get_grid_element(2, 0, 5, 4, bottom_fifth);
-						draw_ui_to_gamespace(temp_pos, UI_SPRITE_NAME::DOWN_ARROW, &uiDraw);
+						draw_ui_to_gamespace(temp_pos, textureAssets::UI::DownArrow, ui_write);
 					}
 					//draw right
 					{
@@ -1546,7 +1562,7 @@ void mainloopfunction()
 					}
 					{
 						GameSpaceCamera temp_pos = area_get_grid_element(4, 1, 5, 4, bottom_fifth);
-						draw_ui_to_gamespace(temp_pos, UI_SPRITE_NAME::RIGHT_ARROW, &uiDraw);
+						draw_ui_to_gamespace(temp_pos, textureAssets::UI::RightArrow, ui_write);
 					}
 				}
 				//draw buttons and their text.
@@ -1560,9 +1576,9 @@ void mainloopfunction()
 					camera_fifth_smaller.up -= (height / 10.0f);
 					camera_fifth_smaller.down += (height / 10.0f);
 					if (i == menu_scene_state->current_highlighted_button)
-						draw_button_to_gamespace(camera_fifth, &uiDraw, glm::vec4(0.7, 0.7, 1, 1));
+						draw_button_to_gamespace(camera_fifth, ui_write, glm::vec4(0.7, 0.7, 1, 1));
 					else
-						draw_button_to_gamespace(camera_fifth, &uiDraw);
+						draw_button_to_gamespace(camera_fifth, ui_write);
 					draw_text_maximized_centered_to_screen(camera_fifth_smaller, menu_scene_state->buttons[i].button_text, &text_draw_info);
 					camera_fifth.down += fifth_h;
 					camera_fifth.up += fifth_h;
@@ -1587,8 +1603,13 @@ void mainloopfunction()
 			shader_set_uniform_float(dottedShader, "time", total_time);
 			glUseProgram(stringShader);
 			shader_set_uniform_mat4(stringShader, "viewProjectionMatrix", camera);
-			glUseProgram(uiShader); 
-			shader_set_uniform_mat4(uiShader, "viewProjectionMatrix", camera); 
+		}
+		//grand new draw world, not like that bad old code!
+		{
+			sprite_write_out(floor_write, camera);
+			sprite_write_out(piece_write, camera);
+			sprite_write_out(symbol_write, camera);
+
 		}
 		//draw full sprites.
 		{
@@ -1608,24 +1629,6 @@ void mainloopfunction()
 			glBindTexture(GL_TEXTURE_2D, floorAtlas);
 			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, fullspriteDraw.num_sprites_drawn);
 		}
-		//draw uiShader.
-		{
-			//send it on over to gpu!
-			glUseProgram(uiShader); CHK
-			glBindVertexArray(uiDraw.fullsprite_VAO); CHK
-			glBindBuffer(GL_ARRAY_BUFFER, uiDraw.fullspriteAtlasBuffer); CHK
-			std::cout << "buffer_attempt" << std::endl; CHK 
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4) * uiDraw.num_sprites_drawn, uiDraw.atlas_cpu); CHK
-
-			glBindBuffer(GL_ARRAY_BUFFER, uiDraw.fullspriteMatrixBuffer); CHK
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::mat4) * uiDraw.num_sprites_drawn, uiDraw.final_cpu); CHK
-
-			glBindBuffer(GL_ARRAY_BUFFER, uiDraw.fullspriteColorBuffer);
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4)* uiDraw.num_sprites_drawn, uiDraw.color_cpu);
-			glBindTexture(GL_TEXTURE_2D, uiAtlas); CHK
-			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, uiDraw.num_sprites_drawn); CHK
-		}
-
 		//draw layers
 		for (int i = 0; i < GAME_NUM_LAYERS; i++)
 		{
@@ -1685,6 +1688,8 @@ void mainloopfunction()
 
 			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, dotted_total_drawn);
 		}
+
+		sprite_write_out(ui_write, camera);
 		//draw text
 		{
 			glUseProgram(stringShader);
@@ -1716,7 +1721,11 @@ void mainloopfunction()
 		fullspriteDraw.num_sprites_drawn = 0;
 		dotted_total_drawn = 0;
 		*text_draw_info.current_number_drawn = 0;
-		uiDraw.num_sprites_drawn = 0;
+
+		floor_write->num_draw = 0;
+		piece_write->num_draw = 0;
+		symbol_write->num_draw = 0;
+		ui_write->num_draw = 0;
 		memory_clear(frame_memory);
 #pragma endregion 
 		//return running;
@@ -1817,10 +1826,16 @@ int main(int argc, char *argv[])
 		dottedShader = shader_compile_program("dottedlines.vs", "dottedlines.f");
 		textShader = shader_compile_program("text.vs", "sprite.f");
 		stringShader = shader_compile_program("string.vs", "string.f");
-		uiShader = shader_compile_program("ui.vs", "ui.f");
+
+		unsigned int floor_atlas_2 = resource_load_image_from_file_onto_gpu("floor.png");
+		unsigned int piece_atlas_2 = resource_load_image_from_file_onto_gpu("piece.png");
+		unsigned int symbol_atlas_2 = resource_load_image_from_file_onto_gpu("symbols.png");
+		unsigned int ui_atlas_2 = resource_load_image_from_file_onto_gpu("ui.png");
+
 		floorAtlas = resource_load_image_from_file_onto_gpu("FinalFloor.png");
 		pieceAtlas = resource_load_image_from_file_onto_gpu("FinalPiece.png");
-		uiAtlas = resource_load_image_from_file_onto_gpu("FinalUI.png");
+	
+
 		//ui_atlas_mapper = resource_load_texcoords_ui(permanent_memory, frame_memory);
 		glUseProgram(spriteShader);
 
@@ -1836,6 +1851,52 @@ int main(int argc, char *argv[])
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices_EBO);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 		}
+	
+		//build sprite writers.
+		{
+			floor_write = sprite_write_make
+			(
+				floor_atlas_2,
+				fullSpriteShader,
+				permanent_memory,
+				1000,
+				vertices_VBO,
+				vertices_EBO,
+				textureAssets::FLOOR_positions(permanent_memory)
+			);
+			piece_write = sprite_write_make
+			(
+				piece_atlas_2,
+				fullSpriteShader,
+				permanent_memory,
+				1000,
+				vertices_VBO,
+				vertices_EBO,
+				textureAssets::PIECE_positions(permanent_memory)
+			);
+			symbol_write = sprite_write_make
+			(
+				symbol_atlas_2,
+				fullSpriteShader,
+				permanent_memory,
+				1000,
+				vertices_VBO,
+				vertices_EBO,
+				textureAssets::SYMBOLS_positions(permanent_memory)
+			);
+			ui_write = sprite_write_make
+			(
+				ui_atlas_2,
+				fullSpriteShader,
+				permanent_memory,
+				1000,
+				vertices_VBO,
+				vertices_EBO,
+				textureAssets::UI_positions(permanent_memory)
+			);
+		}
+
+
 	#pragma endregion
 	#pragma region Layer GPU setup
 			layer_draw = (LayerDrawGPUData*) memory_alloc(permanent_memory, sizeof(LayerDrawGPUData) * GAME_NUM_LAYERS);
@@ -2016,8 +2077,6 @@ int main(int argc, char *argv[])
 	#pragma region fullsprite and UI GPU setup
 		fullspriteDraw.atlas_mapper = floor_atlas_mapper;
 		fullsprite_generate(fullSpriteShader, permanent_memory, vertices_VBO, vertices_EBO, floor_atlas_mapper, &fullspriteDraw);
-		ui_atlas_mapper = resource_load_texcoords_ui(permanent_memory, frame_memory);
-		fullsprite_generate(uiShader, permanent_memory, vertices_VBO, vertices_EBO, ui_atlas_mapper, &uiDraw);
 
 	#pragma endregion 
 	#pragma region dotted GPU setup

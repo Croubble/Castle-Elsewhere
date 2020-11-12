@@ -2,7 +2,7 @@
 
 
 #include "Math.h"
-
+#include "sprite.h"
 namespace TripleCrate
 {
 	struct CratePowers
@@ -37,7 +37,7 @@ namespace TripleCrate
 	};
 	struct Journal
 	{
-		GameState* old;
+		GameState* last_state;
 	};
 	enum Action
 	{
@@ -46,7 +46,9 @@ namespace TripleCrate
 		Down,
 		Left
 	};
-
+	
+	GameState* gamestate_clone(GameState* old, Memory* memory);
 	void gamestate_update(GameState* to_update, Direction action, Memory* temp_memory);
+	void draw_gamestate(GameState* to_draw, Journal* maybe_journal, IntPair* maybe_position_offset, glm::vec4* maybe_color_offset, SpriteWrite* out);
 }
 

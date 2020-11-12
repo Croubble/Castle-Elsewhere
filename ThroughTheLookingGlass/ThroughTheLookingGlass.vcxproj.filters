@@ -135,6 +135,15 @@
     <ClCompile Include="ThreeGames.cpp">
       <Filter>Source Files\GamestateFilter</Filter>
     </ClCompile>
+    <ClCompile Include="sprite.cpp">
+      <Filter>Source Files\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="TextDraw.cpp">
+      <Filter>Source Files\EditorFilter</Filter>
+    </ClCompile>
+    <ClCompile Include="textureAssets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="gl_text.vs">
@@ -299,6 +308,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Scratch.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sprite.h">
+      <Filter>Source Files\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="textureAssets.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

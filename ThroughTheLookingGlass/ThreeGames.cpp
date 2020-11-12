@@ -165,6 +165,27 @@ static void apply_down_moves_to_layer(Memory* memory, bool* is_moving, int* laye
 	}
 }
 
+TripleCrate::GameState* TripleCrate::gamestate_clone(GameState* old, Memory* memory)
+{
+	GameState* result = (GameState*)memory_alloc(memory, sizeof(GameState));
+	int w = old->w;
+	int h = old->h;
+	result->w = old->w;
+	result->h = old->h;
+	int len = old->w * old->h;
+	result->floor = (FloorEle*)memory_alloc(memory, sizeof(sizeof(FloorEle) * len));
+	result->piece = (PieceEle*)memory_alloc(memory, sizeof(sizeof(PieceEle) * len));
+	for (int i = 0; i < len; i++)
+	{
+		result->floor[i] = old->floor[i];
+	}
+	for (int i = 0; i < len; i++)
+	{
+		result->piece[i] = old->piece[i];
+	}
+	return result;
+}
+
 void TripleCrate::gamestate_update(GameState* to_update, Direction action, Memory* temp_memory)
 {
 	//algorithm startup calculations.
@@ -226,4 +247,20 @@ void TripleCrate::gamestate_update(GameState* to_update, Direction action, Memor
 	//if a marked grill has no player on it, transform it into a hot grill.
 	if (grill_to_activate >= 0 && to_update->piece[player_pos] != PieceEle::Player)
 		to_update->floor[grill_to_activate] = FloorEle::GrillHot;
+}
+
+void TripleCrate::draw_gamestate(GameState* to_draw, Journal* maybe_journal, IntPair* maybe_position_offset, glm::vec4* maybe_color_offset, SpriteWrite* out)
+{
+	int w = to_draw->w;
+	int h = to_draw->h;
+	//draw the floor.
+	{
+		//map every element name to a sprite to draw (or -1 if no sprite to draw). 
+		int z = 0;
+		for (int i = 0; i < w; i++)
+			for (int j = 0; j < h; j++, z++)
+			{
+
+			}
+	}
 }

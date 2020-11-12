@@ -5,6 +5,8 @@
 #include "draw.h"
 #include "GameState.h"
 #include "Resource.h"
+#include "sprite.h"
+
 const int MAX_NUM_FULL_SPRITES = 100;
 
 void fullsprite_generate(Shader shader, Memory* permanent_memory, GLuint vertices_VBO, GLuint vertices_EBO, glm::vec4* atlas_mapper, GamefullspriteDrawInfo* fullspriteDraw)
@@ -118,20 +120,20 @@ void draw_gamestates_outlines_to_gamespace(GameState** gamestates, IntPair* offs
 		info->num_sprites_drawn++;
 	}
 }
-void draw_ui_to_gamespace(GameSpaceCamera draw_area, int index, GamefullspriteDrawInfo* draw_info, glm::vec4 color)
+void draw_ui_to_gamespace(GameSpaceCamera draw_area, int index, SpriteWrite* draw_info, glm::vec4 color)
 {
-	int current_draw = draw_info->num_sprites_drawn;
+	int current_draw = draw_info->num_draw;
 	draw_info->atlas_cpu[current_draw] = draw_info->atlas_mapper[index];
-	draw_info->final_cpu[current_draw] = glm::mat4(1.0f);
-	draw_info->final_cpu[current_draw] = glm::translate(draw_info->final_cpu[current_draw], glm::vec3(draw_area.left, draw_area.down, 1));
+	draw_info->matrix_cpu[current_draw] = glm::mat4(1.0f);
+	draw_info->matrix_cpu[current_draw] = glm::translate(draw_info->matrix_cpu[current_draw], glm::vec3(draw_area.left, draw_area.down, 1));
 	float width = draw_area.right - draw_area.left;
 	float height = draw_area.up - draw_area.down;
-	draw_info->final_cpu[current_draw] = glm::scale(draw_info->final_cpu[current_draw], glm::vec3(width, height, 1));
+	draw_info->matrix_cpu[current_draw] = glm::scale(draw_info->matrix_cpu[current_draw], glm::vec3(width, height, 1));
 	draw_info->color_cpu[current_draw] = color;
-	draw_info->num_sprites_drawn++;
+	draw_info->num_draw++;
 
 };
-void draw_button_to_gamespace(GameSpaceCamera draw_area, GamefullspriteDrawInfo* ui_draw, glm::vec4 color)
+void draw_button_to_gamespace(GameSpaceCamera draw_area, SpriteWrite * ui_draw, glm::vec4 color)
 {
 	//draw the left half.
 	float width = draw_area.right - draw_area.left;
@@ -145,20 +147,20 @@ void draw_button_to_gamespace(GameSpaceCamera draw_area, GamefullspriteDrawInfo*
 	{
 		GameSpaceCamera left_draw = draw_area;
 		left_draw.right = left_draw.left + 0.5f * height;
-		draw_ui_to_gamespace(left_draw, UI_SPRITE_NAME::BUTTON_LEFT, ui_draw, color);
+		draw_ui_to_gamespace(left_draw,textureAssets::UI::ButtonLeftHalf, ui_draw, color);
 	}
 	//(maybe) draw the middle half.
 	{
 		GameSpaceCamera middle_draw = draw_area;
 		middle_draw.left += 0.5f * height;
 		middle_draw.right -= 0.5f * height;
-		draw_ui_to_gamespace(middle_draw, UI_SPRITE_NAME::BUTTON_CENTER, ui_draw, color);
+		draw_ui_to_gamespace(middle_draw, textureAssets::UI::ButtonCenter, ui_draw, color);
 	}
 	if (height != width)
 	{
 		GameSpaceCamera right_draw = draw_area;
 		right_draw.left = right_draw.right - 0.5f * height;
-		draw_ui_to_gamespace(right_draw, UI_SPRITE_NAME::BUTTON_RIGHT, ui_draw, color);
+		draw_ui_to_gamespace(right_draw,textureAssets::UI::ButtonRightHalf ,ui_draw, color);
 	}
 	//draw the right half.
 }

@@ -10,6 +10,7 @@ void main()
 {
 	vec4 texColor = texture(texture1,TexCoord);
 	vec4 result = vec4(color.r * texColor.r, color.g * texColor.g, color.b * texColor.b, color.a * texColor.a);
-	FragColor = result; 
-	//FragColor = vec4(1,1,1,1);
+	//FragColor = result; 
+	vec4 result2 = vec4(color.r,1.0,1.0,1.0);
+	FragColor = result2; 
 }
