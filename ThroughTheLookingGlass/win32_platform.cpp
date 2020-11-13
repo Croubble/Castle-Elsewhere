@@ -113,14 +113,6 @@ unsigned int uiAtlas;
 glm::vec4* ui_atlas_mapper;
 LayerDrawGPUData* layer_draw;
 
-GLuint floor_VAO;
-GLuint floorPositionsBuffer;
-GLuint floorAtlasBuffer;
-glm::vec3* floor_positions_cpu;
-glm::vec4* floor_atlas_cpu;
-glm::vec4* floor_atlas_mapper;
-int floor_total_drawn = 0;
-
 GLuint piece_VAO;
 GLuint piecePositionsBuffer;
 GLuint pieceAtlasBuffer;
@@ -1627,21 +1619,6 @@ void mainloopfunction()
 			glBindTexture(GL_TEXTURE_2D, layer_draw[i].texture);
 			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, layer_draw[i].total_drawn);
 		}
-		//draw floor.
-		{
-			//send that data to the gpu!
-			glBindVertexArray(floor_VAO);
-			glUseProgram(spriteShader);
-			glBindBuffer(GL_ARRAY_BUFFER, floorAtlasBuffer);
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4) * floor_total_drawn, floor_atlas_cpu);
-			glBindBuffer(GL_ARRAY_BUFFER, floorPositionsBuffer);
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 3 * floor_total_drawn, floor_positions_cpu);
-
-			//draw that data!
-			glBindTexture(GL_TEXTURE_2D, floorAtlas);
-			glBindVertexArray(floor_VAO);
-			//glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, floor_total_drawn);
-		}
 		//draw pieces.
 		{
 			//send it on over to gpu!
@@ -1697,7 +1674,6 @@ void mainloopfunction()
 		//each frame we are sending the entirety of all the floor and piece things to draw to the gpu, so we reset the list we have. goood.
 		for (int z = 0; z < GAME_NUM_LAYERS; z++)
 			layer_draw[z].total_drawn = 0;
-		floor_total_drawn = 0;
 		piece_total_drawn = 0;
 		fullspriteDraw.num_sprites_drawn = 0;
 		dotted_total_drawn = 0;
@@ -1970,54 +1946,6 @@ int main(int argc, char *argv[])
 
 			}
 	#pragma endregion
-	#pragma region Floor GPU setup
-
-		floor_positions_cpu = (glm::vec3*) memory_alloc(permanent_memory, MAX_NUM_FLOOR_SPRITES * sizeof(glm::vec3));
-		floor_atlas_cpu = (glm::vec4*)memory_alloc(permanent_memory, MAX_NUM_FLOOR_SPRITES * sizeof(glm::vec4));
-		floor_atlas_mapper = resource_load_texcoords_floor(permanent_memory, frame_memory);
-		floor_total_drawn = 0;
-		//build floor VAO
-		{
-
-			glGenVertexArrays(1, &floor_VAO);
-			glBindVertexArray(floor_VAO);
-
-			glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices_EBO);
-
-			GLint position = 0;
-			glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-			glEnableVertexAttribArray(position);
-
-		
-			GLint texCoord = 1;
-			glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-			glEnableVertexAttribArray(texCoord);
-		
-
-			glGenBuffers(1, &floorPositionsBuffer);
-			glBindBuffer(GL_ARRAY_BUFFER, floorPositionsBuffer);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * MAX_NUM_FLOOR_SPRITES, NULL, GL_DYNAMIC_DRAW);
-		
-		
-			GLint positionOffset = glGetAttribLocation(spriteShader, "positionOffset");
-
-			glVertexAttribPointer(positionOffset, 3, GL_FLOAT, false, 3 * sizeof(float), (void*)0);
-			glEnableVertexAttribArray(positionOffset);
-			glVertexAttribDivisor(positionOffset, 1);
-		
-
-			glGenBuffers(1, &floorAtlasBuffer);
-			glBindBuffer(GL_ARRAY_BUFFER, floorAtlasBuffer);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * MAX_NUM_FLOOR_SPRITES, NULL, GL_DYNAMIC_DRAW);
-
-		
-			GLint atlasOffset = glGetAttribLocation(spriteShader, "atlasCoord");
-			glVertexAttribPointer(atlasOffset, 4, GL_FLOAT, false, 4 * sizeof(float), (void*)(0));
-			glEnableVertexAttribArray(atlasOffset);
-			glVertexAttribDivisor(atlasOffset, 1);
-		}
-	#pragma endregion 
 	#pragma region Piece GPU setup
 		piece_VAO;
 		piecePositionsBuffer;
@@ -2061,10 +1989,6 @@ int main(int argc, char *argv[])
 			glVertexAttribDivisor(atlasOffset, 1);
 		}
 	#pragma endregion 
-	#pragma region fullsprite and UI GPU setup
-		fullspriteDraw.atlas_mapper = floor_atlas_mapper;
-		fullsprite_generate(fullSpriteShader, permanent_memory, vertices_VBO, vertices_EBO, floor_atlas_mapper, &fullspriteDraw);
-
 	#pragma endregion 
 	#pragma region dotted GPU setup
 		dotted_VAO;
