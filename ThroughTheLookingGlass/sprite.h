@@ -29,7 +29,7 @@ struct SpriteWrite {
 	glm::mat4* matrix_cpu;
 	glm::vec4* color_cpu;
 };
-struct DrawData
+struct AllWrite
 {
 	SpriteWrite* floor;
 	SpriteWrite* piece;

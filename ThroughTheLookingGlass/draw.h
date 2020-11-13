@@ -51,7 +51,7 @@ void draw_gamestates_outlines_to_gamespace(
 	GameState** gamestates,
 	IntPair* offsets,
 	int length_function_input,
-	GamefullspriteDrawInfo* info,
+	SpriteWrite* info,
 	int index);
 void draw_palette(IntPair palete_screen_start,
 	GameSpaceCamera camera_game,

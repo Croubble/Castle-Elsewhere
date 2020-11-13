@@ -93,7 +93,7 @@ void draw_outline_to_gamespace(AABB outline, SpriteWrite* info)
 	info->atlas_cpu[info->num_draw] = info->atlas_mapper[F_ZBLACK];
 	info->num_draw++;
 }
-void draw_gamestates_outlines_to_gamespace(GameState** gamestates, IntPair* offsets, int length_function_input, GamefullspriteDrawInfo* info, int skip_index)
+void draw_gamestates_outlines_to_gamespace(GameState** gamestates, IntPair* offsets, int length_function_input, SpriteWrite* info, int skip_index)
 {
 	for (int z = 0; z < skip_index; z++)
 	{
@@ -103,9 +103,9 @@ void draw_gamestates_outlines_to_gamespace(GameState** gamestates, IntPair* offs
 		glm::mat4 final = glm::mat4(1.0f);
 		final = glm::translate(final, glm::vec3(startPos.x - OUTLINE_DRAW_SIZE, startPos.y - OUTLINE_DRAW_SIZE, 0));
 		final = glm::scale(final, glm::vec3(w + OUTLINE_DRAW_SIZE * 2, h + OUTLINE_DRAW_SIZE * 2, 1));
-		info->final_cpu[info->num_sprites_drawn] = final;
-		info->atlas_cpu[info->num_sprites_drawn] = info->atlas_mapper[F_ZBLACK];
-		info->num_sprites_drawn++;
+		info->matrix_cpu[info->num_draw] = final;
+		info->atlas_cpu[info->num_draw] = info->atlas_mapper[F_ZBLACK];
+		info->num_draw++;
 	}
 	for (int z = skip_index + 1; z < length_function_input; z++)
 	{
@@ -115,9 +115,9 @@ void draw_gamestates_outlines_to_gamespace(GameState** gamestates, IntPair* offs
 		glm::mat4 final = glm::mat4(1.0f);
 		final = glm::translate(final, glm::vec3(startPos.x - OUTLINE_DRAW_SIZE, startPos.y - OUTLINE_DRAW_SIZE, 0));
 		final = glm::scale(final, glm::vec3(w + OUTLINE_DRAW_SIZE * 2, h + OUTLINE_DRAW_SIZE * 2, 1));
-		info->final_cpu[info->num_sprites_drawn] = final;
-		info->atlas_cpu[info->num_sprites_drawn] = info->atlas_mapper[F_ZBLACK];
-		info->num_sprites_drawn++;
+		info->matrix_cpu[info->num_draw] = final;
+		info->atlas_cpu[info->num_draw] = info->atlas_mapper[F_ZBLACK];
+		info->num_draw++;
 	}
 }
 void draw_ui_to_gamespace(GameSpaceCamera draw_area, int index, SpriteWrite* draw_info, glm::vec4 color)

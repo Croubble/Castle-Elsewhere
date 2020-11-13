@@ -45,6 +45,8 @@ void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, g
 #pragma region EMBARASSINGLY GLOBAL VARIABLES
 
 //Sprite writers
+
+AllWrite* all_write;
 SpriteWrite* floor_write;
 SpriteWrite* piece_write;
 SpriteWrite* symbol_write;
@@ -1289,7 +1291,7 @@ void mainloopfunction()
 					editor_scene_state->timeMachine->gamestates,
 					editor_scene_state->timeMachine->gamestates_positions,
 					editor_scene_state->timeMachine->current_number_of_gamestates,
-					&fullspriteDraw,
+					floor_write,
 					skip_index);
 			}
 			//parse gamestates
@@ -1589,7 +1591,7 @@ void mainloopfunction()
 			sprite_write_out(floor_write, camera);
 			sprite_write_out(piece_write, camera);
 			sprite_write_out(symbol_write, camera);
-
+			sprite_write_out(ui_write, camera);
 		}
 		//draw full sprites.
 		{
@@ -1669,7 +1671,6 @@ void mainloopfunction()
 			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, dotted_total_drawn);
 		}
 
-		sprite_write_out(ui_write, camera);
 		//draw text
 		{
 			glUseProgram(stringShader);
@@ -1874,6 +1875,12 @@ int main(int argc, char *argv[])
 				vertices_EBO,
 				textureAssets::UI_positions(permanent_memory)
 			);
+			all_write = (AllWrite*) memory_alloc(permanent_memory, sizeof(AllWrite));
+			all_write->floor = floor_write;
+			all_write->piece = piece_write;
+			all_write->symbol = symbol_write;
+			all_write->ui = ui_write;
+			all_write->text = &text_draw_info;
 		}
 
 
