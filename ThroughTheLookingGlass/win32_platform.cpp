@@ -121,7 +121,6 @@ glm::vec3* piece_positions_cpu;
 glm::vec4* piece_atlas_mapper;
 int piece_total_drawn = 0;
 
-GamefullspriteDrawInfo fullspriteDraw;
 
 GLuint dotted_VAO;
 GLuint dotted_positions_buffer;
@@ -1452,7 +1451,7 @@ void mainloopfunction()
 		{
 #pragma region send draw data to gpu    
 			draw_text_maximized_centered_to_screen(world_camera, text_scene_state->to_display, &text_draw_info);
-			draw_black_box_over_screen(world_camera, &fullspriteDraw);
+			draw_black_box_over_screen(world_camera, floor_write);
 #pragma endregion
 		}
 		if (scene == ST_MENU)
@@ -1585,24 +1584,6 @@ void mainloopfunction()
 			sprite_write_out(symbol_write, camera);
 			sprite_write_out(ui_write, camera);
 		}
-		//draw full sprites.
-		{
-			//send it on over to gpu!
-			glUseProgram(fullSpriteShader);
-			glBindVertexArray(fullspriteDraw.fullsprite_VAO);
-			glBindBuffer(GL_ARRAY_BUFFER, fullspriteDraw.fullspriteAtlasBuffer);
-			std::cout << "buffer_attempt" << std::endl;
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4) * fullspriteDraw.num_sprites_drawn, fullspriteDraw.atlas_cpu);
-
-			glBindBuffer(GL_ARRAY_BUFFER, fullspriteDraw.fullspriteMatrixBuffer);
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::mat4) * fullspriteDraw.num_sprites_drawn, fullspriteDraw.final_cpu);
-			
-			glBindBuffer(GL_ARRAY_BUFFER, fullspriteDraw.fullspriteColorBuffer);
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4) * fullspriteDraw.num_sprites_drawn, fullspriteDraw.color_cpu);
-
-			glBindTexture(GL_TEXTURE_2D, floorAtlas);
-			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, fullspriteDraw.num_sprites_drawn);
-		}
 		//draw layers
 		for (int i = 0; i < GAME_NUM_LAYERS; i++)
 		{
@@ -1675,7 +1656,6 @@ void mainloopfunction()
 		for (int z = 0; z < GAME_NUM_LAYERS; z++)
 			layer_draw[z].total_drawn = 0;
 		piece_total_drawn = 0;
-		fullspriteDraw.num_sprites_drawn = 0;
 		dotted_total_drawn = 0;
 		*text_draw_info.current_number_drawn = 0;
 
