@@ -194,6 +194,13 @@ glm::vec2 math_screenspace_to_gamespace(IntPair screenSpacePosition, GameSpaceCa
 	//return gamespace.
 	return result;
 }
+
+/*******************************************************************************/
+glm::mat4 math_translated_matrix(glm::vec3 translate)
+{
+	glm::mat4 result = glm::mat4(1.0);
+	return glm::translate(result, translate);
+}
 float math_gamespace_to_pixelspace_multiplier(ViewPortCamera view, float gameHeight)
 {
 	float yDist = (float) view.up - (float) view.down;

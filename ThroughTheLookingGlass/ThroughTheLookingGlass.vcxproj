@@ -224,13 +224,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
-    <ClInclude Include="CatGameState.h" />
     <ClInclude Include="Click.h" />
     <ClInclude Include="Clock.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="draw.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="EditorScene.h" />
+    <ClInclude Include="EditorThree.h" />
     <ClInclude Include="Fonts.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="GamestateAI.h" />
@@ -241,7 +241,6 @@
     <ClInclude Include="Math.h" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="MenuScene.h" />
-    <ClInclude Include="NuGameState.h" />
     <ClInclude Include="Parse.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="PreludeIncludes.h" />

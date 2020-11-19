@@ -14,53 +14,33 @@
 #include "Regex.h"
 #include "Resource.h"
 
-PIECE_IMAGE resource_cursed_direction_to_piece_sprite(CursedDirection dir)
+textureAssets::PIECE resource_cursed_direction_to_piece_sprite(CursedDirection dir)
 {
 	if (dir == CursedDirection::RCURSED)
-		return PIECE_IMAGE::PI_STOPR;
+		return textureAssets::PIECE::StopR;
 	if (dir == CursedDirection::UCURSED)
-		return PIECE_IMAGE::PI_STOPU;
+		return textureAssets::PIECE::StopU;
 	if (dir == CursedDirection::LCURSED)
-		return PIECE_IMAGE::PI_STOPL;
+		return textureAssets::PIECE::StopL;
 	if (dir == CursedDirection::DCURSED)
-		return PIECE_IMAGE::PI_STOPD;
-	return PIECE_IMAGE::PI_NONE;
+		return textureAssets::PIECE::StopD;
+	return textureAssets::PIECE::Empty;
 }
 
-FLOOR_IMAGE resource_floor_to_floor_sprite(Floor floor)
+textureAssets::FLOOR resource_floor_to_sprite(Floor floor)
 {
-	return (FLOOR_IMAGE)floor;
+	return (textureAssets::FLOOR) floor;
 }
-
-PIECE_IMAGE resource_piece_to_piece_sprite(Piece piece)
+textureAssets::PIECE resource_piece_to_sprite(Piece piece)
 {
-	if (is_player(piece))
-	{
-		if(is_cursed(piece))
-			return PI_CURSED_PLAYER;
-		return PI_PLAYER;
-	}
-	if (is_normal_crate(piece))
-	{
-		if (is_cursed(piece))
-			return PI_CURSED_CRATE;
-		return PI_CRATE;
-	}
-	if (is_pull_crate(piece))
-	{
-		if(is_cursed(piece))
-			return PI_CURSED_PULL_CRATE;
-		return PI_PULL_CRATE;
-	}
-	return (PIECE_IMAGE)piece;
+	return (textureAssets::PIECE) piece;
 }
-
 int resource_layer_value_to_layer_sprite_value(int layer_value, int layer_num)
 {
 	if (layer_num == LN_FLOOR)
-		return resource_floor_to_floor_sprite((Floor)layer_value);
+		return resource_floor_to_sprite((Floor)layer_value);
 	else
-		return resource_piece_to_piece_sprite((Piece)layer_value);
+		return resource_piece_to_sprite((Piece)layer_value);
 }
 
 std::string resource_load_puzzle_file(std::string puzzlename)
@@ -150,18 +130,4 @@ glm::vec4* resource_load_internal(std::string file_load, get_atlas_number_from_n
 
 	return result;
 }
-glm::vec4* resource_load_texcoords_pieces(Memory* memory, Memory* tempMemory)
-{
-	return resource_load_internal("FinalPiece.json", resource_texturenames_to_pieceenum_names_internal, memory, tempMemory);
-}
-
-glm::vec4* resource_load_texcoords_ui(Memory* memory, Memory* tempMemory)
-{
-	return resource_load_internal("FinalUI.json", resource_texturenames_to_uisprite_enum_names_internal, memory, tempMemory);
-}
-glm::vec4* resource_load_texcoords_floor(Memory* memory, Memory* tempMemory)
-{
-	return resource_load_internal("FinalFloor.json", resource_texturenames_to_floorsprite_enum_names_internal, memory, tempMemory);
-}
-//old
 

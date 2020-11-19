@@ -50,6 +50,11 @@ float math_gamespace_to_pixelspace_multiplier(ViewPortCamera view, float gameHei
 glm::vec2 math_screenspace_to_pixelspace(IntPair screenSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight);
 glm::vec2 math_pixelspace_to_screenspace(IntPair pixelSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight);
 glm::vec2 math_screenspace_to_gamespace(IntPair screenSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight);
+
+
+
+/*******************************************************************************/
+glm::mat4 math_translated_matrix(glm::vec3 translate);
 /*******************************************************************************/
 /***************************** SIDE ********************************************/
 /*******************************************************************************/

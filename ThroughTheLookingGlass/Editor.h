@@ -94,6 +94,7 @@ struct TimeMachineEditorStartState
 	GameState* gamestates[MAX_NUMBER_GAMESTATES];
 	char names[MAX_NUMBER_GAMESTATES * GAME_LEVEL_NAME_MAX_SIZE];
 };
+
 struct TimeMachineEditor
 {
 	Memory* gamestate_memory;
@@ -114,11 +115,7 @@ void gamestate_timemachine_editor_take_action(TimeMachineEditor* editor, TimeMac
 
 /************************GAMESTATE TIME MACHINE**********************/
 
-typedef void* TimeMachine;
 
-TimeMachine gamestate_timemachine_create(Memory* memory);
-void gamestate_timemachine_add_state(TimeMachine timeMachine, GameState* toAdd);
-void gamestate_timemachine_reset(TimeMachine timeMachine);
 
 TimeMachineEditorAction gamestate_timemachineaction_create_undo_action();
 TimeMachineEditorAction gamestate_timemachineaction_create_create_action(int xStart, int yStart, int w, int h);
@@ -131,5 +128,3 @@ TimeMachineEditorAction gamestate_timemachineaction_create_delete_gamestate(int 
 TimeMachineEditorAction gamestate_timemachineaction_create_replace_gamestate(GameState* replacement, int to_replace, const char* name);
 TimeMachineEditorAction gamestate_timemachineaction_create_update_gamestate(GameState* replacement, int to_replace, const char* name);
 
-/***********************************Building world from time machine helpers*************/
-int gamestate_timemachine_player_starting_level(TimeMachine* time_machine);

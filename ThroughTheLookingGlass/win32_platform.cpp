@@ -107,11 +107,7 @@ Shader fullSpriteShader;
 Shader dottedShader;
 Shader textShader;
 Shader stringShader;
-unsigned int floorAtlas;
-unsigned int pieceAtlas;
-unsigned int uiAtlas;
 glm::vec4* ui_atlas_mapper;
-LayerDrawGPUData* layer_draw;
 
 GLuint dotted_VAO;
 GLuint dotted_positions_buffer;
@@ -318,6 +314,267 @@ void handle_next_action_stateful(GamestateTimeMachine* maybe_time_machine, IntPa
 		*maybe_animation = NULL;
 	}
 }
+
+void handle_editor_input()
+{
+
+}
+void mainloopfunction_old()
+{
+		//reset ui.
+		{
+			for (int i = 0; i < NUM_LETTERS_ON_KEYBOARD; i++)
+			{
+				ui_state.letters[i].pressed_this_frame = false;
+				ui_state.letters[i].released_this_frame = false;
+			}
+			ui_state.update_actual_screen_size = false;
+			ui_state.mouse_last_pos = ui_state.mousePos;
+			ui_state.shift_key_down_this_frame = false;
+			ui_state.click_left_down_this_frame = false;
+			ui_state.click_left_up_this_frame = false;
+			ui_state.wheel_move = 0;
+			ui_state.totalMove = math_intpair_create(0, 0);
+			ui_state.z_key_down_this_frame = false;
+			ui_state.backspace_key_down_this_frame = false;
+			ui_state.right.pressed_this_frame = false;
+			ui_state.up.pressed_this_frame = false;
+			ui_state.down.pressed_this_frame = false;
+			ui_state.left.pressed_this_frame = false;
+			ui_state.spacebar.pressed_this_frame = false;
+			ui_state.enter.pressed_this_frame = false;
+		}
+		//poll events for tasty info.
+		while (SDL_PollEvent(&event))
+		{
+			if (event.type == SDL_WINDOWEVENT)
+			{
+				if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+				{
+					ui_state.update_actual_screen_size = true;
+					ui_state.next_camera_size = glm::ivec2(event.window.data1, event.window.data2);
+				}
+			}
+			if (event.type == SDL_KEYDOWN)
+			{
+				for (int i = 0; i < NUM_LETTERS_ON_KEYBOARD; i++)
+				{
+					if (event.key.keysym.sym == (SDLK_a + i))	//first a, final z.
+					{
+						ui_state.letters[i].pressed = true;
+						if (ui_state.letters[i].released_since_pressed_last)
+						{
+							ui_state.letters[i].pressed_this_frame = true;
+							ui_state.letters[i].time_pressed = ui_state.total_time_passed;
+						}
+						ui_state.letters[i].released_since_pressed_last = false;
+					}
+				}
+				if (event.key.keysym.sym == SDLK_LSHIFT)
+				{
+					ui_state.shift_key_down_this_frame = true;
+					ui_state.shift_key_down = true;
+				}
+				if (event.key.keysym.sym == SDLK_LALT)
+				{
+					ui_state.alt_key_down = true;
+				}
+				if (event.key.keysym.sym == SDLK_LCTRL)
+				{
+					ui_state.control_key_down = true;
+				}
+				if (event.key.keysym.sym == SDLK_z)
+				{
+					ui_state.z_key_down_this_frame = true;
+				}
+				if (event.key.keysym.sym == SDLK_BACKSPACE)
+				{
+					ui_state.backspace_key_down_this_frame = true;
+				}
+				if (event.key.keysym.sym == SDLK_d)
+				{
+					ui_state.right.pressed = true;
+					ui_state.right.pressed_this_frame = true;
+				}
+				if (event.key.keysym.sym == SDLK_w)
+				{
+					ui_state.up.pressed = true;
+					ui_state.up.pressed_this_frame = true;
+				}
+				if (event.key.keysym.sym == SDLK_a)
+				{
+					ui_state.left.pressed = true;
+					ui_state.left.pressed_this_frame = true;
+				}
+				if (event.key.keysym.sym == SDLK_s)
+				{
+					ui_state.down.pressed = true;
+					ui_state.down.pressed_this_frame = true;
+				}
+				if (event.key.keysym.sym == SDLK_SPACE)
+				{
+					ui_state.spacebar.pressed = true;
+					ui_state.spacebar.pressed_this_frame = true;
+				}
+				if (event.key.keysym.sym == SDLK_RETURN)
+				{
+					ui_state.enter.pressed = true;
+					ui_state.enter.pressed_this_frame = true;
+				}
+			}
+			if (event.type == SDL_KEYUP)
+			{
+for (int i = 0; i < NUM_LETTERS_ON_KEYBOARD; i++)
+{
+	if (event.key.keysym.sym == (SDLK_a + i))	//first a, final z.
+	{
+		ui_state.letters[i].pressed = false;
+		ui_state.letters[i].released_this_frame = true;
+		ui_state.letters[i].released_since_pressed_last = true;
+	}
+}
+if (event.key.keysym.sym == SDLK_LSHIFT)
+{
+	ui_state.shift_key_down = false;
+}
+if (event.key.keysym.sym == SDLK_LALT)
+{
+	ui_state.alt_key_down = false;
+}
+if (event.key.keysym.sym == SDLK_LCTRL)
+{
+	ui_state.control_key_down = false;
+}
+if (event.key.keysym.sym == SDLK_d)
+{
+	ui_state.right.pressed = false;
+}
+if (event.key.keysym.sym == SDLK_w)
+{
+	ui_state.up.pressed = false;
+}
+if (event.key.keysym.sym == SDLK_a)
+{
+	ui_state.left.pressed = false;
+}
+if (event.key.keysym.sym == SDLK_s)
+{
+	ui_state.down.pressed = false;
+}
+if (event.key.keysym.sym == SDLK_SPACE)
+{
+	ui_state.spacebar.pressed = false;
+}
+if (event.key.keysym.sym == SDLK_RETURN)
+{
+	ui_state.enter.pressed = false;
+	ui_state.enter.released_this_frame = true;
+	ui_state.enter.released_since_pressed_last = true;
+}
+			}
+			if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP)
+			{
+				//get the mouse coordinates and convert them to gamespace coordinates.
+				{
+					int mouseX;
+					int mouseY;
+					SDL_GetMouseState(&mouseX, &mouseY);
+					mouseY = camera_viewport.up - mouseY;
+					ui_state.mousePos = math_intpair_create(mouseX, mouseY);
+					ui_state.mouseGamePos = math_screenspace_to_gamespace(ui_state.mousePos, camera_game, camera_viewport, ui_state.game_height_current);
+				}
+
+				//grab whether mouse was held down this frame or not.
+				if (event.type == SDL_MOUSEBUTTONDOWN)
+				{
+					if (event.button.button == SDL_BUTTON_RIGHT)
+						ui_state.mouse_right_click_down = true;
+					if (event.button.button == SDL_BUTTON_LEFT)
+					{
+						ui_state.click_left_down_this_frame = true;
+						ui_state.mouse_left_click_down = true;
+					}
+				}
+				//
+				if (event.type == SDL_MOUSEBUTTONUP)
+				{
+					if (event.button.button == SDL_BUTTON_RIGHT)
+						ui_state.mouse_right_click_down = false;
+					if (event.button.button == SDL_BUTTON_LEFT)
+					{
+						ui_state.click_left_up_this_frame = true;
+						ui_state.mouse_left_click_down = false;
+					}
+				}
+			}
+			if (event.type == SDL_QUIT)
+			{
+				running = false;
+			}
+			if (event.type == SDL_MOUSEWHEEL)
+			{
+				if (event.wheel.y != 0)
+				{
+					ui_state.wheel_move = (float)event.wheel.y;
+#ifdef EMSCRIPTEN
+					//if we using emscripten, this wheel scroll value is 100 times the window version for some reason, so we divide it by 100.
+					ui_state.wheel_move /= 100.0f;
+#endif
+				}
+			}
+		}
+		
+		//handle shared events.
+		{
+			bool mouse_moved_this_frame = ui_state.mousePos.x != ui_state.mouse_last_pos.x || ui_state.mousePos.y != ui_state.mouse_last_pos.y;
+			bool left_click_action_resolved = false;
+			{
+				HandleSharedEvents(&ui_state, &camera_game, &camera, mouse_moved_this_frame, scene);
+				//HANDLE clicking on the palette.
+				if (ui_state.click_left_down_this_frame && !ui_state.shift_key_down && !left_click_action_resolved && scene == SCENE_TYPE::ST_EDITOR)
+				{
+					glm::vec2 palete_gamespace_start = math_screenspace_to_gamespace(editor_scene_state->palete_screen_start, camera_game, camera_viewport, ui_state.game_height_current);
+					bool clickedPalete = math_click_is_inside_AABB(
+						palete_gamespace_start.x,
+						palete_gamespace_start.y,
+						palete_gamespace_start.x + palete_length,
+						palete_gamespace_start.y + 1,
+						ui_state.mouseGamePos.x,
+						ui_state.mouseGamePos.y);
+					if (clickedPalete)
+					{
+						//calculate what palete cell we actually clicked;
+						float percentageX = percent_between_two_points(ui_state.mouseGamePos.x, palete_gamespace_start.x, palete_gamespace_start.x + palete_length);
+						int palete_cell_clicked = (int)(percentageX * palete_length);
+						editor_scene_state->currentBrush = palete_cell_clicked;
+						//apply the brush.
+						left_click_action_resolved = true;
+
+					}
+				}
+			}
+		}
+#pragma region GLClear And Update Delta Time
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		//calculate delta
+		float delta = 0;
+		float total_time;
+		{
+			int current_time_ms = SDL_GetTicks();
+			float delta_ms = (float) (current_time_ms - last_frame_time_ms);
+			last_frame_time_ms = current_time_ms;
+			delta = delta_ms / 1000.0f;
+			total_time = (current_time_ms - start_time_ms) / 1000.0f;
+		}
+		ui_state.time_till_player_can_move = maxf(0, ui_state.time_till_player_can_move - delta);
+		ui_state.time_since_last_player_action += delta;
+		ui_state.time_since_scene_started += delta;
+		ui_state.total_time_passed = total_time;
+
+#pragma endregion
+
+}
 void mainloopfunction()
 {
 #pragma region Loop Startup
@@ -345,6 +602,7 @@ void mainloopfunction()
 			ui_state.enter.pressed_this_frame = false;
 		}
 		//poll events for tasty info.
+
 		while (SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_WINDOWEVENT)
@@ -1282,15 +1540,10 @@ void mainloopfunction()
 					editor_scene_state->timeMachine->gamestates,
 					editor_scene_state->timeMachine->gamestates_positions,
 					editor_scene_state->timeMachine->current_number_of_gamestates,
-					layer_draw);
-
-				draw_curse_to_gamespace(editor_scene_state->timeMachine->gamestates,
-					editor_scene_state->timeMachine->gamestates_positions,
-					editor_scene_state->timeMachine->current_number_of_gamestates,
-					layer_draw);
+					all_write);
 			}
 			//parse palette data to gpu form
-			draw_palette(editor_scene_state->palete_screen_start, camera_game, camera_viewport, &ui_state, palete_length, editor_scene_state->palete, layer_draw);
+			draw_palette(editor_scene_state->palete_screen_start, camera_game, camera_viewport, &ui_state, palete_length, editor_scene_state->palete, all_write);
 			//parse dotted data to gpu form.
 			{
 				for (int z = 0; z < skip_index; z++)
@@ -1332,7 +1585,7 @@ void mainloopfunction()
 		{
 #pragma region send draw data to gpu
 			{
-				draw_palette(editor_scene_state->palete_screen_start, camera_game, camera_viewport, &ui_state, palete_length, editor_scene_state->palete, layer_draw);
+				draw_palette(editor_scene_state->palete_screen_start, camera_game, camera_viewport, &ui_state, palete_length, editor_scene_state->palete, all_write);
 
 				GameState* play_draw = &play_scene_state.timeMachine->state_array[play_scene_state.timeMachine->num_gamestates_stored - 1];
 				GameState* edit_draw = &play_scene_state.timeMachine_edit->state_array[play_scene_state.timeMachine_edit->num_gamestates_stored - 1];
@@ -1342,20 +1595,12 @@ void mainloopfunction()
 					&(play_draw),
 					&(play_scene_state.loc),
 					1,
-					layer_draw);
-				draw_curse_to_gamespace(&(play_draw),
-					&(play_scene_state.loc),
-					1,
-					layer_draw);
+					all_write);
 				draw_layers_to_gamespace(
 					&(edit_draw),
 					&(next_position),
 					1,
-					layer_draw);
-				draw_curse_to_gamespace(&(edit_draw),
-					&(next_position),
-					1,
-					layer_draw);
+					all_write);
 				glm::vec3 text_start_pos = glm::vec3(next_position.x, next_position.y + edit_draw->h, 0);
 				draw_text_to_screen(text_start_pos, glm::vec2(1, 1), play_scene_state.game_name, &text_draw_info);
 				//draw_text_to_screen(text_start_pos, play_scene_state.game_name, string_matrix_cpu, string_atlas_cpu, string_true_font_reference, text_positions, text_positions_normalized, &string_total_drawn, SCREEN_STARTING_HEIGHT / ui_state.game_height_current);
@@ -1369,12 +1614,7 @@ void mainloopfunction()
 				world_scene_state->level_state,
 				world_scene_state->level_position,
 				world_scene_state->num_levels,
-				layer_draw);
-			draw_curse_to_gamespace(
-				world_scene_state->level_state,
-				world_scene_state->level_position,
-				world_scene_state->num_levels,
-				layer_draw);
+				all_write);
 #pragma endregion
 		}
 		if (scene == ST_PLAY_LEVEL)
@@ -1388,53 +1628,11 @@ void mainloopfunction()
 				int current_level = world_scene_state->current_level;
 				IntPair* to_draw_position = &world_play_scene_state->draw_position;
 				//IntPair* to_draw_position = &world_scene_state->level_position[current_level];
-				bool can_draw_movement = world_play_scene_state->maybe_animation && world_play_scene_state->maybe_animation->maybe_movement_animation;
-				bool can_draw_curse = world_play_scene_state->maybe_animation && world_play_scene_state->maybe_animation->curse_animation;
-				if (can_draw_movement)
-				{
-					draw_layer_to_gamespace(&to_draw, to_draw_position, 1, layer_draw, LN_FLOOR);
-					bool done_animating_movement = true;
-					done_animating_movement = draw_animation_to_gamespace(world_play_scene_state->maybe_animation->maybe_movement_animation, layer_draw, LN_PIECE, ui_state.time_since_last_player_action);
-					if (done_animating_movement)
-					{
-						draw_piece_curses_to_gamespace(&to_draw, to_draw_position, 1, layer_draw, LN_PIECE, world_play_scene_state->maybe_animation->curse_animation, ui_state.time_since_last_player_action);
-					}
-					else
-					{
-						draw_stationary_piece_curses_to_gamespace(world_play_scene_state->maybe_animation->maybe_movement_animation,
-							world_play_scene_state->maybe_animation->curse_animation,
-							&world_play_scene_state->maybe_animation->old_state,
-							to_draw_position,
-							1,
-							layer_draw,
-							LN_PIECE,
-							ui_state.time_since_last_player_action);
-					}
-				}
-				else
-				{
-					draw_layers_to_gamespace(
-						&to_draw,
-						to_draw_position,
-						1,
-						layer_draw);
-				}
-				if (!can_draw_curse)
-				{
-					draw_curse_to_gamespace(&to_draw, to_draw_position, 1, layer_draw);
-				}
-				else if (can_draw_curse && !can_draw_movement)
-				{
-					draw_stationary_piece_curses_to_gamespace(world_play_scene_state->maybe_animation->maybe_movement_animation,
-						world_play_scene_state->maybe_animation->curse_animation,
-						&world_play_scene_state->maybe_animation->old_state,
-						to_draw_position,
-						1,
-						layer_draw,
-						LN_PIECE,
-						ui_state.time_since_last_player_action);
-				}
-
+				draw_layers_to_gamespace(
+					&to_draw,
+					to_draw_position,
+					1,
+					all_write);
 			}
 #pragma endregion
 		}
@@ -1479,19 +1677,7 @@ void mainloopfunction()
 					}
 					float width_adjustment = (w - goal_w);
 					bottom_fifth.right -= width_adjustment;
-					/*
-					
-				enum UI
-			{
-				ButtonCenter,
-				ButtonLeftHalf,
-				ButtonRightHalf,
-				DownArrow,
-				LeftArrow,
-				RightArrow,
-				UpArrow
-			};
-					*/
+
 					//draw left
 					{
 						GameSpaceCamera temp_pos = area_get_grid_element(1, 1, 5, 4, bottom_fifth);
@@ -1575,22 +1761,6 @@ void mainloopfunction()
 			sprite_write_out(symbol_write, camera);
 			sprite_write_out(ui_write, camera);
 		}
-		//draw layers
-		for (int i = 0; i < GAME_NUM_LAYERS; i++)
-		{
-			glBindVertexArray(layer_draw[i].VAO);
-			glUseProgram(spriteShader);
-			glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].atlas_VBO);
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4) * layer_draw[i].total_drawn, layer_draw[i].atlas_cpu);
-			glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].positions_VBO);
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4) * layer_draw[i].total_drawn, layer_draw[i].positions_cpu);
-			glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].movement_VBO);
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec2) * layer_draw[i].total_drawn, layer_draw[i].movement_cpu);
-			glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].color_VBO);
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec4) * layer_draw[i].total_drawn, layer_draw[i].color_cpu);
-			glBindTexture(GL_TEXTURE_2D, layer_draw[i].texture);
-			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, layer_draw[i].total_drawn);
-		}
 		//draw dotted lines
 		{
 			//send it to the gpu!
@@ -1624,12 +1794,7 @@ void mainloopfunction()
 #pragma endregion
 #pragma region Finish and reset for next frame.
 		SDL_GL_SwapWindow(window);
-		memory_clear(frame_memory);
-
-
 		//each frame we are sending the entirety of all the floor and piece things to draw to the gpu, so we reset the list we have. goood.
-		for (int z = 0; z < GAME_NUM_LAYERS; z++)
-			layer_draw[z].total_drawn = 0;
 		dotted_total_drawn = 0;
 		*text_draw_info.current_number_drawn = 0;
 
@@ -1743,8 +1908,6 @@ int main(int argc, char *argv[])
 		unsigned int symbol_atlas_2 = resource_load_image_from_file_onto_gpu("symbols.png");
 		unsigned int ui_atlas_2 = resource_load_image_from_file_onto_gpu("ui.png");
 
-		floorAtlas = resource_load_image_from_file_onto_gpu("FinalFloor.png");
-		pieceAtlas = resource_load_image_from_file_onto_gpu("FinalPiece.png");
 	
 
 		//ui_atlas_mapper = resource_load_texcoords_ui(permanent_memory, frame_memory);
@@ -1814,91 +1977,6 @@ int main(int argc, char *argv[])
 		}
 
 
-	#pragma endregion
-	#pragma region Layer GPU setup
-			layer_draw = (LayerDrawGPUData*) memory_alloc(permanent_memory, sizeof(LayerDrawGPUData) * GAME_NUM_LAYERS);
-
-			layer_draw[0].atlas_mapper = resource_load_texcoords_floor(permanent_memory, frame_memory);
-			layer_draw[1].atlas_mapper = resource_load_texcoords_pieces(permanent_memory, frame_memory);
-			layer_draw[0].texture = floorAtlas;
-			layer_draw[1].texture = pieceAtlas;
-			for (int i = 0; i < GAME_NUM_LAYERS; i++)
-			{
-				layer_draw[i].total_drawn = 0;
-				layer_draw[i].positions_cpu = (glm::vec3*) memory_alloc(permanent_memory, MAX_NUM_FLOOR_SPRITES * sizeof(glm::vec3));
-				layer_draw[i].atlas_cpu = (glm::vec4*) memory_alloc(permanent_memory, MAX_NUM_FLOOR_SPRITES * sizeof(glm::vec4));
-				layer_draw[i].movement_cpu = (glm::vec2*) memory_alloc(permanent_memory, MAX_NUM_FLOOR_SPRITES * sizeof(glm::vec2));
-				layer_draw[i].color_cpu = (glm::vec4*) memory_alloc(permanent_memory, MAX_NUM_FLOOR_SPRITES * sizeof(glm::vec4));
-				glUseProgram(spriteShader);
-				std::cout << "Layer draw setup begins." << std::endl;
-				glGenVertexArrays(1, &layer_draw[i].VAO);
-
-				std::cout << glGetError() << std::endl;
-				gl_check_err(__FILE__, __LINE__);
-				glBindVertexArray(layer_draw[i].VAO);
-
-				glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO);
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices_EBO);
-
-				GLint position = 0;
-				glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-				glEnableVertexAttribArray(position);
-
-				GLint texcoord = 1;
-				glVertexAttribPointer(texcoord, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-				glEnableVertexAttribArray(texcoord);
-
-				//TODO:
-
-				//build positions.
-				glGenBuffers(1, &layer_draw[i].positions_VBO);
-				std::cout << glGetError() << std::endl;
-				glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].positions_VBO);
-				std::cout << glGetError() << std::endl;
-				glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * MAX_NUM_FLOOR_SPRITES, NULL, GL_DYNAMIC_DRAW);
-				std::cout << glGetError() << std::endl;
-
-				GLint positionOffset = 2;
-				
-				glVertexAttribPointer(positionOffset, 3, GL_FLOAT, false, 3 * sizeof(float), (void*)0);
-				glEnableVertexAttribArray(positionOffset);
-				glVertexAttribDivisor(positionOffset, 1);
-
-				//build atlas.
-				glGenBuffers(1, &layer_draw[i].atlas_VBO);
-				glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].atlas_VBO);
-				glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * MAX_NUM_FLOOR_SPRITES, NULL, GL_DYNAMIC_DRAW);
-
-				GLint atlasOffset = 3;
-				glVertexAttribPointer(atlasOffset, 4, GL_FLOAT, false, 4 * sizeof(float), (void*)(0));
-				glEnableVertexAttribArray(atlasOffset);
-				glVertexAttribDivisor(atlasOffset, 1);
-
-				//build movement.
-				{
-					GLint movementOffset = 4;
-					glGenBuffers(1, &layer_draw[i].movement_VBO);
-					glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].movement_VBO);
-					glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2)* MAX_NUM_FLOOR_SPRITES, NULL, GL_DYNAMIC_DRAW);
-					glVertexAttribPointer(movementOffset, 2, GL_FLOAT, false, 2 * sizeof(float), (void*)(0));
-					glEnableVertexAttribArray(movementOffset);
-					glVertexAttribDivisor(movementOffset, 1);
-				}
-
-				
-				//build color.
-				{
-					GLint colorOffset = 5;
-					glGenBuffers(1, &layer_draw[i].color_VBO);
-					glBindBuffer(GL_ARRAY_BUFFER, layer_draw[i].color_VBO);
-					glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * MAX_NUM_FLOOR_SPRITES, NULL, GL_DYNAMIC_DRAW);
-					glVertexAttribPointer(colorOffset, 4, GL_FLOAT, false, 4 * sizeof(float), (void*)(0));
-					glEnableVertexAttribArray(colorOffset);
-					glVertexAttribDivisor(colorOffset, 1);
-				}
-
-
-			}
 	#pragma endregion
 	#pragma region dotted GPU setup
 		dotted_VAO;

@@ -40,7 +40,6 @@ struct AllWrite
 
 SpriteWrite* sprite_write_make(GLuint atlas_texture, Shader shader, Memory* permanent_memory, int max_draw, GLuint vertices_VBO, GLuint vertices_EBO, glm::vec4* atlas_mapper);
 
-
 void sprite_write_out(SpriteWrite* out, glm::mat4 camera);
 //IDEA: Just because we don't put in an action, doesn't mean we don't want to reset our draw_timer and our animation_info
 /*

@@ -295,12 +295,6 @@
     <ClInclude Include="draw.h">
       <Filter>Source Files\Main</Filter>
     </ClInclude>
-    <ClInclude Include="NuGameState.h">
-      <Filter>Source Files\GamestateFilter</Filter>
-    </ClInclude>
-    <ClInclude Include="CatGameState.h">
-      <Filter>Source Files\GamestateFilter</Filter>
-    </ClInclude>
     <ClInclude Include="ThreeGames.h">
       <Filter>Source Files\GamestateFilter</Filter>
     </ClInclude>
@@ -315,6 +309,9 @@
     </ClInclude>
     <ClInclude Include="textureAssets.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorThree.h">
+      <Filter>Source Files\GamestateFilter</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

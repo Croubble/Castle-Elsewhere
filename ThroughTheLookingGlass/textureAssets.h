@@ -1,4 +1,4 @@
-
+#pragma once
 #include "Math.h"
 namespace textureAssets {
 enum FLOOR

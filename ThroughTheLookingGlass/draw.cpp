@@ -204,33 +204,7 @@ bool draw_animation_to_gamespace(MovementAnimation* animation, LayerDrawGPUData*
 
 	return l >= 1;
 }
-void draw_curse_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info)
-{
-	int i = LN_PIECE;
-	for (int z = 0; z < number_of_gamestates; z++)
-	{
-		GameState* gamestate = gamestates[z];
-		IntPair offset = offsets[z];
-		int num_elements_in_gamestate = gamestate->w * gamestate->h;
-		for (int k = 0; k < num_elements_in_gamestate; k++)
-		{
-			int ele = gamestate->layers[i][k];
-			CursedDirection curse_status = get_entities_cursed_direction(ele);
-			if (curse_status != CursedDirection::NOTCURSED)
-			{
-				int curse_to_draw = resource_cursed_direction_to_piece_sprite(curse_status);
-				info[i].atlas_cpu[info[i].total_drawn] = info[i].atlas_mapper[curse_to_draw];
-				IntPair p = t2D(k, gamestate->w, gamestate->h);
-				info[i].positions_cpu[info[i].total_drawn] = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i + 0.2f);
-				info[i].movement_cpu[info[i].total_drawn] = glm::vec2(0, 0);
-				info[i].color_cpu[info[i].total_drawn] = glm::vec4(1, 1, 1, 1);
-				info[i].total_drawn++;
-			}
-
-		}
-	}
-}
-void draw_layer_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index)
+void draw_layer_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, SpriteWrite* info, int layer_index)
 {
 	int i = layer_index;
 	{
@@ -244,21 +218,22 @@ void draw_layer_to_gamespace(GameState** gamestates, IntPair* offsets, int numbe
 			{
 				int ele = gamestate->layers[i][k];
 				int ele_image = resource_layer_value_to_layer_sprite_value(ele, i);
-				info[i].atlas_cpu[info[i].total_drawn + k] = info[i].atlas_mapper[ele_image];
-				info[i].movement_cpu[info[i].total_drawn + k] = glm::vec2(0, 0);
+				glm::vec4 atlas_pos = info->atlas_mapper[ele_image];
+				info->atlas_cpu[info->num_draw + k] = info->atlas_mapper[ele_image];
 				IntPair p = t2D(k, gamestate->w, gamestate->h);
-				info[i].positions_cpu[info[i].total_drawn + k] = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i);
-				info[i].color_cpu[info[i].total_drawn + k] = glm::vec4(1, 1, 1, 1);
+				glm::vec3 translate = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i);
+				info->matrix_cpu[info->num_draw + k] = math_translated_matrix(translate);
+				info->color_cpu[info->num_draw+ k] = glm::vec4(1, 1, 1, 1);
 			}
-			info[i].total_drawn += num_elements_in_gamestate;
+			info->num_draw += num_elements_in_gamestate;
 		}
 	}
 }
-void draw_layers_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info)
+void draw_layers_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, AllWrite* info)
 {
-	for (int i = 0; i < GAME_NUM_LAYERS; i++)
 	{
-		draw_layer_to_gamespace(gamestates, offsets, number_of_gamestates, info, i);
+		//draw_layer_to_gamespace(gamestates, offsets, number_of_gamestates, info->floor, 0);
+		draw_layer_to_gamespace(gamestates, offsets, number_of_gamestates, info->piece, 1);
 	}
 }
 
@@ -268,7 +243,7 @@ void draw_palette(IntPair palete_screen_start,
 	EditorUIState* ui_state,
 	int palete_length,
 	GamestateBrush* palete,
-	LayerDrawGPUData* layer_draw)
+	AllWrite* layer_draw)
 {
 	//parse palette data to gpu form
 	{
@@ -278,23 +253,21 @@ void draw_palette(IntPair palete_screen_start,
 		{
 			if (palete[i].applyFloor)
 			{
-				LayerDrawGPUData* floor = &layer_draw[LN_FLOOR];
+				SpriteWrite* floor = layer_draw->floor;
 				int ele_image = resource_layer_value_to_layer_sprite_value(palete[i].floor, LN_FLOOR);
-				floor->atlas_cpu[floor->total_drawn] = floor->atlas_mapper[ele_image];
-				floor->positions_cpu[floor->total_drawn] = glm::vec3(palete_true_start.x + i, palete_true_start.y, 4);
-				floor->movement_cpu[floor->total_drawn] = glm::vec2(0, 0);
-				floor->color_cpu[floor->total_drawn] = glm::vec4(1, 1, 1, 1);
-				floor->total_drawn++;
+				floor->atlas_cpu[floor->num_draw] = floor->atlas_mapper[ele_image];
+				floor->matrix_cpu[floor->num_draw] = math_translated_matrix(glm::vec3(palete_true_start.x, palete_true_start.y,4));
+				floor->color_cpu[floor->num_draw] = glm::vec4(1, 1, 1, 1);
+				floor->num_draw++;
 			}
 			if (palete[i].applyPiece)
 			{
-				LayerDrawGPUData* piece = &layer_draw[LN_PIECE];
+				SpriteWrite* piece = layer_draw->piece;
 				int ele_image = resource_layer_value_to_layer_sprite_value(palete[i].piece, LN_PIECE);
-				piece->atlas_cpu[piece->total_drawn] = piece->atlas_mapper[ele_image];
-				piece->positions_cpu[piece->total_drawn] = glm::vec3(palete_true_start.x + i, palete_true_start.y, 5);
-				piece->movement_cpu[piece->total_drawn] = glm::vec2(0, 0);
-				piece->color_cpu[piece->total_drawn] = glm::vec4(1, 1, 1, 1);
-				piece->total_drawn++;
+				piece->atlas_cpu[piece->num_draw] = piece->atlas_mapper[ele_image];
+				piece->matrix_cpu[piece->num_draw] = math_translated_matrix(glm::vec3(palete_true_start.x + i, palete_true_start.y, 5));
+				piece->color_cpu[piece->num_draw] = glm::vec4(1, 1, 1, 1);
+				piece->num_draw++;
 			}
 		}
 	}
