@@ -40,8 +40,6 @@ struct GamefullspriteDrawInfo {
 
 /************************************************************/
 /**********draw functions************************************/
-void draw_stationary_piece_curses_to_gamespace(MovementAnimation* animation, DrawCurseAnimation* curse, GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index, float time_since_last_action);
-void draw_piece_curses_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index, DrawCurseAnimation* curse, float time_since_last_action);
 bool draw_animation_to_gamespace(MovementAnimation* animation, LayerDrawGPUData* info_array, int layer_index, float time_since_last_action);
 void draw_layer_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, SpriteWrite* info, int layer_index);
 void draw_layers_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, AllWrite* info);

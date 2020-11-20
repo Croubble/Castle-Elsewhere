@@ -13,18 +13,6 @@ enum LAYER_NAME
 
 const int GAME_NUM_LAYERS = LN_COUNT; 
 const int PLAYER_LAYER = LN_PIECE; 
-struct GenericGame
-{
-	int num_layers;	
-	int* num_elements_in_layer;	//number of elements that occur in this layer per character.
-	char*** element_names;	//okay so what we actually do is make a biiiig array and put all of em. ALL OF EM. In order.
-};
-struct GenericGamestate
-{
-	int w;
-	int h;
-	int** layers;
-};
 
 enum Piece {
 	P_NONE,
@@ -66,7 +54,8 @@ enum Floor {
 struct GameState {
 	int w;
 	int h;
-	int** layers;
+	int* floor;
+	int* piece;
 };
 
 struct GamestateBrush {
@@ -167,7 +156,8 @@ void gamestate_merge(GameState* left, GameState* right, GameState* output, IntPa
 void curse_gamestate(GameState* state);
 /******************************GAMESTATE READ************************/
 /********************************************************************/
-
+int** gamestate_get_layers(GameState* gamestate, int* num_layers_found, Memory* temp_memory);
+int* gamestate_get_layer(GameState* gamestate, int layer_num);
 bool gamestate_eq(GameState* left, GameState* right);
 //unsigned int gamestate_player_find(GameState* gamestate);
 AABB* gamestate_create_colliders(Memory* memory, GameState** states, IntPair* locations, int length);

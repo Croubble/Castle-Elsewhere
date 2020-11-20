@@ -30,10 +30,10 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 		bool found_player = false;
 		for (int i = 0; i < len; i++)
 		{
-			if (is_player(current_state->layers[LN_PIECE][i]))
+			if (is_player(current_state->piece[i]))
 			{
 				current_player_position = t2D(i, current_state->w, current_state->h);
-				current_player_value = current_state->layers[LN_PIECE][i];
+				current_player_value = current_state->piece[i];
 				found_player = true;
 				break;
 			}
@@ -86,7 +86,7 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 	GameState* next_state = scene->level_state[next_square_level];
 	{
 		int next_square_position_1d = f2D(next_player_square_position.x, next_player_square_position.y, next_state->w, next_state->h);
-		if (next_state->layers[LN_PIECE][next_square_position_1d] != P_NONE)
+		if (next_state->piece[next_square_position_1d] != P_NONE)
 		{
 			//we can't make the action, its invalid. Just reeturn.
 			return NULL;
@@ -98,17 +98,17 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 		//remove the player from the current position.
 		{
 			int current_state_position_1d = f2D(current_player_position.x, current_player_position.y, current_state->w, current_state->h);
-			current_state->layers[LN_PIECE][current_state_position_1d] = P_NONE;
+			current_state->piece[current_state_position_1d] = P_NONE;
 		}
 		//add the player to the next position
 		int next_square_position_1d = f2D(next_player_square_position.x, next_player_square_position.y, next_state->w, next_state->h);
 		{
-			next_state->layers[LN_PIECE][next_square_position_1d] = current_player_value;
+			next_state->piece[next_square_position_1d] = current_player_value;
 			scene->current_level = next_square_level;
 		}
 		//if the player is standing on a "pos level" tile, initiate a new time_machine.
 		{
-			bool standing_on_start_tile = next_state->layers[LN_FLOOR][next_square_position_1d] == F_START;
+			bool standing_on_start_tile = next_state->floor[next_square_position_1d] == F_START;
 			if (standing_on_start_tile)
 			{
 				//TODO.
@@ -163,7 +163,7 @@ WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene
 		{
 			int len = result->level_state[i]->w * result->level_state[i]->h;
 			for (int z = 0; z < len; z++)
-				if (result->level_state[i]->layers[LN_PIECE][z] == P_PLAYER)
+				if (result->level_state[i]->piece[z] == P_PLAYER)
 				{
 					result->current_level = i;
 					done_finding_player = true;
@@ -190,7 +190,7 @@ bool any_levels_left_active(WorldScene* to_check)
 		int len = w * h;
 		for (int z = 0; z < len; z++)
 		{
-			if (state->layers[LN_FLOOR][z] == Floor::F_START)
+			if (state->floor[z] == Floor::F_START)
 				return true;
 		}
 	}

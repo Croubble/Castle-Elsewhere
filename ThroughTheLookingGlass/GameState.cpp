@@ -261,10 +261,12 @@ GamestateTimeMachine* gamestate_timemachine_create(GameState* start_state, Memor
 
 void* gamestate_timemachine_undo(GamestateTimeMachine* timeMachine)
 {
+	//returns a pointer to the memory we cleared.
 	if (timeMachine->num_gamestates_stored > 1)
 	{
 		timeMachine->num_gamestates_stored--;
-		return timeMachine->state_array[timeMachine->num_gamestates_stored].layers;
+		//TODO: 
+		return &timeMachine->state_array[timeMachine->num_gamestates_stored];
 	}
 	return NULL;
 }
@@ -288,22 +290,17 @@ void gamestate_allocate_layers(GameState* result, Memory* memory, int w, int h)
 {
 	result->w = w;
 	result->h = h;
-	result->layers = (int**)memory_alloc(memory, sizeof(int*) * GAME_NUM_LAYERS);
-	for (int i = 0; i < GAME_NUM_LAYERS; i++)
-	{
-		result->layers[i] = (int*)memory_alloc(memory, sizeof(int*) * w * h);
-	}
-
+	result->piece = (int*)memory_alloc(memory, sizeof(int) * w * h);
+	result->floor = (int*)memory_alloc(memory, sizeof(int) * w * h);
 	for (int i = 0; i < w * h; i++)
 	{
 		Floor f = (Floor)0;
-		result->layers[LN_FLOOR][i] = f;
-
+		result->floor[i] = f;
 	}
 	for (int i = 0; i < w * h; i++)
 	{
 		Piece p = (Piece)0;
-		result->layers[LN_PIECE][i] = p;
+		result->piece[i] = p;
 	}
 }
 GameState* gamestate_create(Memory* memory, int w, int h)
@@ -335,22 +332,39 @@ void gamestate_merge(GameState* left, GameState* right, GameState* output, IntPa
 	int h_s = right->h;
 	int w_out = output->w;
 	int h_out = output->h;
-
-	for (int z = 0; z < GAME_NUM_LAYERS; z++)
+	
+	//merge floor
 	{
 		for (int i = 0; i < w_f; i++)
 			for (int j = 0; j < h_f; j++)
 			{
 				int index_in = f2D(i, j, w_f, h_f);
 				int index_out = f2D(i + left_merge_offset.x, j + left_merge_offset.y, w_out, h_out);
-				output->layers[z][index_out] = left->layers[z][index_in];
+				output->floor[index_out] = left->floor[index_in];
 			}
 		for (int i = 0; i < w_s; i++)
 			for (int j = 0; j < h_s; j++)
 			{
 				int index_in = f2D(i, j, w_s, h_s);
 				int index_out = f2D(i + right_merge_offset.x, j + left_merge_offset.y, w_out, h_out);
-				output->layers[z][index_out] = left->layers[z][index_in];
+				output->floor[index_out] = left->floor[index_in];
+			}
+	}
+	//merge piece
+	{
+		for (int i = 0; i < w_f; i++)
+			for (int j = 0; j < h_f; j++)
+			{
+				int index_in = f2D(i, j, w_f, h_f);
+				int index_out = f2D(i + left_merge_offset.x, j + left_merge_offset.y, w_out, h_out);
+				output->piece[index_out] = left->piece[index_in];
+			}
+		for (int i = 0; i < w_s; i++)
+			for (int j = 0; j < h_s; j++)
+			{
+				int index_in = f2D(i, j, w_s, h_s);
+				int index_out = f2D(i + right_merge_offset.x, j + left_merge_offset.y, w_out, h_out);
+				output->piece[index_out] = left->piece[index_in];
 			}
 	}
 }
@@ -360,7 +374,7 @@ bool gamestate_is_in_win_condition(GameState* state)
 	int len = state->w * state->h;
 	for (int i = 0; i < len; i++)
 	{
-		if (state->layers[LN_FLOOR][i] == F_START && !is_player(state->layers[LN_PIECE][i]))
+		if (state->floor[i] == F_START && !is_player(state->piece[i]))
 		{
 			return false;
 		}
@@ -368,9 +382,9 @@ bool gamestate_is_in_win_condition(GameState* state)
 	}
 	for (int i = 0; i < len; i++)
 	{
-		if (state->layers[LN_FLOOR][i] == F_TARGET && 
-			!is_normal_crate(state->layers[LN_PIECE][i]) &&
-			!is_pull_crate(state->layers[LN_PIECE][i]))
+		if (state->floor[i] == F_TARGET && 
+			!is_normal_crate(state->piece[i]) &&
+			!is_pull_crate(state->piece[i]))
 			return false;
 	}
 	return true;
@@ -514,11 +528,12 @@ void gamestate_resize(GameState* input_state, GameState* output_state, IntPair d
 			{
 				int in_index = f2D(i, j, w_in, h_in);
 				int out_index = f2D(out_x, out_y, w_out, h_out);
-				for (int z = 0; z < GAME_NUM_LAYERS; z++)
 				{
-					output_state->layers[z][out_index] = input_state->layers[z][in_index];
+					output_state->floor[out_index] = input_state->floor[in_index];
+					output_state->piece[out_index] = input_state->piece[in_index];
 				}
 			}
+
 		}
 }
 void  gamestate_clone_to(GameState* input_state, GameState* output_state)
@@ -534,10 +549,10 @@ void  gamestate_clone_to(GameState* input_state, GameState* output_state)
 	for(int i = 0; i < w;i++)
 		for (int j = 0; j < h; j++)
 		{
-			for (int z = 0; z < GAME_NUM_LAYERS; z++)
 			{
 				int index = f2D(i, j, w, h);
-				output_state->layers[z][index] = input_state->layers[z][index];
+				output_state->floor[index] = input_state->floor[index];
+				output_state->piece[index] = input_state->piece[index];
 			}
 		}
 }
@@ -556,9 +571,9 @@ GameState* gamestate_add_row(GameState* input, Memory* scope_memory, int target_
 			int out_y = j;
 			int in_index = f2D(i, j, w_old, h_old);
 			int out_index = f2D(out_x, out_y, w_next, h_next);
-			for (int z = 0; z < GAME_NUM_LAYERS; z++)
 			{
-				output->layers[z][out_index] = input->layers[z][in_index];
+				output->floor[out_index] = input->floor[in_index];
+				output->piece[out_index] = input->piece[in_index];
 			}
 		}
 	return output;
@@ -578,9 +593,9 @@ GameState* gamestate_add_column(GameState* input, Memory* scope_memory, int targ
 			int out_y = j + (j >= target_y);
 			int in_index = f2D(i, j, w_old, h_old);
 			int out_index = f2D(out_x, out_y, w_next, h_next);
-			for (int z = 0; z < GAME_NUM_LAYERS; z++)
 			{
-				output->layers[z][out_index] = input->layers[z][in_index];
+				output->floor[out_index] = input->floor[in_index];
+				output->piece[out_index] = input->piece[in_index];
 			}
 		}
 	return output;
@@ -598,16 +613,16 @@ GameState* gamestate_surround_with_walls(GameState* input, Memory* scope_memory)
 			if (i == 0 || j == 0 || i == next_w - 1 || j == next_h - 1)
 			{
 				int z = f2D(i, j, next_w,next_h);
-				result->layers[LN_PIECE][z] = P_WALL;
+				result->piece[z] = P_WALL;
 			}
 
-	for (int z = 0; z < GAME_NUM_LAYERS; z++)
 		for (int i = 0; i < old_w; i++)
 			for (int j = 0; j < old_h; j++)
 			{
 				int in_index = f2D(i, j, old_w, old_h);
 				int out_index = f2D(i + 1, j + 1, next_w, next_h);
-				result->layers[z][out_index] = input->layers[z][in_index];
+				result->floor[out_index] = input->floor[in_index];
+				result->piece[out_index] = input->piece[in_index];
 			}
 	return result;
 }
@@ -629,9 +644,9 @@ bool gamestate_apply_brush(GameState* state, GamestateBrush brush, int x, int y)
 		int w = state->w;
 		int h = state->h;
 		int target = f2D(x, y, w,h);
-		if (state->layers[LN_FLOOR][target] != brush.floor)
+		if (state->floor[target] != brush.floor)
 		{
-			state->layers[LN_FLOOR][target] = brush.floor;
+			state->floor[target] = brush.floor;
 			accept = true;
 		}
 
@@ -641,9 +656,9 @@ bool gamestate_apply_brush(GameState* state, GamestateBrush brush, int x, int y)
 		int w = state->w;
 		int h = state->h;
 		int target = f2D(x, y, w, h);
-		if (state->layers[LN_PIECE][target] != brush.piece)
+		if (state->piece[target] != brush.piece)
 		{
-			state->layers[LN_PIECE][target] = brush.piece;
+			state->piece[target] = brush.piece;
 			accept = true;
 		}
 
@@ -658,6 +673,25 @@ GamestateBrush gamestate_brush_create(bool applyFloor, Floor floor, bool applyPi
 	result.applyPiece = applyPiece;
 	result.piece = piece;
 	return result;
+}
+
+/******************************GAMESTATE READ************************/
+/********************************************************************/
+int** gamestate_get_layers(GameState* gamestate, int* num_layers_found, Memory* temp_memory)
+{
+	int** result = (int**)memory_alloc(temp_memory, sizeof(int*) * 2);
+	result[0] = gamestate->floor;
+	result[1] = gamestate->piece;
+	return result;
+}
+int* gamestate_get_layer(GameState* gamestate, int layer_num)
+{
+	if (layer_num == 0)
+		return gamestate->floor;
+	if (layer_num == 1)
+		return gamestate->piece;
+	crash_err("uh ohh, we tried to get a layer that doesn't exist!");
+	return gamestate->floor;
 }
 bool gamestate_eq(GameState* left, GameState* right)
 {
@@ -713,9 +747,9 @@ void curse_gamestate(GameState* state)
 	int h = state->h;
 	for (int i = 0; i < w * h; i++)
 	{
-		if (state->layers[LN_FLOOR][i] == F_CURSE)
-			if (curseaable(state->layers[LN_PIECE][i]))
-				state->layers[LN_PIECE][i] = curse_entity(state->layers[LN_PIECE][i],CursedDirection::CURSED);
+		if (state->floor[i] == F_CURSE)
+			if (curseaable(state->piece[i]))
+				state->piece[i] = curse_entity(state->piece[i],CursedDirection::CURSED);
 	}
 }
 
@@ -749,7 +783,7 @@ void animationmoveinfo_copy_from_gamestate_internal(PieceMovementAnimation* info
 	int num_to_draw = state->w * state->h;
 	for (int i = 0; i < num_to_draw; i++)
 	{
-		int next_val = state->layers[LN_PIECE][i];
+		int next_val = state->piece[i];
 		info->start_value[i] = next_val;
 	}
 
@@ -774,7 +808,7 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 	const int w = state->w;
 	const int h = state->h;
 	const int num_elements = w * h;
-	int* pieces = state->layers[LN_PIECE];
+	int* pieces = state->piece;
 
 	//build the gamestate animation, then set the results to default values.
 	GameStateAnimation* animation;
@@ -806,7 +840,7 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 					for (int z = 0; z < w * h; z++)
 					{
 						bool flash = false;
-						int entity = state->layers[LN_PIECE][z];
+						int entity = state->piece[z];
 						if (is_player(entity) && is_cursed(entity) && get_entities_cursed_direction(entity) != CursedDirection::CURSED)
 						{
 							flash = true;
@@ -891,19 +925,19 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 			IntPair next_2d = move_pos_wrapped_2d(current_2d, action, w, h);
 			int next_1d = f2D(next_2d.x, next_2d.y, w, h);
 
-			int next_floor_val = state->layers[LN_FLOOR][next_1d];
-			int floor_val = state->layers[LN_FLOOR][i];
-			int piece_val = state->layers[LN_PIECE][i];
+			int next_floor_val = state->floor[next_1d];
+			int floor_val = state->floor[i];
+			int piece_val = state->piece[i];
 			CursedDirection how_to_curse = get_curseddirection_from_direction(action);
 			//if the floor is a curse, or the entity that moved is already cursed.
 			if (next_floor_val == F_CURSE || get_entities_cursed_direction(piece_val) != CursedDirection::NOTCURSED)
 			{
 				//curse an entity.
-				state->layers[LN_PIECE][i] = curse_entity(piece_val, how_to_curse);
+				state->piece[i] = curse_entity(piece_val, how_to_curse);
 			}
 			if (next_floor_val == F_CLEANSE)
 			{
-				state->layers[LN_PIECE][i] = curse_entity(piece_val, CursedDirection::NOTCURSED);
+				state->piece[i] = curse_entity(piece_val, CursedDirection::NOTCURSED);
 			}
 		}
 	}
@@ -928,13 +962,13 @@ void gamestate_crumble(GameState* state)
 	int len = state->w * state->h;
 	for (int i = 0; i < len; i++)
 	{
-		if (state->layers[LN_PIECE][i] == P_CRUMBLE || is_normal_crate(state->layers[LN_PIECE][i]) || is_pull_crate(state->layers[LN_PIECE][i]))
-			state->layers[LN_PIECE][i] = P_NONE;
+		if (state->piece[i] == P_CRUMBLE || is_normal_crate(state->piece[i]) || is_pull_crate(state->piece[i]))
+			state->piece[i] = P_NONE;
 	}
 	for (int i = 0; i < len; i++)
 	{
-		if (state->layers[LN_FLOOR][i] == F_START || state->layers[LN_FLOOR][i] == F_TARGET)
-			state->layers[LN_FLOOR][i] = F_NONE;
+		if (state->floor[i] == F_START || state->floor[i] == F_TARGET)
+			state->floor[i] = F_NONE;
 	}
 }
 void gamestate_extrude_lurking_walls(GameState* state)
@@ -942,9 +976,9 @@ void gamestate_extrude_lurking_walls(GameState* state)
 	int len = state->w * state->h;
 	for (int i = 0; i < len; i++)
 	{
-		if (state->layers[LN_FLOOR][i] == F_LURKING_WALL)
+		if (state->floor[i] == F_LURKING_WALL)
 		{
-			state->layers[LN_PIECE][i] = P_WALL;
+			state->piece[i] = P_WALL;
 		}
 
 	}

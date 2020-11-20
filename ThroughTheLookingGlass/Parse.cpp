@@ -241,7 +241,7 @@ bool try_parse_layer(Tokenizer* t, GameState** result, Memory* final_memory, Mem
 			std::cout << "we are trying to write to a layer number that is bigger than should exist in our game. Crashing now!" << std::endl;
 			abort();
 		}
-
+		
 		//loop until we reach the ending semicolon.
 		int num_gamestates = 0;
 		while (!try_parse_char(t, ';'))
@@ -267,7 +267,8 @@ bool try_parse_layer(Tokenizer* t, GameState** result, Memory* final_memory, Mem
 					abort();
 				}
 				int next = *nextp;
-				result[num_gamestates]->layers[layer_num][i] = next;
+				int* current_layer = gamestate_get_layer(result[num_gamestates], layer_num);
+				current_layer[i] = next;
 			}
 
 			num_gamestates++;
@@ -414,7 +415,8 @@ void parse_serialize_gamestate_layers(char* output, int* output_consumed, int ma
 				*output_consumed += sprintf_s(output + *output_consumed, max_output_length, "%d,%d", w, h);
 				for (int j = 0; j < layer_len; j++)
 				{
-					*output_consumed += sprintf_s(output + *output_consumed, max_output_length, ",%d", state->layers[z][j]);
+					int* current_layer = gamestate_get_layer(state, z);
+					*output_consumed += sprintf_s(output + *output_consumed, max_output_length, ",%d", current_layer[j]);
 				}
 				*output_consumed += sprintf_s(output + *output_consumed, max_output_length, ",");
 			}

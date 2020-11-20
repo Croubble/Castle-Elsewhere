@@ -99,88 +99,6 @@ void draw_button_to_gamespace(GameSpaceCamera draw_area, SpriteWrite * ui_draw, 
 	//draw the right half.
 }
 
-void draw_stationary_piece_curses_to_gamespace(MovementAnimation* animation,
-	DrawCurseAnimation* curse_animation,
-	GameState** gamestates,
-	IntPair* offsets,
-	int number_of_gamestates,
-	LayerDrawGPUData* info,
-	int layer_index,
-	float time_since_last_action)
-{
-	int i = layer_index;
-	for (int z = 0; z < number_of_gamestates; z++)
-	{
-		GameState* gamestate = gamestates[z];
-		IntPair offset = offsets[z];
-		int num_elements_in_gamestate = gamestate->w * gamestate->h;
-		for (int k = 0; k < num_elements_in_gamestate; k++)
-		{
-			int ele = gamestate->layers[i][k];
-			CursedDirection curse_status = get_entities_cursed_direction(ele);
-			if (curse_status != CursedDirection::NOTCURSED &&
-				(!animation || (animation->start_offset[k].x == animation->end_offset[k].x && animation->start_offset[k].y == animation->end_offset[k].y)))
-			{
-				int curse_to_draw = resource_cursed_direction_to_piece_sprite(curse_status);
-				info[i].atlas_cpu[info[i].total_drawn] = info[i].atlas_mapper[curse_to_draw];
-				IntPair p = t2D(k, gamestate->w, gamestate->h);
-				info[i].positions_cpu[info[i].total_drawn] = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i + 0.2f);
-				info[i].movement_cpu[info[i].total_drawn] = glm::vec2(0, 0);
-				if (curse_animation->flash[k])
-				{
-					float l = time_since_last_action / WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-					l = minf(1.0f, l);
-					float ln = l * NUM_CURSE_FLASHES * 2;
-					float flash_value = (float)abs(fmod(ln, 2) - 1.0);
-					glm::vec4 color = glm::mix(glm::vec4(0, 0, 0, 0), glm::vec4(1, 1, 1, 1), flash_value);
-					info[i].color_cpu[info[i].total_drawn] = color;
-				}
-				else
-				{
-					info[i].color_cpu[info[i].total_drawn] = glm::vec4(1, 1, 1, 1);
-				}
-				info[i].total_drawn++;
-			}
-
-		}
-	}
-}
-
-void draw_piece_curses_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, LayerDrawGPUData* info, int layer_index, DrawCurseAnimation* curse, float time_since_last_action)
-{
-	int i = layer_index;
-	for (int z = 0; z < number_of_gamestates; z++)
-	{
-		GameState* gamestate = gamestates[z];
-		IntPair offset = offsets[z];
-		int num_elements_in_gamestate = gamestate->w * gamestate->h;
-		for (int k = 0; k < num_elements_in_gamestate; k++)
-		{
-			int ele = gamestate->layers[i][k];
-			CursedDirection curse_status = get_entities_cursed_direction(ele);
-			if (curse_status != CursedDirection::NOTCURSED)
-			{
-				int curse_to_draw = resource_cursed_direction_to_piece_sprite(curse_status);
-				info[i].atlas_cpu[info[i].total_drawn] = info[i].atlas_mapper[curse_to_draw];
-				IntPair p = t2D(k, gamestate->w, gamestate->h);
-				info[i].positions_cpu[info[i].total_drawn] = glm::vec3(offset.x + p.x, offset.y + p.y, Z_POSITION_STARTING_LAYER + i + 0.2f);
-				info[i].movement_cpu[info[i].total_drawn] = glm::vec2(0, 0);
-				if (curse && time_since_last_action < WAIT_BETWEEN_PLAYER_MOVE_REPEAT)
-				{
-					float l = time_since_last_action / WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-					float ln = l * NUM_CURSE_FLASHES * 2;
-					float flash_value = (float)abs(fmod(ln, 2) - 1);
-					glm::vec4 color = glm::mix(glm::vec4(1, 0, 0, 1), glm::vec4(1, 1, 1, 1), flash_value);
-					info[i].color_cpu[info[i].total_drawn] = color;
-				}
-				else
-					info[i].color_cpu[info[i].total_drawn] = glm::vec4(1, 1, 1, 1);
-				info[i].total_drawn++;
-			}
-
-		}
-	}
-}
 bool draw_animation_to_gamespace(MovementAnimation* animation, LayerDrawGPUData* info_array, int layer_index, float time_since_last_action)
 {
 	float l = time_since_last_action / WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
@@ -212,11 +130,11 @@ void draw_layer_to_gamespace(GameState** gamestates, IntPair* offsets, int numbe
 		{
 			GameState* gamestate = gamestates[z];
 			IntPair offset = offsets[z];
-
+			int* current_layer = gamestate_get_layer(gamestate,layer_index);
 			int num_elements_in_gamestate = gamestate->w * gamestate->h;
 			for (int k = 0; k < num_elements_in_gamestate; k++)
 			{
-				int ele = gamestate->layers[i][k];
+				int ele = current_layer[k];
 				int ele_image = resource_layer_value_to_layer_sprite_value(ele, i);
 				glm::vec4 atlas_pos = info->atlas_mapper[ele_image];
 				info->atlas_cpu[info->num_draw + k] = info->atlas_mapper[ele_image];
