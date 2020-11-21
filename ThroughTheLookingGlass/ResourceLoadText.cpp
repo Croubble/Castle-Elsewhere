@@ -14,19 +14,6 @@
 #include "Regex.h"
 #include "Resource.h"
 
-textureAssets::PIECE resource_cursed_direction_to_piece_sprite(CursedDirection dir)
-{
-	if (dir == CursedDirection::RCURSED)
-		return textureAssets::PIECE::StopR;
-	if (dir == CursedDirection::UCURSED)
-		return textureAssets::PIECE::StopU;
-	if (dir == CursedDirection::LCURSED)
-		return textureAssets::PIECE::StopL;
-	if (dir == CursedDirection::DCURSED)
-		return textureAssets::PIECE::StopD;
-	return textureAssets::PIECE::Empty;
-}
-
 textureAssets::FLOOR resource_floor_to_sprite(Floor floor)
 {
 	return (textureAssets::FLOOR) floor;

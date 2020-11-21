@@ -55,13 +55,6 @@ Animations* animations_build(GameActionJournal* journal, GameState* draw_from, I
 	Animations* result = (Animations*)memory_alloc(clear_on_gamestate_update_memory, sizeof(Animations));
 	result->maybe_movement_animation = animation_build(journal->maybe_animation, draw_from, gamestart, clear_on_gamestate_update_memory, z_pos);
 	result->old_state = gamestate_clone(journal->old_state, clear_on_gamestate_update_memory);
-	result->curse_animation = (DrawCurseAnimation*)memory_alloc(clear_on_gamestate_update_memory, sizeof(DrawCurseAnimation));
-	result->curse_animation->num_elements = draw_from->w * draw_from->h;
-	result->curse_animation->flash = (bool*)memory_alloc(clear_on_gamestate_update_memory, sizeof(bool) * draw_from->w * draw_from->h);
-	for (int i = 0; i < draw_from->w * draw_from->h; i++)
-	{
-		result->curse_animation->flash[i] = journal->maybe_cursed_animation->flash[i];
-	}
 
 	return result;
 }

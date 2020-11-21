@@ -3,7 +3,10 @@
 #include <iostream>
 #include "Math.h"
 
-//movement functions.
+/*INTERNAL FUNCTIONS HEADERS*/
+void gamestate_allocate_layers(GameState* result, Memory* memory, int w, int h);
+
+/***************************MOVEMENT FUNCTIONS***********************************/
 static inline IntPair move_pos_wrapped_2d_up(IntPair pos, int w, int h)
 {
 	pos.y += 1;
@@ -48,7 +51,6 @@ static inline IntPair move_pos_wrapped_2d(IntPair pos, Direction direction, int 
 	return pos;
 }
 
-//apply moves 
 static void apply_moves_to_layer_SLOW(Memory* temp_memory, bool* is_moving, int* layer, int w, int h, Direction action)
 {
 	//TODO: No longer need to call this, replace call with faster code, holy moly this is slow.
@@ -169,14 +171,8 @@ static void apply_down_moves_to_layer(Memory* memory, bool* is_moving, int* laye
 		layer[next_final_1d] = (stored_value * is_moving[final_i]) + (layer[next_final_1d] * (1 - is_moving[final_i]));
 	}
 }
-static __forceinline inline bool can_be_pushed(int piece)
-{
-	return is_normal_crate(piece);
-}
-static __forceinline inline bool can_be_pulled(int piece)
-{
-	return is_pull_crate(piece);
-}
+
+//******************************DIRECTION UTILITY***************************************/
 IntPair direction_to_intpair(Direction action)
 {
 	if (action == U)
@@ -197,14 +193,6 @@ IntPair direction_to_intpair(Direction action)
 	}
 	return math_intpair_create(0, 0);
 }
-void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scope_memory)
-{
-	int next_pos = timeMachine->num_gamestates_stored;
-	GameState* next = &timeMachine->state_array[next_pos];
-	GameState* old = &timeMachine->state_array[0];
-	gamestate_clone_to_unitialized(old, next, scope_memory);
-	timeMachine->num_gamestates_stored++;
-}
 Direction action_to_direction(Action action)
 {
 	if (action == Action::A_UP)
@@ -216,6 +204,15 @@ Direction action_to_direction(Action action)
 	if (action == Action::A_LEFT)
 		return Direction::L;
 	return Direction::NO_DIRECTION;
+}
+//**********************timemachine utilty***********************************/
+void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scope_memory)
+{
+	int next_pos = timeMachine->num_gamestates_stored;
+	GameState* next = &timeMachine->state_array[next_pos];
+	GameState* old = &timeMachine->state_array[0];
+	gamestate_clone_to_unitialized(old, next, scope_memory);
+	timeMachine->num_gamestates_stored++;
 }
 static void cancel_blocked_moves(bool* is_moving, int* layer, Direction d, int w, int h)
 {
@@ -243,13 +240,10 @@ static void cancel_blocked_moves(bool* is_moving, int* layer, Direction d, int w
 	}
 
 }
-
-
 GamestateTimeMachine* gamestate_timemachine_create(GameState* start_state, Memory* memory, int max_num_gamestates)
 {
 	GamestateTimeMachine* result = (GamestateTimeMachine*) memory_alloc(memory, sizeof(GamestateTimeMachine));
 	result->start_state = gamestate_clone(start_state, memory);
-	curse_gamestate(result->start_state);
 	result->state_array = (GameState*)memory_alloc(memory, sizeof(GameState) * max_num_gamestates);
 	//TODO: Get this function actually working correctly. Do eet.
 	gamestate_clone_to_unitialized(result->start_state, &(result->state_array[0]), memory);
@@ -258,7 +252,6 @@ GamestateTimeMachine* gamestate_timemachine_create(GameState* start_state, Memor
 	result->max_gamestates_storable = max_num_gamestates;
 	return result;
 }
-
 void* gamestate_timemachine_undo(GamestateTimeMachine* timeMachine)
 {
 	//returns a pointer to the memory we cleared.
@@ -274,6 +267,33 @@ GameState* gamestate_timemachine_get_latest_gamestate(GamestateTimeMachine* time
 {
 	return &timeMachine->state_array[timeMachine->num_gamestates_stored - 1];
 }
+
+//*****************************************GAMESTATE WRITE************************//
+GameState* gamestate_create(Memory* memory, int w, int h)
+{
+	int size = sizeof(GameState);
+	GameState* result = (GameState*) memory_alloc(memory,size);
+	gamestate_allocate_layers(result, memory, w, h);
+	return result;
+}
+GameState* gamestate_clone(GameState* state, Memory* memory)
+{
+	GameState* clone_to = gamestate_create(memory, state->w, state->h);
+	gamestate_clone_to(state, clone_to);
+	return clone_to;
+}
+GameState* gamestate_merge_with_allocate(GameState* first, GameState* second, IntPair combined_size, Memory* output_memory, IntPair left_merge_offset, IntPair right_merge_offset)
+{
+	GameState* output_state = gamestate_create(output_memory, combined_size.x, combined_size.y);
+	gamestate_merge(first, second, output_state, left_merge_offset, right_merge_offset);
+	return output_state;
+}
+GameState* gamestate_resize_with_allocate(GameState* input_state, Memory* output_memory, int output_w, int output_h, IntPair displacement_from_input_to_output)
+{
+	GameState* output_state = gamestate_create(output_memory, output_w, output_h);
+	gamestate_resize(input_state, output_state, displacement_from_input_to_output);
+	return output_state;
+}
 GameActionJournal* gamestate_timemachine_take_action(GamestateTimeMachine* timeMachine, Direction action, Memory* scope_memory, Memory* temp_memory)
 {
 	int next_pos = timeMachine->num_gamestates_stored;
@@ -284,45 +304,6 @@ GameActionJournal* gamestate_timemachine_take_action(GamestateTimeMachine* timeM
 	GameActionJournal* result = gamestate_action(next, action, temp_memory);
 	timeMachine->num_gamestates_stored++;
 	return result;
-}
-
-void gamestate_allocate_layers(GameState* result, Memory* memory, int w, int h)
-{
-	result->w = w;
-	result->h = h;
-	result->piece = (int*)memory_alloc(memory, sizeof(int) * w * h);
-	result->floor = (int*)memory_alloc(memory, sizeof(int) * w * h);
-	for (int i = 0; i < w * h; i++)
-	{
-		Floor f = (Floor)0;
-		result->floor[i] = f;
-	}
-	for (int i = 0; i < w * h; i++)
-	{
-		Piece p = (Piece)0;
-		result->piece[i] = p;
-	}
-}
-GameState* gamestate_create(Memory* memory, int w, int h)
-{
-	int size = sizeof(GameState);
-	GameState* result = (GameState*) memory_alloc(memory,size);
-	gamestate_allocate_layers(result, memory, w, h);
-	return result;
-}
-
-GameState* gamestate_clone(GameState* state, Memory* memory)
-{
-	GameState* clone_to = gamestate_create(memory, state->w, state->h);
-	gamestate_clone_to(state, clone_to);
-	return clone_to;
-}
-
-GameState* gamestate_merge_with_allocate(GameState* first, GameState* second, IntPair combined_size, Memory* output_memory, IntPair left_merge_offset, IntPair right_merge_offset)
-{
-	GameState* output_state = gamestate_create(output_memory, combined_size.x, combined_size.y);
-	gamestate_merge(first, second, output_state, left_merge_offset, right_merge_offset);
-	return output_state;
 }
 void gamestate_merge(GameState* left, GameState* right, GameState* output, IntPair left_merge_offset, IntPair right_merge_offset)
 {
@@ -368,7 +349,24 @@ void gamestate_merge(GameState* left, GameState* right, GameState* output, IntPa
 			}
 	}
 }
-
+//*******************************GAMESTATE ACTION INTERNALS************************/
+void gamestate_allocate_layers(GameState* result, Memory* memory, int w, int h)
+{
+	result->w = w;
+	result->h = h;
+	result->piece = (int*)memory_alloc(memory, sizeof(int) * w * h);
+	result->floor = (int*)memory_alloc(memory, sizeof(int) * w * h);
+	for (int i = 0; i < w * h; i++)
+	{
+		Floor f = (Floor)0;
+		result->floor[i] = f;
+	}
+	for (int i = 0; i < w * h; i++)
+	{
+		Piece p = (Piece)0;
+		result->piece[i] = p;
+	}
+}
 bool gamestate_is_in_win_condition(GameState* state)
 {
 	int len = state->w * state->h;
@@ -389,7 +387,6 @@ bool gamestate_is_in_win_condition(GameState* state)
 	}
 	return true;
 }
-
 bool is_player(int val)
 {
 	return val == P_PLAYER ||
@@ -399,7 +396,6 @@ bool is_player(int val)
 		val == P_CURSED_PLAYERD ||
 		val == P_CURSED_PLAYERL;
 }
-
 bool is_normal_crate(int val)
 {
 	return val == P_CRATE ||
@@ -409,7 +405,6 @@ bool is_normal_crate(int val)
 		val == P_CURSED_CRATER ||
 		val == P_CURSED_CRATEL;
 }
-
 bool is_pull_crate(int val)
 {
 	return val == P_PULL_CRATE ||
@@ -418,100 +413,6 @@ bool is_pull_crate(int val)
 		val == P_CURSED_PULL_CRATEU ||
 		val == P_CURSED_PULL_CRATEL ||
 		val == P_CURSED_PULL_CRATER;
-}
-
-CursedDirection get_entities_cursed_direction(int val)
-{
-	if (val == P_CURSED_PLAYERD || val == P_CURSED_CRATED || val == P_CURSED_PULL_CRATED)
-		return CursedDirection::DCURSED;
-	if (val == P_CURSED_PLAYERU || val == P_CURSED_CRATEU || val == P_CURSED_PULL_CRATEU)
-		return CursedDirection::UCURSED;
-	if (val == P_CURSED_PLAYERR || val == P_CURSED_CRATER || val == P_CURSED_PULL_CRATER)
-		return CursedDirection::RCURSED;
-	if (val == P_CURSED_PLAYERL || val == P_CURSED_CRATEL || val == P_CURSED_PULL_CRATEL)
-		return CursedDirection::LCURSED;
-	if (val == P_CURSED_PLAYER || val == P_CURSED_CRATE || val == P_CURSED_PULL_CRATE)
-		return CursedDirection::CURSED;
-	return CursedDirection::NOTCURSED;
-}
-
-CursedDirection get_curseddirection_from_direction(Direction dir)
-{
-	if (dir == U)
-		return CursedDirection::UCURSED;
-	if (dir == R)
-		return CursedDirection::RCURSED;
-	if (dir == D)
-		return CursedDirection::DCURSED;
-	if (dir == L)
-		return CursedDirection::LCURSED;
-	return CursedDirection::NOTCURSED;
-}
-
-bool is_cursed(int entity)
-{
-	return !(get_entities_cursed_direction(entity) == CursedDirection::NOTCURSED);
-}
-
-bool curseaable(int entity)
-{
-	bool can_be_cursed = is_player(entity) || is_normal_crate(entity) || is_pull_crate(entity);
-	bool cursed = is_cursed(entity);
-	return can_be_cursed && !cursed;
-}
-int curse_entity(int entity_value, CursedDirection curse_to_apply)
-{
-	if (is_player(entity_value))
-	{
-		if (curse_to_apply == D)
-			return P_CURSED_PLAYERD;
-		if (curse_to_apply == R)
-			return P_CURSED_PLAYERR;
-		if (curse_to_apply == U)
-			return P_CURSED_PLAYERU;
-		if (curse_to_apply == L)
-			return P_CURSED_PLAYERL;
-		if (curse_to_apply == CursedDirection::CURSED)
-			return P_CURSED_PLAYER;
-		return P_PLAYER;
-	}
-	if (is_normal_crate(entity_value))
-	{
-		if (curse_to_apply == D)
-			return P_CURSED_CRATED;
-		if (curse_to_apply == R)
-			return P_CURSED_CRATER;
-		if (curse_to_apply == U)
-			return P_CURSED_CRATEU;
-		if (curse_to_apply == L)
-			return P_CURSED_CRATEL;
-		if (curse_to_apply == CursedDirection::CURSED)
-			return P_CURSED_CRATE;
-		return P_CRATE;
-	}
-	if (is_pull_crate(entity_value))
-	{
-		if (curse_to_apply == D)
-			return P_CURSED_PULL_CRATED;
-		if (curse_to_apply == U)
-			return P_CURSED_PULL_CRATEU;
-		if (curse_to_apply == R)
-			return P_CURSED_PULL_CRATER;
-		if (curse_to_apply == L)
-			return P_CURSED_PULL_CRATEL;
-		if (curse_to_apply == CursedDirection::CURSED)
-			return P_CURSED_PULL_CRATE;
-		return P_PULL_CRATE;
-	}
-	crash_err("we appear to be trying to curse an entity that can't be cursed. This is would indicate an error in the code we wrote. Abort.");
-	return P_CRATE;
-}
-
-GameState* gamestate_resize_with_allocate(GameState* input_state, Memory* output_memory, int output_w, int output_h, IntPair displacement_from_input_to_output)
-{
-	GameState* output_state = gamestate_create(output_memory, output_w, output_h);
-	gamestate_resize(input_state, output_state, displacement_from_input_to_output);
-	return output_state;
 }
 void gamestate_resize(GameState* input_state, GameState* output_state, IntPair displacement_from_input_to_output)
 {
@@ -556,7 +457,6 @@ void  gamestate_clone_to(GameState* input_state, GameState* output_state)
 			}
 		}
 }
-
 GameState* gamestate_add_row(GameState* input, Memory* scope_memory, int target_x, int target_y)
 {
 	int w_old = input->w;
@@ -578,7 +478,6 @@ GameState* gamestate_add_row(GameState* input, Memory* scope_memory, int target_
 		}
 	return output;
 }
-
 GameState* gamestate_add_column(GameState* input, Memory* scope_memory, int target_x, int target_y)
 {
 	int w_old = input->w;
@@ -600,7 +499,6 @@ GameState* gamestate_add_column(GameState* input, Memory* scope_memory, int targ
 		}
 	return output;
 }
-
 GameState* gamestate_surround_with_walls(GameState* input, Memory* scope_memory)
 {
 	int old_w = input->w;
@@ -626,7 +524,6 @@ GameState* gamestate_surround_with_walls(GameState* input, Memory* scope_memory)
 			}
 	return result;
 }
-
 void gamestate_clone_to_unitialized(GameState* input_state, GameState* output_state, Memory* memory)
 {
 	int w = input_state->w;
@@ -697,8 +594,6 @@ bool gamestate_eq(GameState* left, GameState* right)
 {
 	return false;
 }
-
-
 AABB* gamestate_create_colliders(Memory* memory, GameState** states, IntPair* locations, int length)
 {
 	AABB* result = (AABB*)memory_alloc(memory, sizeof(AABB) * (length - 1));
@@ -714,7 +609,6 @@ AABB* gamestate_create_colliders(Memory* memory, GameState** states, IntPair* lo
 	}
 	return result;
 }
-
 AABB* gamestate_create_colliders(Memory* memory, GameState** states, IntPair* locations, int length, int skip_index)
 {
 	AABB* result = (AABB*) memory_alloc(memory, sizeof(AABB) * (length - 1));
@@ -740,19 +634,6 @@ AABB* gamestate_create_colliders(Memory* memory, GameState** states, IntPair* lo
 	}
 	return result;
 }
-
-void curse_gamestate(GameState* state)
-{
-	int w = state->w;
-	int h = state->h;
-	for (int i = 0; i < w * h; i++)
-	{
-		if (state->floor[i] == F_CURSE)
-			if (curseaable(state->piece[i]))
-				state->piece[i] = curse_entity(state->piece[i],CursedDirection::CURSED);
-	}
-}
-
 PieceMovementAnimation* gamestate_animationmoveinfo_create_internal(int num_elements, Memory* temp_memory)
 {
 	PieceMovementAnimation* result = (PieceMovementAnimation*)memory_alloc(temp_memory, sizeof(PieceMovementAnimation));
@@ -830,33 +711,10 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 		{
 			if (is_player(pieces[i]))
 			{
-				//if we found a cursed player trying to move , cancel the action.
-				if (get_entities_cursed_direction(pieces[i]) == action)
-				{
-					journal->action_result = AR_ACTION_CANCELLED;
-					journal->maybe_animation = NULL;
-					journal->maybe_cursed_animation = (CurseAnimation*) memory_alloc(temp_memory, sizeof(CurseAnimation*));
-					journal->maybe_cursed_animation->flash = (bool*) memory_alloc(temp_memory, sizeof(CurseAnimation*) * w * h);
-					for (int z = 0; z < w * h; z++)
-					{
-						bool flash = false;
-						int entity = state->piece[z];
-						if (is_player(entity) && is_cursed(entity) && get_entities_cursed_direction(entity) != CursedDirection::CURSED)
-						{
-							flash = true;
-						}
-						journal->maybe_cursed_animation->flash[z] = flash;
-					}
-					return journal;
-					//TODO: build the cursed animation for the player, then return get out of here card.
-				}
-				//if we found a player that isn't having their move stopped, continue the algorithm.
-				else
-				{
-					player_1d = i;
-					player_2d = t2D(i, state->w, state->h);
-					break;
-				}
+				//we found a player that isn't having their move stopped, continue the algorithm.
+				player_1d = i;
+				player_2d = t2D(i, state->w, state->h);
+				break;
 			}
 		}
 	}
@@ -868,11 +726,6 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 		square_moving[player_1d] = true;
 	}
 
-	//setup memory for curse info.
-	journal->maybe_cursed_animation = (CurseAnimation*) memory_alloc(temp_memory, sizeof(CurseAnimation));
-	journal->maybe_cursed_animation->flash = (bool*)memory_alloc(temp_memory, sizeof(bool) * w * h);
-	for (int i = 0; i < w * h; i++)
-		journal->maybe_cursed_animation->flash[i] = false;
 
 	//for each moving player, if their is a crate in their movement direction, make that move too!
 	//this is where we cancel cursed moves that shouldn't be happening.
@@ -883,64 +736,18 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 		int back_square_1d = f2D(back_square.x, back_square.y, w, h);
 		int next_piece = pieces[next_square_1d];
 		int back_piece = pieces[back_square_1d];
-		if (can_be_pushed(next_piece))
+		if (is_normal_crate(next_piece))
 		{
-			if (get_entities_cursed_direction(next_piece) != action)
-			{
-				square_moving[next_square_1d] = true;
-			}
-			else
-			{
-				//the square we are pushing's curse animation flashes true.
-				journal->maybe_cursed_animation->flash[next_square_1d] = true;
-			}
+			square_moving[next_square_1d] = true;
 		}
-		if (can_be_pulled(back_piece))
+		if (is_pull_crate(back_piece))
 		{
-			if (get_entities_cursed_direction(back_piece) != action)
-			{
-				square_moving[back_square_1d] = true;
-			}
-			else
-			{
-				//the square we are pulling's curse animation flashes true.
-				journal->maybe_cursed_animation->flash[back_square_1d] = true;
-			}
+			square_moving[back_square_1d] = true;
 		}
 
 	}
-	
-	//curse anything standing on a curse.
-	curse_gamestate(state);
 	//block moves.
-
 	cancel_blocked_moves(square_moving, pieces, action, w, h);
-
-	//curse anything that is moving and is (already cursed / stepping onto a curse this turn)
-	for (int i = 0; i < w * h; i++)
-	{
-		if (square_moving[i])
-		{
-			IntPair current_2d = t2D(i, w, h);
-			IntPair next_2d = move_pos_wrapped_2d(current_2d, action, w, h);
-			int next_1d = f2D(next_2d.x, next_2d.y, w, h);
-
-			int next_floor_val = state->floor[next_1d];
-			int floor_val = state->floor[i];
-			int piece_val = state->piece[i];
-			CursedDirection how_to_curse = get_curseddirection_from_direction(action);
-			//if the floor is a curse, or the entity that moved is already cursed.
-			if (next_floor_val == F_CURSE || get_entities_cursed_direction(piece_val) != CursedDirection::NOTCURSED)
-			{
-				//curse an entity.
-				state->piece[i] = curse_entity(piece_val, how_to_curse);
-			}
-			if (next_floor_val == F_CLEANSE)
-			{
-				state->piece[i] = curse_entity(piece_val, CursedDirection::NOTCURSED);
-			}
-		}
-	}
 
 	//get final values (e.g. after curses)
 	animationmoveinfo_copy_from_gamestate_internal(&animation->ends, state);
@@ -956,7 +763,6 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 	journal->maybe_animation = animation;
 	return journal;
 }
-
 void gamestate_crumble(GameState* state)
 {
 	int len = state->w * state->h;
@@ -982,4 +788,32 @@ void gamestate_extrude_lurking_walls(GameState* state)
 		}
 
 	}
+}
+
+
+
+//scratch
+
+//okay so the four mechanics I want to implement are:
+	//push
+	//pull
+	//parrallel
+	//merge 
+	//using these 4 crates we can have a progression that looks like:
+	//push / pull / parallel path, opening up gates to the next stage.
+	//merge rule parallel cadence,
+	//set parallel paths, that each lead towards keys that open the gate to the finale section. Paths are just cool cadences that rely on prior work.
+	//finale puzzle.
+
+
+//apply push
+//apply pull
+//apply parallel
+//if a crate is moving into another crate in our movement function, we merge their two 
+typedef void tunnel_journal;
+tunnel_journal tunnel(GameState* state, int player_pos)
+{
+	//detect whether the player moves.
+	//list<IntPair> <- get all the crates!
+	//move the tunneled crate to its output position.
 }

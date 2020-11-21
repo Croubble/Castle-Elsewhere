@@ -22,21 +22,6 @@ enum Piece {
 	P_CRUMBLE,
 	P_WALL,
 	P_WALL_ALT,
-	P_CURSED_PLAYER,
-	P_CURSED_PLAYERU,
-	P_CURSED_PLAYERR,
-	P_CURSED_PLAYERL,
-	P_CURSED_PLAYERD,
-	P_CURSED_CRATE,
-	P_CURSED_CRATEU,
-	P_CURSED_CRATER,
-	P_CURSED_CRATEL,
-	P_CURSED_CRATED,
-	P_CURSED_PULL_CRATE,
-	P_CURSED_PULL_CRATEU,
-	P_CURSED_PULL_CRATER,
-	P_CURSED_PULL_CRATEL,
-	P_CURSED_PULL_CRATED,
 	P_COUNT
 };
 
@@ -47,8 +32,6 @@ enum Floor {
 	F_START,
 	F_ZBLACK,
 	F_LURKING_WALL,
-	F_CURSE,
-	F_CLEANSE,
 	F_COUNT
 };
 struct GameState {
@@ -72,9 +55,6 @@ struct GamestateTimeMachine
 	int num_gamestates_stored;
 	int max_gamestates_storable;
 };
-enum CursedDirection {
-	UCURSED,RCURSED,DCURSED,LCURSED,CURSED,NOTCURSED
-};
 enum Action {
 	A_UP,
 	A_RIGHT,
@@ -93,10 +73,6 @@ enum AnimationType {
 	AT_COUNT
 };
 
-struct CurseAnimation
-{
-	bool* flash;	//says whether each cursed element should animate the curse or not.
-};
 struct PieceMovementAnimation
 {
 	IntPair* pos;
@@ -120,7 +96,6 @@ struct GameActionJournal
 	GameState* old_state;
 	ActionResult action_result;
 	GameStateAnimation* maybe_animation;
-	CurseAnimation* maybe_cursed_animation;
 };
 Direction action_to_direction(Action action);
 IntPair direction_to_intpair(Direction dir);
@@ -153,7 +128,6 @@ GameState* gamestate_resize_with_allocate(GameState* input_state, Memory* output
 bool gamestate_apply_brush(GameState* state, GamestateBrush brush, int x, int y);
 GameState* gamestate_merge_with_allocate(GameState* first, GameState* second, IntPair combined_size, Memory* output_memory, IntPair left_merge_offset, IntPair right_merge_offset);
 void gamestate_merge(GameState* left, GameState* right, GameState* output, IntPair left_merge_offset, IntPair right_merge_offset);
-void curse_gamestate(GameState* state);
 /******************************GAMESTATE READ************************/
 /********************************************************************/
 int** gamestate_get_layers(GameState* gamestate, int* num_layers_found, Memory* temp_memory);
@@ -168,10 +142,6 @@ bool gamestate_is_in_win_condition(GameState* state);
 bool is_player(int val);
 bool is_normal_crate(int val);
 bool is_pull_crate(int val);
-CursedDirection get_entities_cursed_direction(int val);
-CursedDirection get_curseddirection_from_direction(Direction dir);
-bool is_cursed(int entity);
-int curse_entity(int entity_value, CursedDirection curse_to_apply);
 
 /******************************GAMESTATE GAME ACTION WRITE**********************/
 /********************************************************************/

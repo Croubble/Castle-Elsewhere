@@ -2,8 +2,6 @@
   Camera.cpp
   EditorTimeMachine.cpp
   GameState.cpp
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\GameState.cpp(172,22): warning C4141: 'inline': used more than once
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\GameState.cpp(176,22): warning C4141: 'inline': used more than once
   Parse.cpp
   Regex.cpp
   ResourceLoadText.cpp

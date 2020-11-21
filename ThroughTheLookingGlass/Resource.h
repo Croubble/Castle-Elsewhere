@@ -6,7 +6,6 @@
 #include "textureAssets.h"
 typedef int (*get_atlas_number_from_name) (std::string);
 
-textureAssets::PIECE resource_cursed_direction_to_piece_sprite(CursedDirection dir);
 
 
 textureAssets::FLOOR resource_floor_to_sprite(Floor floor);
