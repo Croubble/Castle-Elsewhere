@@ -196,7 +196,6 @@
     <ClCompile Include="Sprites.cpp" />
     <ClCompile Include="TextDraw.cpp" />
     <ClCompile Include="textureAssets.cpp" />
-    <ClCompile Include="ThreeGames.cpp" />
     <ClCompile Include="tinyfiledialogs.c" />
     <ClCompile Include="Walk.cpp" />
     <ClCompile Include="win32_platform.cpp" />
@@ -256,7 +255,6 @@
     <ClInclude Include="TextDraw.h" />
     <ClInclude Include="TextScene.h" />
     <ClInclude Include="textureAssets.h" />
-    <ClInclude Include="ThreeGames.h" />
     <ClInclude Include="tinyfiledialogs.h" />
     <ClInclude Include="TrueFontCharacter.h" />
     <ClInclude Include="World.h" />

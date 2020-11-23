@@ -147,11 +147,58 @@ void draw_layer_to_gamespace(GameState** gamestates, IntPair* offsets, int numbe
 		}
 	}
 }
+void draw_sprite(int atlas_ele, glm::mat4 position, SpriteWrite* write_to)
+{
+	glm::vec4 atlas_coords = write_to->atlas_mapper[atlas_ele];
+	int d = write_to->num_draw;
+	write_to->atlas_cpu[d] = atlas_coords;
+	write_to->matrix_cpu[d] = position;
+	write_to->color_cpu[d] = glm::vec4(1, 1, 1, 1);
+	write_to->num_draw++;
+}
 void draw_layers_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, AllWrite* info)
 {
 	{
-		//draw_layer_to_gamespace(gamestates, offsets, number_of_gamestates, info->floor, 0);
+		draw_layer_to_gamespace(gamestates, offsets, number_of_gamestates, info->floor, 0);
 		draw_layer_to_gamespace(gamestates, offsets, number_of_gamestates, info->piece, 1);
+		//draw crate symbols.
+		for(int z = 0; z < number_of_gamestates;z++)
+		{
+			GameState* next = gamestates[z];
+			IntPair offset = offsets[z];
+			for (int i = 0; i < next->w * next->h; i++)
+				if (next->piece[i] == P_CRATE)
+				{
+					PieceData piece_data = next->piece_data[i];
+					//count the number of elements to draw.
+					
+					//determine whether we need 1 space, 4 spaces, or 9 spaces to draw the crate.
+					int length = CP_COUNT;
+					int total = 0;
+					for (int i = 0; i < length; i++)
+						total += piece_data.powers[i];
+					
+					int num_drawn = 0;//draw number.
+					int width = (int) ceil(sqrt(total));
+					
+					for (int i = 0; i < length; i++)
+					{
+						if (piece_data.powers[i])
+						{
+							//draw position
+							int to_draw = piecedata_to_symbol((CratePower) i);
+							glm::vec3 draw_position = glm::vec3(num_drawn % width, num_drawn / width, 0);
+							glm::vec3 scale = glm::vec3(1.0 / (float)width, 1.0 / (float)width, 1);
+							glm::mat4 matrix_drawn = math_translated_scaled_matrix(draw_position, scale);
+							draw_position.x /= (float)width;
+							draw_position.y /= (float)width;
+							num_drawn++;
+							draw_sprite(to_draw, matrix_drawn, info->symbol);
+						}
+					}
+
+				}
+		}
 	}
 }
 

@@ -4,6 +4,7 @@
 #include "Memory.h"
 #include "Math.h"
 #include <iostream>
+#include "textureAssets.h"
 enum LAYER_NAME
 {
 	LN_FLOOR,
@@ -18,7 +19,6 @@ enum Piece {
 	P_NONE,
 	P_PLAYER,
 	P_CRATE,
-	P_PULL_CRATE,
 	P_CRUMBLE,
 	P_WALL,
 	P_WALL_ALT,
@@ -34,11 +34,32 @@ enum Floor {
 	F_LURKING_WALL,
 	F_COUNT
 };
+enum CratePower {
+	CP_PUSH,
+	CP_PULL,
+	CP_PARALLEL,
+	CP_MERGE,
+	CP_COUNT,
+	CP_ERROR
+};
+struct PieceData
+{
+	bool powers[CP_COUNT];
+};
+struct FloorData
+{
+	//target match rules.
+	PieceData target_union_rules;	//crate must meet criteria
+	PieceData target_disjoint_rules; //crate must NOT meet criteria
+};
+
 struct GameState {
 	int w;
 	int h;
 	int* floor;
 	int* piece;
+	FloorData* floor_data;
+	PieceData* piece_data;
 };
 
 struct GamestateBrush {
@@ -112,6 +133,11 @@ GameActionJournal* gamestate_timemachine_take_action(GamestateTimeMachine* timeM
 /*********************************************************************/
 GamestateBrush gamestate_brush_create(bool applyFloor, Floor floor, bool applyPiece, Piece piece);
 
+/*************************PIECE/FLOOR DATA*******************************/
+/*********************************************************************/
+textureAssets::SYMBOLS piecedata_to_symbol(CratePower val);
+PieceData gamestate_piecedata_make();
+FloorData gamestate_floordata_make();
 /******************************GAMESTATE WRITE************************/
 /*********************************************************************/
 
@@ -132,7 +158,6 @@ void gamestate_merge(GameState* left, GameState* right, GameState* output, IntPa
 /********************************************************************/
 int** gamestate_get_layers(GameState* gamestate, int* num_layers_found, Memory* temp_memory);
 int* gamestate_get_layer(GameState* gamestate, int layer_num);
-bool gamestate_eq(GameState* left, GameState* right);
 //unsigned int gamestate_player_find(GameState* gamestate);
 AABB* gamestate_create_colliders(Memory* memory, GameState** states, IntPair* locations, int length);
 AABB* gamestate_create_colliders(Memory* memory, GameState** states, IntPair* locations, int length, int skip_index);
@@ -140,8 +165,6 @@ bool gamestate_is_in_win_condition(GameState* state);
 
 
 bool is_player(int val);
-bool is_normal_crate(int val);
-bool is_pull_crate(int val);
 
 /******************************GAMESTATE GAME ACTION WRITE**********************/
 /********************************************************************/

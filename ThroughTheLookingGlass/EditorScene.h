@@ -2,7 +2,7 @@
 #include "GameState.h"
 #include "Editor.h"
 
-const int palete_length = 16;
+const int palete_length = 11;
 struct EditorScene
 {
 	TimeMachineEditor* timeMachine;
@@ -28,19 +28,13 @@ EditorScene* editorscene_setup_with_start_state(Memory* editor_memory, ViewPortC
 		result->palete[i++] = gamestate_brush_create(true, F_NONE, true, P_NONE);
 		result->palete[i++] = gamestate_brush_create(true, F_TARGET, false, P_NONE);
 		result->palete[i++] = gamestate_brush_create(true, F_START, false, P_NONE);
-		result->palete[i++] = gamestate_brush_create(true, F_CURSE, false, P_NONE);
-		result->palete[i++] = gamestate_brush_create(true, F_CLEANSE, false, P_NONE);
 		result->palete[i++] = gamestate_brush_create(true, F_LURKING_WALL, false, P_NONE);
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, Piece::P_NONE);
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_WALL);
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_WALL_ALT);
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRUMBLE);
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE);
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_PULL_CRATE);
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_PLAYER);
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CURSED_CRATE);
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CURSED_PULL_CRATE);
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CURSED_PLAYER);
 		if (i != palete_length)
 		{
 			crash_err("you need the number of elements in the palete to be teh same as the length of the palete");

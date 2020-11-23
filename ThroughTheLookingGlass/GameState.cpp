@@ -214,6 +214,45 @@ void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scop
 	gamestate_clone_to_unitialized(old, next, scope_memory);
 	timeMachine->num_gamestates_stored++;
 }
+static void cancel_blocked_nonmerge_moves(bool* is_merge, bool* is_moving, int* layer, PieceData* piece_data, Direction d, int w, int h)
+{
+	bool done = false;
+	while (!done)
+	{
+		done = true;
+		int length = w * h;
+		int z = 0;
+		for (int i = 0; i < w; i++)
+			for (int j = 0; j < h; j++, z++)
+			{
+				if (is_moving[z])
+				{
+					IntPair next = move_pos_wrapped_2d(math_intpair_create(i, j), d, w, h);
+					int next_1d = f2D(next.x, next.y, w, h);
+					bool we_are_merge = is_merge[z];
+					bool next_is_crate = layer[next_1d] == P_CRATE;
+					bool next_is_blocked = (layer[next_1d] != LN_FLOOR) && !is_moving[next_1d];
+					if (next_is_blocked)
+					{
+						if (next_is_crate && we_are_merge)
+						{
+							//get the next crate's data, and our data, and perform a merge.
+							piece_data[next_1d].powers[CP_PUSH] = piece_data[next_1d].powers[CP_PUSH] || piece_data[z].powers[CP_PUSH];
+							piece_data[next_1d].powers[CP_PULL] = piece_data[next_1d].powers[CP_PULL] || piece_data[z].powers[CP_PULL];
+							piece_data[next_1d].powers[CP_MERGE] = piece_data[next_1d].powers[CP_MERGE] || piece_data[z].powers[CP_MERGE];
+							piece_data[next_1d].powers[CP_PARALLEL] = piece_data[next_1d].powers[CP_PARALLEL] || piece_data[z].powers[CP_PARALLEL];
+						}
+						else
+						{
+							is_moving[z] = false;
+							done = false;
+						}
+					}
+				}
+			}
+	}
+
+}
 static void cancel_blocked_moves(bool* is_moving, int* layer, Direction d, int w, int h)
 {
 	bool done = false;
@@ -348,114 +387,41 @@ void gamestate_merge(GameState* left, GameState* right, GameState* output, IntPa
 				output->piece[index_out] = left->piece[index_in];
 			}
 	}
-}
-//*******************************GAMESTATE ACTION INTERNALS************************/
-void gamestate_allocate_layers(GameState* result, Memory* memory, int w, int h)
-{
-	result->w = w;
-	result->h = h;
-	result->piece = (int*)memory_alloc(memory, sizeof(int) * w * h);
-	result->floor = (int*)memory_alloc(memory, sizeof(int) * w * h);
-	for (int i = 0; i < w * h; i++)
+	//merge floor_data
 	{
-		Floor f = (Floor)0;
-		result->floor[i] = f;
-	}
-	for (int i = 0; i < w * h; i++)
-	{
-		Piece p = (Piece)0;
-		result->piece[i] = p;
-	}
-}
-bool gamestate_is_in_win_condition(GameState* state)
-{
-	int len = state->w * state->h;
-	for (int i = 0; i < len; i++)
-	{
-		if (state->floor[i] == F_START && !is_player(state->piece[i]))
-		{
-			return false;
-		}
-
-	}
-	for (int i = 0; i < len; i++)
-	{
-		if (state->floor[i] == F_TARGET && 
-			!is_normal_crate(state->piece[i]) &&
-			!is_pull_crate(state->piece[i]))
-			return false;
-	}
-	return true;
-}
-bool is_player(int val)
-{
-	return val == P_PLAYER ||
-		val == P_CURSED_PLAYER ||
-		val == P_CURSED_PLAYERU ||
-		val == P_CURSED_PLAYERR ||
-		val == P_CURSED_PLAYERD ||
-		val == P_CURSED_PLAYERL;
-}
-bool is_normal_crate(int val)
-{
-	return val == P_CRATE ||
-		val == P_CURSED_CRATE || 
-		val == P_CURSED_CRATED ||
-		val == P_CURSED_CRATEU ||
-		val == P_CURSED_CRATER ||
-		val == P_CURSED_CRATEL;
-}
-bool is_pull_crate(int val)
-{
-	return val == P_PULL_CRATE ||
-		val == P_CURSED_PULL_CRATE ||
-		val == P_CURSED_PULL_CRATED ||
-		val == P_CURSED_PULL_CRATEU ||
-		val == P_CURSED_PULL_CRATEL ||
-		val == P_CURSED_PULL_CRATER;
-}
-void gamestate_resize(GameState* input_state, GameState* output_state, IntPair displacement_from_input_to_output)
-{
-	int w_in = input_state->w;
-	int h_in = input_state->h;
-	int w_out = output_state->w;
-	int h_out = output_state->h;
-	for(int i = 0; i < w_in;i++)
-		for (int j = 0; j < h_in; j++)
-		{
-			int out_x = i + displacement_from_input_to_output.x;
-			int out_y = j + displacement_from_input_to_output.y;
-			if (out_x >= 0 && out_x < w_out && out_y >= 0 && out_y < h_out)
+		for (int i = 0; i < w_f; i++)
+			for (int j = 0; j < h_f; j++)
 			{
-				int in_index = f2D(i, j, w_in, h_in);
-				int out_index = f2D(out_x, out_y, w_out, h_out);
-				{
-					output_state->floor[out_index] = input_state->floor[in_index];
-					output_state->piece[out_index] = input_state->piece[in_index];
-				}
+				int index_in = f2D(i, j, w_f, h_f);
+				int index_out = f2D(i + left_merge_offset.x, j + left_merge_offset.y, w_out, h_out);
+				output->floor_data[index_out] = left->floor_data[index_in];
 			}
-
-		}
-}
-void  gamestate_clone_to(GameState* input_state, GameState* output_state)
-{
-	int w = input_state->w;
-	int h = input_state->h;
-	if (output_state->w != w || output_state->h != h)
-	{
-		crash_err("You fool! You tried to use gamestate_clone_to on an input_state that didn't have the correct amount of memory. This would be a memory leak. It's now a crash. Enjoy.");
-	}
-	output_state->w = w;
-	output_state->h = h;
-	for(int i = 0; i < w;i++)
-		for (int j = 0; j < h; j++)
-		{
+		for (int i = 0; i < w_s; i++)
+			for (int j = 0; j < h_s; j++)
 			{
-				int index = f2D(i, j, w, h);
-				output_state->floor[index] = input_state->floor[index];
-				output_state->piece[index] = input_state->piece[index];
+				int index_in = f2D(i, j, w_s, h_s);
+				int index_out = f2D(i + right_merge_offset.x, j + left_merge_offset.y, w_out, h_out);
+				output->floor_data[index_out] = left->floor_data[index_in];
 			}
-		}
+	}
+	//merge piece_data
+	{
+		for (int i = 0; i < w_f; i++)
+			for (int j = 0; j < h_f; j++)
+			{
+				int index_in = f2D(i, j, w_f, h_f);
+				int index_out = f2D(i + left_merge_offset.x, j + left_merge_offset.y, w_out, h_out);
+				output->piece_data[index_out] = left->piece_data[index_in];
+			}
+		for (int i = 0; i < w_s; i++)
+			for (int j = 0; j < h_s; j++)
+			{
+				int index_in = f2D(i, j, w_s, h_s);
+				int index_out = f2D(i + right_merge_offset.x, j + left_merge_offset.y, w_out, h_out);
+				output->piece_data[index_out] = left->piece_data[index_in];
+			}
+	}
+
 }
 GameState* gamestate_add_row(GameState* input, Memory* scope_memory, int target_x, int target_y)
 {
@@ -474,6 +440,9 @@ GameState* gamestate_add_row(GameState* input, Memory* scope_memory, int target_
 			{
 				output->floor[out_index] = input->floor[in_index];
 				output->piece[out_index] = input->piece[in_index];
+				output->floor_data[out_index] = input->floor_data[in_index];
+				output->piece_data[out_index] = input->piece_data[in_index];
+	
 			}
 		}
 	return output;
@@ -495,6 +464,8 @@ GameState* gamestate_add_column(GameState* input, Memory* scope_memory, int targ
 			{
 				output->floor[out_index] = input->floor[in_index];
 				output->piece[out_index] = input->piece[in_index];
+				output->floor_data[out_index] = input->floor_data[in_index];
+				output->piece_data[out_index] = input->piece_data[in_index];
 			}
 		}
 	return output;
@@ -521,8 +492,122 @@ GameState* gamestate_surround_with_walls(GameState* input, Memory* scope_memory)
 				int out_index = f2D(i + 1, j + 1, next_w, next_h);
 				result->floor[out_index] = input->floor[in_index];
 				result->piece[out_index] = input->piece[in_index];
+				result->floor_data[out_index] = input->floor_data[in_index];
+				result->piece_data[out_index] = input->piece_data[in_index];
+
 			}
 	return result;
+}
+//*******************************GAMESTATE ACTION INTERNALS************************/
+void gamestate_allocate_layers(GameState* result, Memory* memory, int w, int h)
+{
+	result->w = w;
+	result->h = h;
+	result->piece = (int*)memory_alloc(memory, sizeof(int) * w * h);
+	result->floor = (int*)memory_alloc(memory, sizeof(int) * w * h);
+	result->piece_data = (PieceData*)memory_alloc(memory, sizeof(PieceData) * w * h);
+	result->floor_data = (FloorData*)memory_alloc(memory, sizeof(FloorData) * w * h);
+	for (int i = 0; i < w * h; i++)
+	{
+		Floor f = (Floor)0;
+		result->floor[i] = f;
+	}
+	for (int i = 0; i < w * h; i++)
+	{
+		Piece p = (Piece)0;
+		result->piece[i] = p;
+	}
+	for (int i = 0; i < w * h; i++)
+	{
+		result->floor_data[i] = gamestate_floordata_make();
+	}
+	for (int i = 0; i < w * h; i++)
+	{
+		result->piece_data[i] = gamestate_piecedata_make();
+	}
+
+}
+bool gamestate_is_in_win_condition(GameState* state)
+{
+	int len = state->w * state->h;
+	for (int i = 0; i < len; i++)
+	{
+		if (state->floor[i] == F_START && !is_player(state->piece[i]))
+		{
+			return false;
+		}
+
+	}
+	for (int i = 0; i < len; i++)
+	{
+		if (state->floor[i] == F_TARGET && state->piece[i] != P_CRATE) 
+			return false;
+	}
+	return true;
+}
+bool is_player(int val)
+{
+	return val == P_PLAYER;
+}
+bool is_crate(int val)
+{
+	return val == P_CRATE;
+}
+bool is_normal_crate(PieceData val)
+{
+	return val.powers[CP_PUSH];
+}
+bool is_pull_crate(PieceData val)
+{
+	return val.powers[CP_PULL];
+}
+void gamestate_resize(GameState* input_state, GameState* output_state, IntPair displacement_from_input_to_output)
+{
+	int w_in = input_state->w;
+	int h_in = input_state->h;
+	int w_out = output_state->w;
+	int h_out = output_state->h;
+	for(int i = 0; i < w_in;i++)
+		for (int j = 0; j < h_in; j++)
+		{
+			int out_x = i + displacement_from_input_to_output.x;
+			int out_y = j + displacement_from_input_to_output.y;
+			if (out_x >= 0 && out_x < w_out && out_y >= 0 && out_y < h_out)
+			{
+				int in_index = f2D(i, j, w_in, h_in);
+				int out_index = f2D(out_x, out_y, w_out, h_out);
+				{
+					output_state->floor[out_index] = input_state->floor[in_index];
+					output_state->piece[out_index] = input_state->piece[in_index];
+					output_state->floor_data[out_index] = input_state->floor_data[in_index];
+					output_state->piece_data[out_index] = input_state->piece_data[in_index];
+				}
+			}
+
+		}
+}
+void  gamestate_clone_to(GameState* input_state, GameState* output_state)
+{
+	int w = input_state->w;
+	int h = input_state->h;
+	if (output_state->w != w || output_state->h != h)
+	{
+		crash_err("You fool! You tried to use gamestate_clone_to on an input_state that didn't have the correct amount of memory. This would be a memory leak. It's now a crash. Enjoy.");
+	}
+	output_state->w = w;
+	output_state->h = h;
+	for(int i = 0; i < w;i++)
+		for (int j = 0; j < h; j++)
+		{
+			{
+				int index = f2D(i, j, w, h);
+				output_state->floor[index] = input_state->floor[index];
+				output_state->piece[index] = input_state->piece[index];
+				output_state->floor_data[index] = input_state->floor_data[index];
+				output_state->piece_data[index] = input_state->piece_data[index];
+				
+			}
+		}
 }
 void gamestate_clone_to_unitialized(GameState* input_state, GameState* output_state, Memory* memory)
 {
@@ -572,6 +657,43 @@ GamestateBrush gamestate_brush_create(bool applyFloor, Floor floor, bool applyPi
 	return result;
 }
 
+
+/*************************PIECE/FLOOR DATA*******************************/
+/*********************************************************************/
+
+
+/*************************PIECE/FLOOR DATA*******************************/
+/*********************************************************************/
+textureAssets::SYMBOLS piecedata_to_symbol(CratePower val)
+{
+	if (val == CratePower::CP_PUSH)
+		return textureAssets::SYMBOLS::Circle;
+	if (val == CratePower::CP_PULL)
+		return textureAssets::SYMBOLS::Square;
+	if (val == CratePower::CP_MERGE)
+		return textureAssets::SYMBOLS::Plus;
+	if (val == CratePower::CP_PARALLEL)
+		return textureAssets::SYMBOLS::Triangle;
+	crash_err("Tried to draw a crate_power that is not drawable");
+	return textureAssets::SYMBOLS::HalfCircle;
+}
+
+PieceData gamestate_piecedata_make()
+{
+	PieceData result;
+	for (int i = 0; i < CP_COUNT; i++)
+		result.powers[i] = false;
+	return result;
+}
+
+FloorData gamestate_floordata_make()
+{
+	FloorData result;
+	result.target_union_rules = gamestate_piecedata_make();
+	result.target_disjoint_rules = gamestate_piecedata_make();
+	return result;
+}
+
 /******************************GAMESTATE READ************************/
 /********************************************************************/
 int** gamestate_get_layers(GameState* gamestate, int* num_layers_found, Memory* temp_memory)
@@ -589,10 +711,6 @@ int* gamestate_get_layer(GameState* gamestate, int layer_num)
 		return gamestate->piece;
 	crash_err("uh ohh, we tried to get a layer that doesn't exist!");
 	return gamestate->floor;
-}
-bool gamestate_eq(GameState* left, GameState* right)
-{
-	return false;
 }
 AABB* gamestate_create_colliders(Memory* memory, GameState** states, IntPair* locations, int length)
 {
@@ -728,24 +846,40 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 
 
 	//for each moving player, if their is a crate in their movement direction, make that move too!
-	//this is where we cancel cursed moves that shouldn't be happening.
 	{
 		IntPair next_square = move_pos_wrapped_2d(player_2d, action, w, h);
 		IntPair back_square = move_pos_wrapped_2d(player_2d, direction_reverse(action), w, h);
+		IntPair clockwise_square = move_pos_wrapped_2d(player_2d, direction_rotate_clockwise(action), w, h);
+		IntPair anticlockwise_square = move_pos_wrapped_2d(player_2d, direction_rotate_anti(action), w, h);
 		int next_square_1d = f2D(next_square.x, next_square.y, w, h);
 		int back_square_1d = f2D(back_square.x, back_square.y, w, h);
+		int clockwise_square_1d = f2D(clockwise_square.x, clockwise_square.y, w, h);
+		int anticlockwise_square_1d = f2D(anticlockwise_square.x, anticlockwise_square.y, w, h);
+
 		int next_piece = pieces[next_square_1d];
 		int back_piece = pieces[back_square_1d];
-		if (is_normal_crate(next_piece))
+		int clockwise_piece = pieces[clockwise_square_1d];
+		int anticlockwise_piece = pieces[anticlockwise_square_1d];
+
+		if (next_piece == P_CRATE && state->piece_data[next_piece].push)
 		{
 			square_moving[next_square_1d] = true;
 		}
-		if (is_pull_crate(back_piece))
+		if (back_piece == P_CRATE && state->piece_data[back_piece].pull)
 		{
 			square_moving[back_square_1d] = true;
 		}
+		if (clockwise_piece == P_CRATE && state->piece_data[clockwise_square_1d].parallel)
+		{
+			square_moving[clockwise_square_1d] = true;
+		}
+		if (anticlockwise_piece == P_CRATE && state->piece_data[anticlockwise_square_1d].parallel)
+		{
+			square_moving[anticlockwise_square_1d] = true;
+		}
 
 	}
+
 	//block moves.
 	cancel_blocked_moves(square_moving, pieces, action, w, h);
 
@@ -768,7 +902,7 @@ void gamestate_crumble(GameState* state)
 	int len = state->w * state->h;
 	for (int i = 0; i < len; i++)
 	{
-		if (state->piece[i] == P_CRUMBLE || is_normal_crate(state->piece[i]) || is_pull_crate(state->piece[i]))
+		if (state->piece[i] == P_CRUMBLE || state->piece[i] == P_CRATE)
 			state->piece[i] = P_NONE;
 	}
 	for (int i = 0; i < len; i++)
@@ -806,14 +940,3 @@ void gamestate_extrude_lurking_walls(GameState* state)
 	//finale puzzle.
 
 
-//apply push
-//apply pull
-//apply parallel
-//if a crate is moving into another crate in our movement function, we merge their two 
-typedef void tunnel_journal;
-tunnel_journal tunnel(GameState* state, int player_pos)
-{
-	//detect whether the player moves.
-	//list<IntPair> <- get all the crates!
-	//move the tunneled crate to its output position.
-}

@@ -132,9 +132,6 @@
     <ClCompile Include="HelperGL.cpp">
       <Filter>Source Files\Main</Filter>
     </ClCompile>
-    <ClCompile Include="ThreeGames.cpp">
-      <Filter>Source Files\GamestateFilter</Filter>
-    </ClCompile>
     <ClCompile Include="sprite.cpp">
       <Filter>Source Files\Main</Filter>
     </ClCompile>
@@ -294,9 +291,6 @@
     </ClInclude>
     <ClInclude Include="draw.h">
       <Filter>Source Files\Main</Filter>
-    </ClInclude>
-    <ClInclude Include="ThreeGames.h">
-      <Filter>Source Files\GamestateFilter</Filter>
     </ClInclude>
     <ClInclude Include="GenericUtil.h">
       <Filter>Source Files</Filter>
