@@ -51,11 +51,12 @@ static inline IntPair move_pos_wrapped_2d(IntPair pos, Direction direction, int 
 	return pos;
 }
 
-static void apply_moves_to_layer_SLOW(Memory* temp_memory, bool* is_moving, int* layer, int w, int h, Direction action)
+template <class T>
+static void apply_moves_to_layer_SLOW(Memory* temp_memory, bool* is_moving, T* layer, int w, int h, Direction action, T empty_val)
 {
 	//TODO: No longer need to call this, replace call with faster code, holy moly this is slow.
 	int length = w * h;
-	int* next_layer = (int*) memory_alloc(temp_memory, sizeof(int) * length);
+	T* next_layer = (T*) memory_alloc(temp_memory, sizeof(T) * length);
 	int* shall_delete = (int*)memory_alloc(temp_memory, sizeof(int) * length);
 	for (int z = 0; z < length; z++)
 	{
@@ -81,7 +82,7 @@ static void apply_moves_to_layer_SLOW(Memory* temp_memory, bool* is_moving, int*
 	for (int z = 0; z < length; z++)
 	{
 		if (shall_delete[z] > 0)
-			next_layer[z] = 0;
+			next_layer[z] = empty_val;
 	}
 	for (int z = 0; z < length; z++)
 	{
@@ -236,7 +237,7 @@ static void cancel_blocked_nonmerge_moves(bool* is_merge, bool* is_moving, int* 
 					{
 						if (next_is_crate && we_are_merge)
 						{
-							//get the next crate's data, and our data, and perform a merge.
+							//get the next crate's piece_data, and our piece_data, and perform a merge.
 							piece_data[next_1d].powers[CP_PUSH] = piece_data[next_1d].powers[CP_PUSH] || piece_data[z].powers[CP_PUSH];
 							piece_data[next_1d].powers[CP_PULL] = piece_data[next_1d].powers[CP_PULL] || piece_data[z].powers[CP_PULL];
 							piece_data[next_1d].powers[CP_MERGE] = piece_data[next_1d].powers[CP_MERGE] || piece_data[z].powers[CP_MERGE];
@@ -643,17 +644,26 @@ bool gamestate_apply_brush(GameState* state, GamestateBrush brush, int x, int y)
 			state->piece[target] = brush.piece;
 			accept = true;
 		}
-
+	}
+	if (brush.applyCratePower)
+	{
+		int w = state->w;
+		int h = state->h;
+		int target = f2D(x, y, w, h);
+		for (int i = 0; i < CP_COUNT; i++)
+			state->piece_data[target].powers[i] = brush.piece_data.powers[i];
 	}
 	return accept;
 }
-GamestateBrush gamestate_brush_create(bool applyFloor, Floor floor, bool applyPiece, Piece piece)
+GamestateBrush gamestate_brush_create(bool applyFloor, Floor floor, bool applyPiece, Piece piece, bool applyPieceData, PieceData pieceData)
 {
 	GamestateBrush result;
 	result.applyFloor = applyFloor;
 	result.floor = floor;
 	result.applyPiece = applyPiece;
 	result.piece = piece;
+	result.applyCratePower = applyPieceData;
+	result.piece_data = pieceData;
 	return result;
 }
 
@@ -685,7 +695,36 @@ PieceData gamestate_piecedata_make()
 		result.powers[i] = false;
 	return result;
 }
+PieceData gamestate_piecedata_make(CratePower power)
+{
+	PieceData result;
+	for (int i = 0; i < CP_COUNT; i++)
+		result.powers[i] = false;
+	result.powers[power] = true;
+	return result;
 
+}
+PieceData gamestate_piecedata_make(CratePower power,CratePower power2)
+{
+	PieceData result;
+	for (int i = 0; i < CP_COUNT; i++)
+		result.powers[i] = false;
+	result.powers[power] = true;
+	result.powers[power2] = true;
+	return result;
+
+}
+PieceData gamestate_piecedata_make(CratePower power,CratePower power2, CratePower power3)
+{
+	PieceData result;
+	for (int i = 0; i < CP_COUNT; i++)
+		result.powers[i] = false;
+	result.powers[power] = true;
+	result.powers[power2] = true;
+	result.powers[power3] = true;
+	return result;
+
+}
 FloorData gamestate_floordata_make()
 {
 	FloorData result;
@@ -861,19 +900,19 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 		int clockwise_piece = pieces[clockwise_square_1d];
 		int anticlockwise_piece = pieces[anticlockwise_square_1d];
 
-		if (next_piece == P_CRATE && state->piece_data[next_piece].push)
+		if (next_piece == P_CRATE && state->piece_data[next_square_1d].powers[CP_PUSH])
 		{
 			square_moving[next_square_1d] = true;
 		}
-		if (back_piece == P_CRATE && state->piece_data[back_piece].pull)
+		if (back_piece == P_CRATE && state->piece_data[back_square_1d].powers[CP_PULL])
 		{
 			square_moving[back_square_1d] = true;
 		}
-		if (clockwise_piece == P_CRATE && state->piece_data[clockwise_square_1d].parallel)
+		if (clockwise_piece == P_CRATE && state->piece_data[clockwise_square_1d].powers[CP_PARALLEL])
 		{
 			square_moving[clockwise_square_1d] = true;
 		}
-		if (anticlockwise_piece == P_CRATE && state->piece_data[anticlockwise_square_1d].parallel)
+		if (anticlockwise_piece == P_CRATE && state->piece_data[anticlockwise_square_1d].powers[CP_PARALLEL])
 		{
 			square_moving[anticlockwise_square_1d] = true;
 		}
@@ -890,8 +929,8 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 	animationmoveinfo_apply_movements(state,&animation->starts, &animation->ends, square_moving, action, w * h);
 
 	//apply moves.
-	apply_moves_to_layer_SLOW(temp_memory, square_moving, pieces, w, h, action);
-	
+	apply_moves_to_layer_SLOW<int>(temp_memory, square_moving, pieces, w, h, action, P_NONE);
+	apply_moves_to_layer_SLOW<PieceData>(temp_memory, square_moving, state->piece_data,w,h,action, gamestate_piecedata_make());
 	//fin.
 	journal->action_result = AR_ACTION_OCCURED;
 	journal->maybe_animation = animation;

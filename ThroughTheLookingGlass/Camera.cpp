@@ -201,6 +201,13 @@ glm::mat4 math_translated_matrix(glm::vec3 translate)
 	glm::mat4 result = glm::mat4(1.0);
 	return glm::translate(result, translate);
 }
+glm::mat4 math_translated_scaled_matrix(glm::vec3 translate, glm::vec3 scale)
+{
+	glm::mat4 result = glm::mat4(1.0f);
+	result = glm::translate(result, translate);
+	result = glm::scale(result, scale);
+	return result;
+}
 float math_gamespace_to_pixelspace_multiplier(ViewPortCamera view, float gameHeight)
 {
 	float yDist = (float) view.up - (float) view.down;

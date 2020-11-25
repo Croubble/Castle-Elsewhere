@@ -55,13 +55,7 @@ glm::vec2 math_screenspace_to_gamespace(IntPair screenSpacePosition, GameSpaceCa
 
 /*******************************************************************************/
 glm::mat4 math_translated_matrix(glm::vec3 translate);
-glm::mat4 math_translated_scaled_matrix(glm::vec3 translate, glm::vec3 scale)
-{
-	glm::mat4 result = glm::mat4(1.0f);
-	result = glm::translate(result, translate);
-	result = glm::scale(result, scale);
-	return result;
-}
+glm::mat4 math_translated_scaled_matrix(glm::vec3 translate, glm::vec3 scale);
 /*******************************************************************************/
 /***************************** SIDE ********************************************/
 /*******************************************************************************/

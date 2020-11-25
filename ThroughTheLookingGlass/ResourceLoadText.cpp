@@ -16,10 +16,34 @@
 
 textureAssets::FLOOR resource_floor_to_sprite(Floor floor)
 {
+	if (floor == F_NONE)
+		return textureAssets::FLOOR::Floor;
+	if (floor == F_TARGET)
+		return textureAssets::FLOOR::Target;
+	if (floor == F_START)
+		return textureAssets::FLOOR::Start;
+	if (floor == F_ZBLACK)
+		return textureAssets::FLOOR::ZBlack;
+	if (floor == F_LURKING_WALL)
+		return textureAssets::FLOOR::Floor;
+	if (floor == F_OUTLINE)
+		return textureAssets::FLOOR::Floor;
 	return (textureAssets::FLOOR) floor;
 }
 textureAssets::PIECE resource_piece_to_sprite(Piece piece)
 {
+	if (piece == Piece::P_CRATE)
+		return textureAssets::PIECE::Crate;
+	if (piece == Piece::P_CRUMBLE)
+		return textureAssets::PIECE::Crumble;
+	if (piece == Piece::P_NONE)
+		return textureAssets::PIECE::Empty;
+	if (piece == Piece::P_PLAYER)
+		return textureAssets::PIECE::Player;
+	if (piece == Piece::P_WALL_ALT)
+		return textureAssets::PIECE::WallAlt;
+	if (piece == Piece::P_WALL)
+		return textureAssets::PIECE::Wall;
 	return (textureAssets::PIECE) piece;
 }
 int resource_layer_value_to_layer_sprite_value(int layer_value, int layer_num)

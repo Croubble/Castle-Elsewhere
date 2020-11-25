@@ -50,12 +50,12 @@ void draw_algorithm(DrawOutput* out->ut, GameState* state, IntPair draw__offset_
 	{
 		//static draw algorithm
 		//draw pieces(
-		//draw crate data
+		//draw crate piece_data
 	}
 	if(journal)
 	{
 		//for each piece, if its moving, draw it lerping from old_position to new_position using time_since_last_action.
-		//for each crate data, draw the symbols, lerping from old position to new_position using time_since_last_action.
+		//for each crate piece_data, draw the symbols, lerping from old position to new_position using time_since_last_action.
 	}
 }
 */

@@ -121,7 +121,7 @@ AtlasData* GetAtlasPosition(Memory* temp_memory, std::string atlas, get_atlas_nu
 		}
 	}
 	
-	//step 3: get meta data.
+	//step 3: get meta piece_data.
 	{
 		bool found_meta = try_parse_until_string(&t, "\"meta\"");
 		bool found_size = try_parse_until_string(&t, "\"w\":");

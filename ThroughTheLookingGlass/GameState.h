@@ -67,6 +67,8 @@ struct GamestateBrush {
 	bool applyPiece;
 	Floor floor;
 	Piece piece;
+	bool applyCratePower;
+	PieceData piece_data;
 };
 
 struct GamestateTimeMachine
@@ -131,12 +133,15 @@ GamestateTimeMachine* gamestate_timemachine_create(GameState* start_state, Memor
 GameActionJournal* gamestate_timemachine_take_action(GamestateTimeMachine* timeMachine, Direction action, Memory* scope_memory, Memory* temp_memory);
 /*************************PALETTE_BRUSH*******************************/
 /*********************************************************************/
-GamestateBrush gamestate_brush_create(bool applyFloor, Floor floor, bool applyPiece, Piece piece);
+GamestateBrush gamestate_brush_create(bool applyFloor, Floor floor, bool applyPiece, Piece piece, bool applyPieceData, PieceData pieceData);
 
 /*************************PIECE/FLOOR DATA*******************************/
 /*********************************************************************/
 textureAssets::SYMBOLS piecedata_to_symbol(CratePower val);
 PieceData gamestate_piecedata_make();
+PieceData gamestate_piecedata_make(CratePower val);
+PieceData gamestate_piecedata_make(CratePower val, CratePower val2);
+PieceData gamestate_piecedata_make(CratePower val, CratePower val2,CratePower val3);	
 FloorData gamestate_floordata_make();
 /******************************GAMESTATE WRITE************************/
 /*********************************************************************/

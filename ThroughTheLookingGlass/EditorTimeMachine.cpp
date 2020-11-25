@@ -140,7 +140,7 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 		if (editor->current_number_of_gamestates > MAX_NUMBER_GAMESTATES)
 		{
 			crash_err("we have overflowed our level editor gamestate memory. Rats! This means you should implement some proper memory techniques to like not have this happen. ");
-			//Technique TODO 1: Make a new gamestate memory, copy over all _relevant_ gamestate data to it, and then delete the old gamestate memory.
+			//Technique TODO 1: Make a new gamestate memory, copy over all _relevant_ gamestate piece_data to it, and then delete the old gamestate memory.
 			//Technique TODO 2: Okay, so rather than been in order, just replace gamestate stuff with malloc/free.
 			abort();
 		}

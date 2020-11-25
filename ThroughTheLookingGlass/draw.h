@@ -42,7 +42,7 @@ struct GamefullspriteDrawInfo {
 /**********draw functions************************************/
 bool draw_animation_to_gamespace(MovementAnimation* animation, LayerDrawGPUData* info_array, int layer_index, float time_since_last_action);
 void draw_layer_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, SpriteWrite* info, int layer_index);
-void draw_layers_to_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, AllWrite* info);
+void draw_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, AllWrite* info);
 void draw_gamestates_outlines_to_gamespace(
 	GameState** gamestates,
 	IntPair* offsets,

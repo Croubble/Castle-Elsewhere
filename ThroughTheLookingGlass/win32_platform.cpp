@@ -1536,15 +1536,15 @@ void mainloopfunction()
 			}
 			//parse gamestates
 			{
-				draw_layers_to_gamespace(
+				draw_gamespace(
 					editor_scene_state->timeMachine->gamestates,
 					editor_scene_state->timeMachine->gamestates_positions,
 					editor_scene_state->timeMachine->current_number_of_gamestates,
 					all_write);
 			}
-			//parse palette data to gpu form
+			//parse palette piece_data to gpu form
 			draw_palette(editor_scene_state->palete_screen_start, camera_game, camera_viewport, &ui_state, palete_length, editor_scene_state->palete, all_write);
-			//parse dotted data to gpu form.
+			//parse dotted piece_data to gpu form.
 			{
 				for (int z = 0; z < skip_index; z++)
 				{
@@ -1591,12 +1591,12 @@ void mainloopfunction()
 				GameState* edit_draw = &play_scene_state.timeMachine_edit->state_array[play_scene_state.timeMachine_edit->num_gamestates_stored - 1];
 				IntPair start_position = play_scene_state.loc;
 				IntPair next_position = play_scene_state.loc_edit;
-				draw_layers_to_gamespace(
+				draw_gamespace(
 					&(play_draw),
 					&(play_scene_state.loc),
 					1,
 					all_write);
-				draw_layers_to_gamespace(
+				draw_gamespace(
 					&(edit_draw),
 					&(next_position),
 					1,
@@ -1610,7 +1610,7 @@ void mainloopfunction()
 		if (scene == ST_PLAY_WORLD)
 		{
 #pragma region send draw data to gpu
-			draw_layers_to_gamespace(
+			draw_gamespace(
 				world_scene_state->level_state,
 				world_scene_state->level_position,
 				world_scene_state->num_levels,
@@ -1628,7 +1628,7 @@ void mainloopfunction()
 				int current_level = world_scene_state->current_level;
 				IntPair* to_draw_position = &world_play_scene_state->draw_position;
 				//IntPair* to_draw_position = &world_scene_state->level_position[current_level];
-				draw_layers_to_gamespace(
+				draw_gamespace(
 					&to_draw,
 					to_draw_position,
 					1,
