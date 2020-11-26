@@ -188,11 +188,15 @@ void draw_gamespace(GameState** gamestates, IntPair* offsets, int number_of_game
 							int to_draw = piecedata_to_symbol((CratePower) j);
 							glm::vec3 draw_position = glm::vec3(num_drawn % width, num_drawn / width, 5);
 							glm::vec3 scale = glm::vec3(1.0 / (float)width, 1.0 / (float)width, 1);
+							scale.x -= 0.10f;
+							scale.y -= 0.10f;
 							draw_position.x /= (float)width;
 							draw_position.y /= (float)width;
 							IntPair draw_offset = t2D(i, next->w, next->h);
 							draw_position.x += offset.x + draw_offset.x;
 							draw_position.y += offset.y + draw_offset.y;
+							draw_position.x += 0.05f;
+							draw_position.y += 0.05f;
 							num_drawn++;
 							glm::mat4 matrix_drawn = math_translated_scaled_matrix(draw_position, scale);
 							draw_sprite(to_draw, matrix_drawn, info->symbol);

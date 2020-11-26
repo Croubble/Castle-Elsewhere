@@ -140,7 +140,44 @@ int* try_parse_number_comma_pair(Tokenizer* t, Memory* temp_memory)
 	return NULL;
 
 }
+int* try_parse_number_dash_pair(Tokenizer* t, Memory* temp_memory)
+{
+	char* on_fail = t->at;
+	int* result = try_parse_number(t, temp_memory);
+	bool comma_after = try_parse_char(t, '_');
+	if (comma_after && result)
+	{
+		return result;
+	}
+	t->at = on_fail;
+	return NULL;
 
+}
+PieceData* try_parse_piece_data(Tokenizer* t, Memory* temp_memory)
+{
+	char* on_fail = t->at;
+	PieceData* result = (PieceData*) memory_alloc(temp_memory, sizeof(PieceData));
+	int num_val = 0;
+	int* next_val = try_parse_number_dash_pair(t, temp_memory);
+	if (!next_val)
+	{
+		t->at = on_fail;
+		return NULL;
+	}
+	while (next_val)
+	{
+		result->powers[num_val] = *next_val;
+		next_val = try_parse_number_dash_pair(t, temp_memory);
+		num_val++;
+	}
+	bool found_comma = try_parse_char(t, ',');
+	if (!found_comma)
+	{
+		crash_err("parsing piece data error with comma");
+	}
+	return result;
+
+}
 void consume_whitespace(Tokenizer* t)
 {
 	while (is_whitespace(t->at[0]))
@@ -226,6 +263,47 @@ bool try_parse_positions(Tokenizer* t, IntPair * result, Memory* temp_memory)
 
 }
 
+bool try_parse_piece_data(Tokenizer* t, GameState** result, Memory* final_memory, Memory* temp_memory)
+{
+	char* on_fail = t->at;
+	bool found_piece_data = try_parse_string(t, "piece_data:");
+	if (found_piece_data)
+	{
+		//parse the width and height.
+		int num_gamestates = 0;
+		while (!try_parse_char(t, ';'))
+		{
+			int* wp = try_parse_number_comma_pair(t, temp_memory);
+			int* hp = try_parse_number_comma_pair(t, temp_memory);
+			if (!wp || !hp)
+			{
+				std::cout << "parse layer failed on parsing w h." << std::endl;
+				abort();
+			}
+			int w = *wp;
+			int h = *hp;
+			int len = w * h;
+			if (result[num_gamestates] == NULL)
+				result[num_gamestates] = gamestate_create(final_memory, w, h);
+			for (int i = 0; i < len; i++)
+			{
+				PieceData* nextp = try_parse_piece_data(t, temp_memory);
+				if (!nextp)
+				{
+					std::cout << "parse piece data failed on parsing number." << std::endl;
+					abort();
+				}
+				PieceData next = *nextp;
+				result[num_gamestates]->piece_data[i] = next;
+			}
+
+			num_gamestates++;
+
+		}
+		return true;
+	}
+	return false;
+}
 bool try_parse_layer(Tokenizer* t, GameState** result, Memory* final_memory, Memory* temp_memory)
 {
 	char* on_fail = t->at;
@@ -376,8 +454,9 @@ TimeMachineEditorStartState* parse_deserialize_timemachine(std::string input_str
 		}
 		bool parsed_positions = try_parse_positions(&tokenizer, result->gamestates_positions, temp_memory);
 		bool parsed_layer = try_parse_layer(&tokenizer, result->gamestates, final_memory, temp_memory);
+		bool parsed_piece_data = try_parse_piece_data(&tokenizer, result->gamestates, final_memory, temp_memory);
 		bool parsed_names = try_parse_names(&tokenizer, result->names, final_memory, temp_memory);
-		if (!maybe_num_gamestates && !parsed_positions && !parsed_layer && !parsed_names)
+		if (!maybe_num_gamestates && !parsed_positions && !parsed_layer && !parsed_names && !parsed_piece_data)
 		{
 			std::cout << "uh oh, we've failed to parse something and the parsing isn't over. Better crash!" << std::endl;
 			std::cout << "rest of tokenizer next line:" << std::endl;
@@ -424,6 +503,26 @@ void parse_serialize_gamestate_layers(char* output, int* output_consumed, int ma
 		//put a little ';' at the end of that serialized gamestate.
 		*output_consumed += sprintf_s(output + *output_consumed, max_output_length, ";\n");
 	}
+	//serialize piece data.
+	*output_consumed += sprintf_s(output + *output_consumed, max_output_length, "piece_data:");
+	for (int i = 0; i < length; i++)
+	{
+		GameState* state = states[i];
+		const int w = state->w;
+		const int h = state->h;
+		const int layer_len = w * h;
+		*output_consumed += sprintf_s(output + *output_consumed, max_output_length, "%d,%d,", w, h);
+		for (int j = 0; j < w * h; j++)
+		{
+			for (int k = 0; k < CP_COUNT; k++)
+			{
+				int to_print = state->piece_data[j].powers[k];
+				*output_consumed += sprintf_s(output + *output_consumed, max_output_length, "%d_", to_print);
+			}
+			*output_consumed += sprintf_s(output + *output_consumed, max_output_length, ",");
+		}
+	}
+	*output_consumed += sprintf_s(output + *output_consumed, max_output_length, ";\n");
 }
 std::string parse_serialize_timemachine(TimeMachineEditor* timeMachine, Memory* final_memory, Memory* temp_memory)
 {
