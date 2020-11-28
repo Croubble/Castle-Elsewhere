@@ -215,7 +215,7 @@ void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scop
 	gamestate_clone_to_unitialized(old, next, scope_memory);
 	timeMachine->num_gamestates_stored++;
 }
-static void cancel_blocked_nonmerge_moves(bool* is_merge, bool* is_moving, int* layer, PieceData* piece_data, Direction d, int w, int h)
+static void apply_merge_moves(PieceData* piece_data, bool* is_moving, int* layer, Direction d, int w, int h)
 {
 	bool done = false;
 	while (!done)
@@ -230,18 +230,51 @@ static void cancel_blocked_nonmerge_moves(bool* is_merge, bool* is_moving, int* 
 				{
 					IntPair next = move_pos_wrapped_2d(math_intpair_create(i, j), d, w, h);
 					int next_1d = f2D(next.x, next.y, w, h);
-					bool we_are_merge = is_merge[z];
-					bool next_is_crate = layer[next_1d] == P_CRATE;
+					bool we_are_merge = piece_data[z].powers[CP_MERGE] || piece_data[next_1d].powers[CP_MERGE];
+					bool both_crates = layer[next_1d] == P_CRATE && layer[z] == P_CRATE;
 					bool next_is_blocked = (layer[next_1d] != LN_FLOOR) && !is_moving[next_1d];
 					if (next_is_blocked)
 					{
-						if (next_is_crate && we_are_merge)
+						if (both_crates && we_are_merge)
 						{
 							//get the next crate's piece_data, and our piece_data, and perform a merge.
 							piece_data[next_1d].powers[CP_PUSH] = piece_data[next_1d].powers[CP_PUSH] || piece_data[z].powers[CP_PUSH];
 							piece_data[next_1d].powers[CP_PULL] = piece_data[next_1d].powers[CP_PULL] || piece_data[z].powers[CP_PULL];
 							piece_data[next_1d].powers[CP_MERGE] = piece_data[next_1d].powers[CP_MERGE] || piece_data[z].powers[CP_MERGE];
 							piece_data[next_1d].powers[CP_PARALLEL] = piece_data[next_1d].powers[CP_PARALLEL] || piece_data[z].powers[CP_PARALLEL];
+							layer[z] = 0;
+							for(int i = 0; i < CP_COUNT;i++)
+								piece_data[z].powers[i] = false;
+							is_moving[z] = false;
+						}
+					}
+				}
+			}
+	}
+}
+static void cancel_blocked_nonmerge_moves(bool* is_moving, int* layer, PieceData* piece_data, Direction d, int w, int h)
+{
+	bool done = false;
+	while (!done)
+	{
+		done = true;
+		int length = w * h;
+		int z = 0;
+		for (int i = 0; i < w; i++)
+			for (int j = 0; j < h; j++, z++)
+			{
+				if (is_moving[z])
+				{
+					IntPair next = move_pos_wrapped_2d(math_intpair_create(i, j), d, w, h);
+					int next_1d = f2D(next.x, next.y, w, h);
+					bool we_are_merge = piece_data[z].powers[CP_MERGE] || piece_data[next_1d].powers[CP_MERGE];
+					bool both_crates = layer[next_1d] == P_CRATE && layer[z] == P_CRATE;
+					bool next_is_blocked = (layer[next_1d] != LN_FLOOR) && !is_moving[next_1d];
+					if (next_is_blocked)
+					{
+						if (both_crates && we_are_merge)
+						{
+
 						}
 						else
 						{
@@ -918,9 +951,11 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 		}
 
 	}
-
-	//block moves.
-	cancel_blocked_moves(square_moving, pieces, action, w, h);
+	
+	//
+	cancel_blocked_nonmerge_moves(square_moving, pieces, state->piece_data, action, w, h);
+	apply_merge_moves(state->piece_data, square_moving, pieces, action, w, h);
+	//cancel_blocked_moves(square_moving, pieces, action, w, h);
 
 	//get final values (e.g. after curses)
 	animationmoveinfo_copy_from_gamestate_internal(&animation->ends, state);
