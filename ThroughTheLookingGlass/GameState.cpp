@@ -940,7 +940,7 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 		rigid_data.num_links = 0;
 		rigid_data.num_rigids = 1;
 	}
-	//for each moving player, if their is a crate in their movement direction, make that move too!
+	//for each moving player, if their is a crate in their movement direction, make that move too! also cancel grill stuff.
 	{
 		IntPair next_square = move_pos_wrapped_2d(player_2d, action, w, h);
 		IntPair back_square = move_pos_wrapped_2d(player_2d, direction_reverse(action), w, h);
@@ -992,9 +992,16 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 			rigid_data.links[rigid_data.num_links] = math_intpair_create(player_rigid_number, rigid_data.grid[anticlockwise_square_1d]);
 			rigid_data.num_links++;
 		}
-
+		if (state->floor[next_square_1d] == F_GRILL_HOT)
+		{
+			square_moving[player_1d] = false;
+			cancel_moves_by_rigid(&rigid_data, square_moving, player_rigid_number, state->w * state->h);
+		}
 	}
 	cancel_blocked_nonmerge_moves(&rigid_data, square_moving, pieces, state->piece_data, action, w, h);
+	//if the player is moving and they are standing on top of a cold grill, turn the grill hot.
+	if (square_moving[player_1d] && state->floor[player_1d] == F_GRILL_COLD)
+		state->floor[player_1d] = F_GRILL_HOT;
 	apply_merge_moves(state->piece_data, square_moving, pieces, action, w, h);
 
 	//get final values (e.g. after curses)

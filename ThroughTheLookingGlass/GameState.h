@@ -32,6 +32,8 @@ enum Floor {
 	F_START,
 	F_ZBLACK,
 	F_LURKING_WALL,
+	F_GRILL_COLD,
+	F_GRILL_HOT,
 	F_COUNT
 };
 enum CratePower {

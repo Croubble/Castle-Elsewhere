@@ -2,7 +2,7 @@
 #include "GameState.h"
 #include "Editor.h"
 
-const int palete_length = 15;
+const int palete_length = 16;
 struct EditorScene
 {
 	TimeMachineEditor* timeMachine;
@@ -25,12 +25,13 @@ EditorScene* editorscene_setup_with_start_state(Memory* editor_memory, ViewPortC
 	result->palete_screen_start = math_intpair_create(camera_viewport.left + 60, camera_viewport.up - 120);
 	{
 		int i = 0;
-		result->palete[i++] = gamestate_brush_create(true, F_NONE, true, P_NONE,false,gamestate_piecedata_make());
-		result->palete[i++] = gamestate_brush_create(true, F_TARGET, false, P_NONE, false,gamestate_piecedata_make());
-		result->palete[i++] = gamestate_brush_create(true, F_START, false, P_NONE, false,gamestate_piecedata_make());
-		result->palete[i++] = gamestate_brush_create(true, F_LURKING_WALL, false, P_NONE, false,gamestate_piecedata_make() );
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, Piece::P_NONE, false,gamestate_piecedata_make() );
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_WALL,  false,gamestate_piecedata_make());
+		result->palete[i++] = gamestate_brush_create(true, F_NONE, true, P_NONE, false, gamestate_piecedata_make());
+		result->palete[i++] = gamestate_brush_create(true, F_TARGET, false, P_NONE, false, gamestate_piecedata_make());
+		result->palete[i++] = gamestate_brush_create(true, F_START, false, P_NONE, false, gamestate_piecedata_make());
+		result->palete[i++] = gamestate_brush_create(true, F_LURKING_WALL, false, P_NONE, false, gamestate_piecedata_make());
+		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, Piece::P_NONE, false, gamestate_piecedata_make());
+		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_WALL, false, gamestate_piecedata_make());
+		result->palete[i++] = gamestate_brush_create(true, F_GRILL_COLD, true, P_NONE, true, gamestate_piecedata_make());
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_WALL_ALT,  false,gamestate_piecedata_make());
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRUMBLE,  false,gamestate_piecedata_make());
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PUSH));
