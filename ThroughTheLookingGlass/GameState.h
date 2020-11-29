@@ -39,6 +39,7 @@ enum CratePower {
 	CP_PULL,
 	CP_PARALLEL,
 	CP_MERGE,
+	CP_STICKY,
 	CP_COUNT,
 	CP_ERROR
 };
@@ -119,6 +120,14 @@ struct GameActionJournal
 	GameState* old_state;
 	ActionResult action_result;
 	GameStateAnimation* maybe_animation;
+};
+
+struct RigidData
+{
+	int* grid;
+	int num_rigids;
+	IntPair* links;
+	int num_links;
 };
 Direction action_to_direction(Action action);
 IntPair direction_to_intpair(Direction dir);

@@ -252,8 +252,18 @@ static void apply_merge_moves(PieceData* piece_data, bool* is_moving, int* layer
 			}
 	}
 }
-static void cancel_blocked_nonmerge_moves(bool* is_moving, int* layer, PieceData* piece_data, Direction d, int w, int h)
+static void cancel_moves_by_rigid(RigidData* rigids, bool* is_moving, int rigid_to_cancel, int len)
 {
+	for (int k = 0; k < len; k++)
+		if (rigids->grid[k] == rigid_to_cancel)
+			is_moving[k] = false;
+	for (int z = 0; z < rigids->num_links; z++)
+		if (rigids->links[z].x == rigid_to_cancel)
+			cancel_moves_by_rigid(rigids, is_moving, rigids->links[z].y, len);
+}
+static void cancel_blocked_nonmerge_moves(RigidData* rigids, bool* is_moving, int* layer, PieceData* piece_data, Direction d, int w, int h)
+{
+	bool loop = false;
 	bool done = false;
 	while (!done)
 	{
@@ -280,12 +290,18 @@ static void cancel_blocked_nonmerge_moves(bool* is_moving, int* layer, PieceData
 						{
 							is_moving[z] = false;
 							done = false;
+							if (rigids->grid[z] != 0)
+							{
+								cancel_moves_by_rigid(rigids,is_moving,rigids->grid[z],w*h);
+								loop = true;
+							}
 						}
 					}
 				}
 			}
 	}
-
+	if (loop)
+		cancel_blocked_nonmerge_moves(rigids, is_moving, layer, piece_data, d, w, h);
 }
 static void cancel_blocked_moves(bool* is_moving, int* layer, Direction d, int w, int h)
 {
@@ -700,11 +716,6 @@ GamestateBrush gamestate_brush_create(bool applyFloor, Floor floor, bool applyPi
 	return result;
 }
 
-
-/*************************PIECE/FLOOR DATA*******************************/
-/*********************************************************************/
-
-
 /*************************PIECE/FLOOR DATA*******************************/
 /*********************************************************************/
 textureAssets::SYMBOLS piecedata_to_symbol(CratePower val)
@@ -872,6 +883,9 @@ void animationmoveinfo_apply_movements(GameState* state, PieceMovementAnimation*
 			end->pos[z] = next_goal;
 		}
 }
+
+/****************************GAME ACTION + MISC**********************/
+/********************************************************************/
 GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* temp_memory)
 {
 	GameActionJournal* journal = (GameActionJournal*)memory_alloc(temp_memory, sizeof(GameActionJournal));
@@ -916,7 +930,16 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 		square_moving[player_1d] = true;
 	}
 
-
+	//build the starting rigid data.
+	RigidData rigid_data;
+	{
+		rigid_data.grid = (int*)memory_alloc(temp_memory, sizeof(int) * num_elements);
+		for (int i = 0; i < num_elements; i++)
+			rigid_data.grid[i]= 0;
+		rigid_data.links = (IntPair*) memory_alloc(temp_memory, sizeof(IntPair) * num_elements);
+		rigid_data.num_links = 0;
+		rigid_data.num_rigids = 1;
+	}
 	//for each moving player, if their is a crate in their movement direction, make that move too!
 	{
 		IntPair next_square = move_pos_wrapped_2d(player_2d, action, w, h);
@@ -933,29 +956,46 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 		int clockwise_piece = pieces[clockwise_square_1d];
 		int anticlockwise_piece = pieces[anticlockwise_square_1d];
 
+		//setup player rigidnumber.
+		int player_rigid_number = rigid_data.num_rigids;
+		rigid_data.num_rigids++;
+		rigid_data.grid[player_1d] = player_rigid_number;
 		if (next_piece == P_CRATE && state->piece_data[next_square_1d].powers[CP_PUSH])
 		{
 			square_moving[next_square_1d] = true;
+			rigid_data.grid[next_square_1d] = rigid_data.num_rigids;
+			rigid_data.num_rigids++;
+			rigid_data.links[rigid_data.num_links] = math_intpair_create(player_rigid_number, rigid_data.grid[next_square_1d]);
+			rigid_data.num_links++;
 		}
 		if (back_piece == P_CRATE && state->piece_data[back_square_1d].powers[CP_PULL])
 		{
 			square_moving[back_square_1d] = true;
+			rigid_data.grid[back_square_1d] = rigid_data.num_rigids;
+			rigid_data.num_rigids++;
+			rigid_data.links[rigid_data.num_links] = math_intpair_create(player_rigid_number, rigid_data.grid[back_square_1d]);
+			rigid_data.num_links++;
 		}
 		if (clockwise_piece == P_CRATE && state->piece_data[clockwise_square_1d].powers[CP_PARALLEL])
 		{
 			square_moving[clockwise_square_1d] = true;
+			rigid_data.grid[clockwise_square_1d] = rigid_data.num_rigids;
+			rigid_data.num_rigids++;
+			rigid_data.links[rigid_data.num_links] = math_intpair_create(player_rigid_number, rigid_data.grid[clockwise_square_1d]);
+			rigid_data.num_links++;
 		}
 		if (anticlockwise_piece == P_CRATE && state->piece_data[anticlockwise_square_1d].powers[CP_PARALLEL])
 		{
 			square_moving[anticlockwise_square_1d] = true;
+			rigid_data.grid[anticlockwise_square_1d] = rigid_data.num_rigids;
+			rigid_data.num_rigids++;
+			rigid_data.links[rigid_data.num_links] = math_intpair_create(player_rigid_number, rigid_data.grid[anticlockwise_square_1d]);
+			rigid_data.num_links++;
 		}
 
 	}
-	
-	//
-	cancel_blocked_nonmerge_moves(square_moving, pieces, state->piece_data, action, w, h);
+	cancel_blocked_nonmerge_moves(&rigid_data, square_moving, pieces, state->piece_data, action, w, h);
 	apply_merge_moves(state->piece_data, square_moving, pieces, action, w, h);
-	//cancel_blocked_moves(square_moving, pieces, action, w, h);
 
 	//get final values (e.g. after curses)
 	animationmoveinfo_copy_from_gamestate_internal(&animation->ends, state);
