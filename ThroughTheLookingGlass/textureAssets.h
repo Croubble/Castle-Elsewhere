@@ -4,6 +4,8 @@ namespace textureAssets {
 enum FLOOR
 {
     Floor,
+    GrillCot,
+    GrillHot,
     Outline,
     Start,
     Target,

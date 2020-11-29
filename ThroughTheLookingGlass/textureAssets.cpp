@@ -2,12 +2,14 @@
 #include "textureAssets.h"
 
 glm::vec4* textureAssets::FLOOR_positions(Memory* memory) {
-glm::vec4* result = (glm::vec4*) memory_alloc(memory,sizeof(glm::vec4) * 5);
+glm::vec4* result = (glm::vec4*) memory_alloc(memory,sizeof(glm::vec4) * 7);
  result[0] = glm::vec4(0.000977,0.000977,0.063477,0.063477);
  result[1] = glm::vec4(0.065430,0.000977,0.127930,0.063477);
  result[2] = glm::vec4(0.129883,0.000977,0.192383,0.063477);
  result[3] = glm::vec4(0.194336,0.000977,0.256836,0.063477);
- result[4] = glm::vec4(0.258789,0.000977,0.321289,0.063477);return result;
+ result[4] = glm::vec4(0.258789,0.000977,0.321289,0.063477);
+ result[5] = glm::vec4(0.323242,0.000977,0.385742,0.063477);
+ result[6] = glm::vec4(0.387695,0.000977,0.450195,0.063477);return result;
 }
 
 glm::vec4* textureAssets::PIECE_positions(Memory* memory) {

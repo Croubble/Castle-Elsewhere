@@ -28,6 +28,10 @@ textureAssets::FLOOR resource_floor_to_sprite(Floor floor)
 		return textureAssets::FLOOR::Floor;
 	if (floor == F_OUTLINE)
 		return textureAssets::FLOOR::Floor;
+	if (floor == F_GRILL_COLD)
+		return textureAssets::FLOOR::GrillCot;
+	if (floor == F_GRILL_HOT)
+		return textureAssets::FLOOR::GrillHot;
 	return (textureAssets::FLOOR) floor;
 }
 textureAssets::PIECE resource_piece_to_sprite(Piece piece)
