@@ -840,12 +840,12 @@ PieceMovementAnimation* gamestate_animationmoveinfo_create_internal(int num_elem
 	PieceMovementAnimation* result = (PieceMovementAnimation*)memory_alloc(temp_memory, sizeof(PieceMovementAnimation));
 	result->pos = (IntPair*)memory_alloc(temp_memory, sizeof(IntPair) * num_elements);
 	result->to_move = (Direction*)memory_alloc(temp_memory, sizeof(Direction) * num_elements);
-	result->start_value = (int*)memory_alloc(temp_memory, sizeof(int) * num_elements);
+	result->img_value = (int*)memory_alloc(temp_memory, sizeof(int) * num_elements);
 	for (int i = 0; i < num_elements; i++)
 	{
 		result->pos[i] = math_intpair_create(0, 0);
 		result->to_move[i] = Direction::NO_DIRECTION;
-		result->start_value[i] = 0;
+		result->img_value[i] = 0;
 	}
 	return result;
 }
@@ -866,7 +866,7 @@ void animationmoveinfo_copy_from_gamestate_internal(PieceMovementAnimation* info
 	for (int i = 0; i < num_to_draw; i++)
 	{
 		int next_val = state->piece[i];
-		info->start_value[i] = next_val;
+		info->img_value[i] = next_val;
 	}
 
 }

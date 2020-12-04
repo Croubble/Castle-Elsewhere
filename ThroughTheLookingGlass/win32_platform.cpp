@@ -1372,11 +1372,18 @@ void mainloopfunction()
 				int current_level = world_scene_state->current_level;
 				IntPair* to_draw_position = &world_play_scene_state->draw_position;
 				//IntPair* to_draw_position = &world_scene_state->level_position[current_level];
-				draw_gamespace(
-					&to_draw,
-					to_draw_position,
-					1,
-					all_write);
+				if (world_play_scene_state->maybe_animation)
+				{
+					draw_gamespace_animated(&to_draw, &world_play_scene_state->maybe_animation, to_draw_position, 1, all_write, ui_state.time_since_last_player_action);
+				}
+				else
+				{
+					draw_gamespace(
+						&to_draw,
+						to_draw_position,
+						1,
+						all_write);
+				}
 			}
 #pragma endregion
 		}
@@ -2038,7 +2045,7 @@ void take_player_action(Animations** maybe_animation, GamestateTimeMachine* mayb
 	*maybe_animation = a;
 }
 /*
-float draw_text_to_screen(glm::vec3 start_position, 
+float draw_text_to_screen(glm::vec3 position, 
 	const char* c_string, 
 	glm::mat4* matrix, 
 	glm::vec4* atlas_output, 
@@ -2048,7 +2055,7 @@ float draw_text_to_screen(glm::vec3 start_position,
 	int* current_draw,
 	float num_pixels_per_gameunit)
 {
-	glm::vec3 next_position = start_position;
+	glm::vec3 next_position = position;
 	int draw = *current_draw;
 	for(;c_string[0]; c_string++)
 	{
@@ -2064,9 +2071,9 @@ float draw_text_to_screen(glm::vec3 start_position,
 
 		if (c != ' ')
 		{
-			glm::vec3 start_position = glm::vec3(next_position.x + x_start, next_position.y + y_start, next_position.z);
+			glm::vec3 position = glm::vec3(next_position.x + x_start, next_position.y + y_start, next_position.z);
 			matrix[draw] = glm::mat4(1.0f);
-			matrix[draw] = glm::translate(matrix[draw], start_position);
+			matrix[draw] = glm::translate(matrix[draw], position);
 			matrix[draw] = glm::scale(matrix[draw], glm::vec3(w, h, 1));
 
 			//handle what character should be drawn.
@@ -2083,7 +2090,7 @@ float draw_text_to_screen(glm::vec3 start_position,
 
 	}
 	*current_draw = draw;
-	return next_position.x - start_position.x;
+	return next_position.x - position.x;
 }
 */
 

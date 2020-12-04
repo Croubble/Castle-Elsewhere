@@ -99,25 +99,121 @@ void draw_button_to_gamespace(GameSpaceCamera draw_area, SpriteWrite * ui_draw, 
 	//draw the right half.
 }
 
-bool draw_animation_to_gamespace(MovementAnimation* animation, LayerDrawGPUData* info_array, int layer_index, float time_since_last_action)
+void mask_sprite_using_window(glm::vec4* draw_square, glm::vec4* tex_coord, glm::vec4 window, glm::vec2 tex_movement)
+{
+	if (draw_square->x < window.x)
+	{
+		float zzzz = 3.5f;
+	}
+
+	glm::vec4 next_draw_square;
+	//build a new draw square.
+	{
+		next_draw_square.x = maxf(draw_square->x, window.x);
+		next_draw_square.z = minf(draw_square->z, window.z);
+		next_draw_square.y = maxf(draw_square->y, window.y);
+		next_draw_square.w = minf(draw_square->w, window.w);
+	}
+	//determine what % of the draw square got reduced in L/R/U/D, and then reduce the window by that amount.
+	auto determine_atlas_change = [](float pos, float window, float length_square) -> float 
+	{
+		float percentage_change = (pos - window) / length_square;
+		return percentage_change;
+	};
+	glm::vec4 next_tex_coord;
+	{
+		float width = draw_square->z - draw_square->x;
+		float height = draw_square->w - draw_square->y;
+
+		float left = clampf(0, 1, 0 - tex_movement.x / width);
+		float right = clampf(0, 1, 1 - tex_movement.x / width);
+		float down = clampf(0, 1, 0 - tex_movement.y / height);
+		float up = clampf(0, 1, 1 - tex_movement.y / height);
+		
+		next_tex_coord.x = lerp(tex_coord->x, tex_coord->z, left);
+		next_tex_coord.z = lerp(tex_coord->x, tex_coord->z, right);
+		next_tex_coord.y = lerp(tex_coord->y, tex_coord->w, down);
+		next_tex_coord.w = lerp(tex_coord->y, tex_coord->w, up);
+	}
+	//output those new values to our input data.
+	*draw_square = next_draw_square;
+	*tex_coord = next_tex_coord;
+}
+
+bool draw_animation_to_gamespace(MovementAnimation* animation, SpriteWrite * info, int layer_index, float time_since_last_action)
 {
 	float l = time_since_last_action / WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-
+	l = l * 0.1f;
 	l = maxf(0, l);
 	l = minf(1, l);
 
-	LayerDrawGPUData* info = &info_array[layer_index];
 	int len = animation->num_elements;
 	for (int i = 0; i < len; i++)
 	{
-		int ele = resource_layer_value_to_layer_sprite_value(animation->sprite_value[i], layer_index);
-		if (ele == 0)
+		if (animation->sprite_value[i] == 0)
 			continue;
-		info->atlas_cpu[info->total_drawn] = info->atlas_mapper[ele];
-		info->positions_cpu[info->total_drawn] = animation->start_position[i];
-		info->movement_cpu[info->total_drawn] = animation->start_offset[i] * (1.0f - l) + animation->end_offset[i] * l;
-		info->color_cpu[info->total_drawn] = glm::vec4(1, 1, 1, 1);
-		info->total_drawn++;
+
+		int ele_img = resource_layer_value_to_layer_sprite_value(animation->sprite_value[i], layer_index);
+		glm::vec4 temp_atlas_pos = info->atlas_mapper[ele_img];
+		float x_move = animation->start_offset[i].x * (1.0f - l) + animation->end_offset[i].x * l;
+		float y_move = animation->start_offset[i].y * (1.0f - l) + animation->end_offset[i].y * l;
+		
+		//calculate the position we will be drawing too.
+		/*
+		float x_min = animation->position[i].x;
+		float x_max = animation->position[i].x + 1;
+		float x_pos = x_min + x_move;
+		float y_min = animation->position[i].y;
+		float y_max = animation->position[i].y + 1;
+		float y_pos = y_min + y_move;
+		float xl = clampf(x_min, x_max, x_pos);
+		float xr = clampf(x_min, x_max, x_pos + 1);
+		float yb = clampf(y_min, y_max, y_pos);
+		float yt = clampf(y_min, y_max, y_pos + 1);
+		float x_width = xr - xl;
+		float y_height = yt - yb;
+
+		//figure out the amount of distance we lost 
+		glm::vec4 temp_atlas_pos = info->atlas_mapper[ele_img];
+		glm::vec4 atlas_pos;
+		{
+			float wx = animation->position[i].x;	//window_x
+			float wy = animation->position[i].y;  //window_y
+			float px = x_pos;
+			float py = y_pos;
+			float x_left = maxf(0,wx - px);
+			float x_right = minf(1,1 + (wx - px));
+			float y_bot = maxf(0, wy - py);
+			float y_top = minf(1, 1 + (wy - py));
+
+			atlas_pos.x = lerpf(temp_atlas_pos.x, temp_atlas_pos.z, x_left);
+			atlas_pos.z = lerpf(temp_atlas_pos.x, temp_atlas_pos.z, x_right);
+			atlas_pos.y = lerpf(temp_atlas_pos.y, temp_atlas_pos.w, y_bot);
+			atlas_pos.w = lerpf(temp_atlas_pos.y, temp_atlas_pos.w, y_top);
+		}
+		*/
+		float x_start = animation->position[i].x + x_move;
+		float y_start = animation->position[i].y + y_move;
+		glm::vec4 square = glm::vec4(x_start,y_start, x_start + 1, y_start + 1);
+		float window_start_x = animation->position[i].x;
+		float window_start_y = animation->position[i].y;
+		glm::vec4 window = glm::vec4(window_start_x, window_start_y, window_start_x + 1, window_start_y + 1);
+		mask_sprite_using_window(&square, &temp_atlas_pos, window,glm::vec2(x_move,y_move));
+
+		glm::mat4 matrix;
+		{
+			float x_width = (square.z - square.x);
+			float y_height = (square.w - square.y);
+			glm::vec3 final_translate = glm::vec3(square.x, square.y, animation->position[i].z);
+			glm::vec3 final_scale = glm::vec3(x_width, y_height, 1);
+			matrix = math_translated_scaled_matrix(final_translate, final_scale);
+		}
+
+		info->atlas_cpu[info->num_draw] = temp_atlas_pos;
+		info->matrix_cpu[info->num_draw] = matrix;
+//		info->matrix_cpu[info->num_draw] = math_translated_scaled_matrix(glm::vec3(xl,yb,animation->position[i].z),glm::vec3(x_width,y_height,1));
+		info->color_cpu[info->num_draw] = glm::vec4(1, 1, 1, 1);
+		info->num_draw++;
 	}
 
 	return l >= 1;
@@ -155,6 +251,71 @@ void draw_sprite(int atlas_ele, glm::mat4 position, SpriteWrite* write_to)
 	write_to->color_cpu[d] = glm::vec4(1, 1, 1, 1);
 	write_to->num_draw++;
 }
+
+void draw_gamestate_pieces(GameState* gamestate, IntPair offset, AllWrite* info)
+{
+	GameState* next = gamestate;
+		for (int i = 0; i < next->w * next->h; i++)
+			if (next->piece[i] == P_CRATE)
+			{
+				PieceData piece_data = next->piece_data[i];
+				//count the number of elements to draw.
+				
+				//determine whether we need 1 space, 4 spaces, or 9 spaces to draw the crate.
+				int length = CP_COUNT;
+				int total = 0;
+				for (int i = 0; i < length; i++)
+					total += piece_data.powers[i];
+				
+				int num_drawn = 0;//draw number.
+				int width = (int) ceil(sqrt(total));
+				
+				for (int j = 0; j < length; j++)
+				{
+					if (piece_data.powers[j])
+					{
+						//draw position
+						int to_draw = piecedata_to_symbol((CratePower) j);
+						glm::vec3 draw_position = glm::vec3(num_drawn % width, num_drawn / width, 5);
+						glm::vec3 scale = glm::vec3(1.0 / (float)width, 1.0 / (float)width, 1);
+						scale.x -= 0.10f;
+						scale.y -= 0.10f;
+						draw_position.x /= (float)width;
+						draw_position.y /= (float)width;
+						IntPair draw_offset = t2D(i, next->w, next->h);
+						draw_position.x += offset.x + draw_offset.x;
+						draw_position.y += offset.y + draw_offset.y;
+						draw_position.x += 0.05f;
+						draw_position.y += 0.05f;
+						num_drawn++;
+						glm::mat4 matrix_drawn = math_translated_scaled_matrix(draw_position, scale);
+						draw_sprite(to_draw, matrix_drawn, info->symbol);
+					}
+				}
+
+			}
+
+}
+void draw_gamespace_animated(GameState** gamestates, Animations** maybe_animations, IntPair* offsets, int number_of_gamestates, AllWrite* info, float time_since_action)
+{
+	draw_layer_to_gamespace(gamestates, offsets, number_of_gamestates, info->floor, 0);
+	for (int z = 0; z < number_of_gamestates; z++)
+	{
+
+		GameState* next = gamestates[z];
+		IntPair offset = offsets[z];
+		if (!maybe_animations[z])
+		{
+			draw_layer_to_gamespace(&gamestates[z], &offsets[z], 1, info->piece, 1);
+			draw_gamestate_pieces(next, offset, info);
+		}
+		else
+		{
+			draw_animation_to_gamespace(maybe_animations[z]->maybe_movement_animation, info->piece, 1, time_since_action);
+			//draw_gamestate_pieces(next, offset, info);
+		}
+	}
+}
 void draw_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, AllWrite* info)
 {
 	{
@@ -165,45 +326,7 @@ void draw_gamespace(GameState** gamestates, IntPair* offsets, int number_of_game
 		{
 			GameState* next = gamestates[z];
 			IntPair offset = offsets[z];
-			for (int i = 0; i < next->w * next->h; i++)
-				if (next->piece[i] == P_CRATE)
-				{
-					PieceData piece_data = next->piece_data[i];
-					//count the number of elements to draw.
-					
-					//determine whether we need 1 space, 4 spaces, or 9 spaces to draw the crate.
-					int length = CP_COUNT;
-					int total = 0;
-					for (int i = 0; i < length; i++)
-						total += piece_data.powers[i];
-					
-					int num_drawn = 0;//draw number.
-					int width = (int) ceil(sqrt(total));
-					
-					for (int j = 0; j < length; j++)
-					{
-						if (piece_data.powers[j])
-						{
-							//draw position
-							int to_draw = piecedata_to_symbol((CratePower) j);
-							glm::vec3 draw_position = glm::vec3(num_drawn % width, num_drawn / width, 5);
-							glm::vec3 scale = glm::vec3(1.0 / (float)width, 1.0 / (float)width, 1);
-							scale.x -= 0.10f;
-							scale.y -= 0.10f;
-							draw_position.x /= (float)width;
-							draw_position.y /= (float)width;
-							IntPair draw_offset = t2D(i, next->w, next->h);
-							draw_position.x += offset.x + draw_offset.x;
-							draw_position.y += offset.y + draw_offset.y;
-							draw_position.x += 0.05f;
-							draw_position.y += 0.05f;
-							num_drawn++;
-							glm::mat4 matrix_drawn = math_translated_scaled_matrix(draw_position, scale);
-							draw_sprite(to_draw, matrix_drawn, info->symbol);
-						}
-					}
-
-				}
+			draw_gamestate_pieces(next, offset, info);
 		}
 	}
 }

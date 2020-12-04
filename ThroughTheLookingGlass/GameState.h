@@ -101,15 +101,15 @@ enum AnimationType {
 
 struct PieceMovementAnimation
 {
-	IntPair* pos;
-	Direction* to_move;
-	int* start_value;
+	IntPair* pos; //where we are going to end up drawing after animation.
+	Direction* to_move; //which direciton we are moving to our draw position from.
+	int* img_value; //what image we are drawing.
 };
 struct GameStateAnimation
 {
 	int num_to_draw;
-	PieceMovementAnimation starts;
-	PieceMovementAnimation ends;
+	PieceMovementAnimation starts; 
+	PieceMovementAnimation ends; 
 };
 enum ActionResult
 {

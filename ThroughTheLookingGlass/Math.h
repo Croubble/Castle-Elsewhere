@@ -150,6 +150,18 @@ inline bool math_within_grid(int x, int y, int w, int h)
 }
 /************************************MISC FUNCTIONS INLINE************************/
 
+inline float lerpf(float left, float right, float t)
+{
+	return left * (1.0f - t) + right * t;
+}
+inline float clampf(float min, float max, float v)
+{
+	if (v < min)
+		return min;
+	if (v > max)
+		return max;
+	return v;
+}
 inline float maxf(float x, float y) {
 	if (x < y)
 		return y;
