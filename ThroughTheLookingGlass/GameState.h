@@ -99,6 +99,39 @@ enum AnimationType {
 	AT_COUNT
 };
 
+struct SymbolMovementAnimation
+{
+	int length;
+	IntPair* pos; //the window we are drawing to.
+	Direction* to_move; //which direction we are moving to our draw position from.
+	int* img_value; //what symbol to draw.
+	glm::vec2* local_position_start; //the starting local position of our symbol.
+	glm::vec2* local_position_end; //the final local position of our symbol.
+	
+	//start values.
+	
+	//final values.
+	bool* flash;
+};
+struct SymbolFlashAnimation
+{
+	bool* flash;
+};
+
+struct SymbolGlobalAnimation
+{
+	IntPair* pos; //where we are going to end up drawing after animation.
+	Direction* to_move; //which direciton we are moving to our draw position from.
+	int* img_value; //what image we are drawing.
+};
+struct SymbolLocalAnimation
+{
+	float* start_size; //converted into glm::vec2 of double size.
+	float* end_size; //ditto to above.
+	int* local_start_position; //gets converted into a position by been combined with start_size;
+	int* local_end_position; //gets converted into a position using end_size;
+	bool* flash_element; //whether the rule should glow. 
+};
 struct PieceMovementAnimation
 {
 	IntPair* pos; //where we are going to end up drawing after animation.
@@ -110,6 +143,9 @@ struct GameStateAnimation
 	int num_to_draw;
 	PieceMovementAnimation starts; 
 	PieceMovementAnimation ends; 
+	SymbolGlobalAnimation starts_symbol;
+	SymbolGlobalAnimation ends_symbol;
+	SymbolLocalAnimation symbol;
 };
 enum ActionResult
 {

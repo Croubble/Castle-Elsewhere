@@ -101,11 +101,6 @@ void draw_button_to_gamespace(GameSpaceCamera draw_area, SpriteWrite * ui_draw, 
 
 void mask_sprite_using_window(glm::vec4* draw_square, glm::vec4* tex_coord, glm::vec4 window, glm::vec2 tex_movement)
 {
-	if (draw_square->x < window.x)
-	{
-		float zzzz = 3.5f;
-	}
-
 	glm::vec4 next_draw_square;
 	//build a new draw square.
 	{
@@ -139,7 +134,11 @@ void mask_sprite_using_window(glm::vec4* draw_square, glm::vec4* tex_coord, glm:
 	*draw_square = next_draw_square;
 	*tex_coord = next_tex_coord;
 }
-
+bool draw_crate_traits_to_gamespace(int* pieces, PieceData* piece_data, MovementAnimation* animation, SpriteWrite* info, int layer_index, float time_since_last_action)
+{
+	//generate 
+	return false;
+}
 bool draw_animation_to_gamespace(MovementAnimation* animation, SpriteWrite * info, int layer_index, float time_since_last_action)
 {
 	float l = time_since_last_action / WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
@@ -252,6 +251,47 @@ void draw_sprite(int atlas_ele, glm::mat4 position, SpriteWrite* write_to)
 	write_to->num_draw++;
 }
 
+
+
+void draw_piece_data(PieceData piece_data, glm::vec2 draw_start, SpriteWrite* symbols)
+{
+	//determine whether we need 1 space, 4 spaces, or 9 spaces to draw the crate.
+	int length = CP_COUNT;
+	int total = 0;
+	for (int i = 0; i < length; i++)
+		total += piece_data.powers[i];
+	
+	int num_drawn = 0;//draw number.
+	int width = (int) ceil(sqrt(total));
+
+	for (int j = 0; j < length; j++)
+	{
+		if (piece_data.powers[j])
+		{
+			//draw position
+			int to_draw = piecedata_to_symbol((CratePower) j);
+			glm::vec3 draw_position = glm::vec3(num_drawn % width, num_drawn / width, 5);
+			glm::vec3 scale = glm::vec3(1.0 / (float)width, 1.0 / (float)width, 1);
+			scale.x -= 0.10f;
+			scale.y -= 0.10f;
+			draw_position.x /= (float)width;
+			draw_position.y /= (float)width;
+			draw_position.x += draw_start.x;
+			draw_position.y += draw_start.y;
+			draw_position.x += 0.05f;
+			draw_position.y += 0.05f;
+			num_drawn++;
+			glm::mat4 matrix_drawn = math_translated_scaled_matrix(draw_position, scale);
+			draw_sprite(to_draw, matrix_drawn, symbols);
+		}
+	}
+
+};
+
+void draw_gamestate_pieces_animated(GameState* gamestate, MovementAnimation* animation, IntPair offset, AllWrite* info)
+{
+
+}
 void draw_gamestate_pieces(GameState* gamestate, IntPair offset, AllWrite* info)
 {
 	GameState* next = gamestate;
@@ -260,39 +300,10 @@ void draw_gamestate_pieces(GameState* gamestate, IntPair offset, AllWrite* info)
 			{
 				PieceData piece_data = next->piece_data[i];
 				//count the number of elements to draw.
-				
-				//determine whether we need 1 space, 4 spaces, or 9 spaces to draw the crate.
-				int length = CP_COUNT;
-				int total = 0;
-				for (int i = 0; i < length; i++)
-					total += piece_data.powers[i];
-				
-				int num_drawn = 0;//draw number.
-				int width = (int) ceil(sqrt(total));
-				
-				for (int j = 0; j < length; j++)
-				{
-					if (piece_data.powers[j])
-					{
-						//draw position
-						int to_draw = piecedata_to_symbol((CratePower) j);
-						glm::vec3 draw_position = glm::vec3(num_drawn % width, num_drawn / width, 5);
-						glm::vec3 scale = glm::vec3(1.0 / (float)width, 1.0 / (float)width, 1);
-						scale.x -= 0.10f;
-						scale.y -= 0.10f;
-						draw_position.x /= (float)width;
-						draw_position.y /= (float)width;
-						IntPair draw_offset = t2D(i, next->w, next->h);
-						draw_position.x += offset.x + draw_offset.x;
-						draw_position.y += offset.y + draw_offset.y;
-						draw_position.x += 0.05f;
-						draw_position.y += 0.05f;
-						num_drawn++;
-						glm::mat4 matrix_drawn = math_translated_scaled_matrix(draw_position, scale);
-						draw_sprite(to_draw, matrix_drawn, info->symbol);
-					}
-				}
-
+				IntPair state_offset = offset;
+				IntPair grid_offset = t2D(i, next->w, next->h);
+				glm::vec2 draw_offset = glm::vec2(state_offset.x + grid_offset.x, state_offset.y + grid_offset.y);
+				draw_piece_data(piece_data, draw_offset, info->symbol);
 			}
 
 }

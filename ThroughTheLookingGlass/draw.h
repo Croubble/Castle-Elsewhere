@@ -4,39 +4,6 @@
 #include "Click.h"
 #include "sprite.h"
 #include "textureAssets.h"
-struct LayerDrawGPUData
-{
-	int total_drawn;
-	GLuint texture;
-
-	GLuint VAO;
-
-	GLuint positions_VBO;
-	glm::vec3* positions_cpu;
-
-	GLuint atlas_VBO;
-	glm::vec4* atlas_cpu;
-
-	GLuint movement_VBO;
-	glm::vec2* movement_cpu;
-
-	GLuint color_VBO;
-	glm::vec4* color_cpu;
-
-	glm::vec4* atlas_mapper;
-};
-
-struct GamefullspriteDrawInfo {
-	GLuint fullsprite_VAO;
-	GLuint fullspriteMatrixBuffer;
-	GLuint fullspriteAtlasBuffer;
-	GLuint fullspriteColorBuffer;
-	int num_sprites_drawn;
-	glm::vec4* atlas_mapper;
-	glm::vec4* atlas_cpu;
-	glm::mat4* final_cpu;
-	glm::vec4* color_cpu;
-};
 
 /************************************************************/
 /**********draw functions************************************/

@@ -3,8 +3,22 @@
 #include "Math.h"
 #include "Memory.h"
 const float Z_POSITION_STARTING_LAYER = 2;
+const int MAX_CRATE_ANIMATIONS = 4;
+struct CrateMovementAnimation
+{
+	//we need to have a local position, and a global position. we scale along both at the same time.
+	TimeAnimation<glm::vec3,2> global_position;
+	TimeAnimation<glm::vec3,2> local_position;
+	TimeAnimation<glm::vec2,2> scale;
+	TimeAnimation<glm::vec4,2> color;
+};
 
-
+template<class T, int L> 
+struct TimeAnimation
+{
+	float time[L];
+	T elements[L];
+};
 struct MovementAnimation
 {
 	int num_elements;

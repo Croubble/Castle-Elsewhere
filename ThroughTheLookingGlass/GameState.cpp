@@ -835,6 +835,25 @@ AABB* gamestate_create_colliders(Memory* memory, GameState** states, IntPair* lo
 	}
 	return result;
 }
+SymbolLocalAnimation* symbollocalanimation_create_internal(int num_elements, Memory* temp_memory)
+{
+	SymbolLocalAnimation* result = mem_alloc<SymbolLocalAnimation>(temp_memory, 1);
+	result->len = num_elements;
+	result->flash_element = mem_alloc<bool>(temp_memory, num_elements);
+	result->local_start_position = mem_alloc<int>(temp_memory, num_elements);
+	result->local_end_position = mem_alloc<int>(temp_memory, num_elements);
+	result->start_size = mem_alloc<float>(temp_memory, num_elements);
+	result->end_size= mem_alloc<float>(temp_memory, num_elements);
+	return result;
+}
+
+void symbolglobalanimation_alloc_internal(SymbolGlobalAnimation* to_alloc, Memory* temp_memory,int num_elements)
+{
+	to_alloc->len = num_elements;
+	to_alloc->img_value = mem_alloc<int>(temp_memory, num_elements);
+	to_alloc->to_move = mem_alloc<Direction>(temp_memory, num_elements);
+	to_alloc->pos = mem_alloc<IntPair>(temp_memory, num_elements);
+}
 PieceMovementAnimation* gamestate_animationmoveinfo_create_internal(int num_elements, Memory* temp_memory)
 {
 	PieceMovementAnimation* result = (PieceMovementAnimation*)memory_alloc(temp_memory, sizeof(PieceMovementAnimation));
@@ -998,10 +1017,26 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 			cancel_moves_by_rigid(&rigid_data, square_moving, player_rigid_number, state->w * state->h);
 		}
 	}
+	//build the symbol animation.
+	{
+		int num_symbols_total = 0;
+		for (int i = 0; i < w * h; i++)
+		{
+			for (int j = 0; j < CP_COUNT; j++)
+			{
+				num_symbols_total += state->piece_data->powers[j];
+			}
+		}
+	
+		symbolglobalanimation_alloc_internal(&animation->starts_symbol,temp_memory, num_symbols_total);
+		symbolglobalanimation_alloc_internal(&animation->ends_symbol,temp_memory, num_symbols_total);
+	}
 	cancel_blocked_nonmerge_moves(&rigid_data, square_moving, pieces, state->piece_data, action, w, h);
 	//if the player is moving and they are standing on top of a cold grill, turn the grill hot.
+	{
 	if (square_moving[player_1d] && state->floor[player_1d] == F_GRILL_COLD)
 		state->floor[player_1d] = F_GRILL_HOT;
+	}
 	apply_merge_moves(state->piece_data, square_moving, pieces, action, w, h);
 
 	//get final values (e.g. after curses)

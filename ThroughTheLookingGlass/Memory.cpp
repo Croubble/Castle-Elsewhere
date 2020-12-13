@@ -10,6 +10,11 @@ struct Memory
 	void* memoryStart;
 };
 
+template<class T>
+T* mem_alloc(Memory* memory, int num_elements)
+{
+	return (T*)memory_alloc(memory, sizeof(T) * num_elements);
+}
 void* memory_alloc(Memory* memory, int numBytes)
 {
 	int bytesToAddToMemoryToConserveAlignment = (alignBoundary -  (numBytes % alignBoundary)) % alignBoundary;
