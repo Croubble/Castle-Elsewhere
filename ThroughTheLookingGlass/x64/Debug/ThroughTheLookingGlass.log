@@ -1,23 +1,30 @@
 ﻿  Animation.cpp
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(11,1): error C2059: syntax error: '}'
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(11,1): error C2143: syntax error: missing ';' before '}'
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(11,1): error C2238: unexpected token(s) preceding ';'
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(66,20): error C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(82,3): error C2143: syntax error: missing ';' before '}'
+  Camera.cpp
+  EditorTimeMachine.cpp
+  GameState.cpp
+  Parse.cpp
+  Regex.cpp
+  ResourceLoadText.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
+D:\OpenGL\Include\glad\glad.h(32): message : see previous definition of 'APIENTRY'
+  Shader.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
+D:\OpenGL\Include\glad\glad.h(32): message : see previous definition of 'APIENTRY'
+  World.cpp
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(66,20): error C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(82,3): error C2143: syntax error: missing ';' before '}'
   draw.cpp
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
 D:\OpenGL\Include\glad\glad.h(32): message : see previous definition of 'APIENTRY'
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(11,1): error C2059: syntax error: '}'
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(11,1): error C2143: syntax error: missing ';' before '}'
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(11,1): error C2238: unexpected token(s) preceding ';'
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(66,20): error C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(82,3): error C2143: syntax error: missing ';' before '}'
   win32_platform.cpp
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
 D:\OpenGL\Include\glad\glad.h(32): message : see previous definition of 'APIENTRY'
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(11,1): error C2059: syntax error: '}'
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(11,1): error C2143: syntax error: missing ';' before '}'
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(11,1): error C2238: unexpected token(s) preceding ';'
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(66,20): error C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(82,3): error C2143: syntax error: missing ';' before '}'
 C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\TextScene.h(17,77): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\MenuScene.h(28,36): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-  World.cpp
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(11,1): error C2059: syntax error: '}'
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(11,1): error C2143: syntax error: missing ';' before '}'
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Animation.h(11,1): error C2238: unexpected token(s) preceding ';'
   Generating Code...

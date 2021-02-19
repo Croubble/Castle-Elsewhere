@@ -99,53 +99,40 @@ enum AnimationType {
 	AT_COUNT
 };
 
-struct SymbolMovementAnimation
-{
-	int length;
-	IntPair* pos; //the window we are drawing to.
-	Direction* to_move; //which direction we are moving to our draw position from.
-	int* img_value; //what symbol to draw.
-	glm::vec2* local_position_start; //the starting local position of our symbol.
-	glm::vec2* local_position_end; //the final local position of our symbol.
-	
-	//start values.
-	
-	//final values.
-	bool* flash;
-};
-struct SymbolFlashAnimation
-{
-	bool* flash;
-};
 
 struct SymbolGlobalAnimation
 {
+	int len;
 	IntPair* pos; //where we are going to end up drawing after animation.
 	Direction* to_move; //which direciton we are moving to our draw position from.
 	int* img_value; //what image we are drawing.
 };
-struct SymbolLocalAnimation
+struct SymbolAnimation
 {
-	float* start_size; //converted into glm::vec2 of double size.
-	float* end_size; //ditto to above.
-	int* local_start_position; //gets converted into a position by been combined with start_size;
-	int* local_end_position; //gets converted into a position using end_size;
-	bool* flash_element; //whether the rule should glow. 
+	int len;
+	int* index;
+	IntPair* global_position;
+	Direction* global_move;
+	PieceData* start_powers;	
+	PieceData* end_powers;	//when the crate has finished moving, what powers will be in effect? 
+	PieceData* flash_powers;	//true if should be flashed to indicate its effect is occuring.
 };
-struct PieceMovementAnimation
+struct MaskedMovementAnimation
 {
 	IntPair* pos; //where we are going to end up drawing after animation.
 	Direction* to_move; //which direciton we are moving to our draw position from.
+	//implicit; mask is POS. 
 	int* img_value; //what image we are drawing.
 };
 struct GameStateAnimation
 {
 	int num_to_draw;
-	PieceMovementAnimation starts; 
-	PieceMovementAnimation ends; 
-	SymbolGlobalAnimation starts_symbol;
-	SymbolGlobalAnimation ends_symbol;
-	SymbolLocalAnimation symbol;
+	//for drawing the crates moving.
+	MaskedMovementAnimation starts; 
+	MaskedMovementAnimation ends; 
+	//for drawing the symbols inside the crates moving locally.
+	SymbolAnimation symbol_start;
+	SymbolAnimation symbol_end;
 };
 enum ActionResult
 {
@@ -217,6 +204,9 @@ bool gamestate_is_in_win_condition(GameState* state);
 
 
 bool is_player(int val);
+
+glm::vec2 piecedata_calculate_scale(PieceData piece);
+void piecedata_calculate_local_positions(PieceData piece, glm::vec2* scale, glm::vec2* out_positions);
 
 /******************************GAMESTATE GAME ACTION WRITE**********************/
 /********************************************************************/

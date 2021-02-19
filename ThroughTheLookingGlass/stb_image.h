@@ -1903,7 +1903,7 @@ static int stbi__build_huffman(stbi__huffman *h, int *count)
 {
    int i,j,k=0;
    unsigned int code;
-   // build size list for each symbol (from JPEG spec)
+   // build size list for each symbol_start (from JPEG spec)
    for (i=0; i < 16; ++i)
       for (j=0; j < count[i]; ++j)
          h->size[k++] = (stbi_uc) (i+1);
@@ -1913,7 +1913,7 @@ static int stbi__build_huffman(stbi__huffman *h, int *count)
    code = 0;
    k = 0;
    for(j=1; j <= 16; ++j) {
-      // compute delta to add to code to compute symbol id
+      // compute delta to add to code to compute symbol_start id
       h->delta[j] = k - code;
       if (h->size[k] == j) {
          while (h->size[k] == j)
@@ -1997,7 +1997,7 @@ stbi_inline static int stbi__jpeg_huff_decode(stbi__jpeg *j, stbi__huffman *h)
 
    if (j->code_bits < 16) stbi__grow_buffer_unsafe(j);
 
-   // look at the top FAST_BITS and determine what symbol ID it is,
+   // look at the top FAST_BITS and determine what symbol_start ID it is,
    // if the code is <= FAST_BITS
    c = (j->code_buffer >> (32 - FAST_BITS)) & ((1 << FAST_BITS)-1);
    k = h->fast[c];
@@ -2029,11 +2029,11 @@ stbi_inline static int stbi__jpeg_huff_decode(stbi__jpeg *j, stbi__huffman *h)
    if (k > j->code_bits)
       return -1;
 
-   // convert the huffman code to the symbol id
+   // convert the huffman code to the symbol_start id
    c = ((j->code_buffer >> (32 - k)) & stbi__bmask[k]) + h->delta[k];
    STBI_ASSERT((((j->code_buffer) >> (32 - h->size[c])) & stbi__bmask[h->size[c]]) == h->code[c]);
 
-   // convert the id to a symbol
+   // convert the id to a symbol_start
    j->code_bits -= k;
    j->code_buffer <<= k;
    return h->values[c];
@@ -7600,7 +7600,7 @@ STBIDEF int stbi_is_16_bit_from_callbacks(stbi_io_callbacks const *c, void *user
       0.60    fix compiling as c++
       0.59    fix warnings: merge Dave Moore's -Wall fixes
       0.58    fix bug: zlib uncompressed mode len/nlen was wrong endian
-      0.57    fix bug: jpg last huffman symbol before marker was >9 bits but less than 16 available
+      0.57    fix bug: jpg last huffman symbol_start before marker was >9 bits but less than 16 available
       0.56    fix bug: zlib uncompressed mode len vs. nlen
       0.55    fix bug: restart_interval not initialized to 0
       0.54    allow NULL for 'int *comp'

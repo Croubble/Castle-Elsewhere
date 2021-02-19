@@ -215,7 +215,7 @@ void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scop
 	gamestate_clone_to_unitialized(old, next, scope_memory);
 	timeMachine->num_gamestates_stored++;
 }
-static void apply_merge_moves(PieceData* piece_data, bool* is_moving, int* layer, Direction d, int w, int h)
+static void apply_merge_moves(PieceData* piece_data, bool* is_moving, int* layer, Direction d, int w, int h, GameStateAnimation* animation)
 {
 	bool done = false;
 	while (!done)
@@ -246,6 +246,10 @@ static void apply_merge_moves(PieceData* piece_data, bool* is_moving, int* layer
 							for(int i = 0; i < CP_COUNT;i++)
 								piece_data[z].powers[i] = false;
 							is_moving[z] = false;
+
+							//put that informataion into the animation.
+							animation->symbol_start.end_powers[z] = piece_data[next_1d];
+							animation->symbol_start.end_powers[next_1d] = piece_data[next_1d];
 						}
 					}
 				}
@@ -835,15 +839,30 @@ AABB* gamestate_create_colliders(Memory* memory, GameState** states, IntPair* lo
 	}
 	return result;
 }
-SymbolLocalAnimation* symbollocalanimation_create_internal(int num_elements, Memory* temp_memory)
+void symbollocalanimation_alloc_internal(GameState* state, SymbolAnimation* animation,int w, int h)
 {
-	SymbolLocalAnimation* result = mem_alloc<SymbolLocalAnimation>(temp_memory, 1);
+		int z = 0;
+		for (int i = 0; i < w; i++)
+			for(int j = 0; j < h;j++,z++)
+		{
+				animation->start_powers[z] = state->piece_data[z];
+				animation->end_powers[z] = state->piece_data[z];
+				for (int p = 0; p < CP_COUNT; p++)
+					animation->flash_powers[z].powers[p] = false;;
+				animation->global_position[z] = math_intpair_create(i, j);
+				animation->global_move[z] = Direction::NO_DIRECTION;
+		}
+}
+	
+SymbolAnimation* symbollocalanimation_create_internal(int num_elements, Memory* temp_memory)
+{
+	SymbolAnimation* result = mem_alloc<SymbolAnimation>(temp_memory, 1);
 	result->len = num_elements;
-	result->flash_element = mem_alloc<bool>(temp_memory, num_elements);
-	result->local_start_position = mem_alloc<int>(temp_memory, num_elements);
-	result->local_end_position = mem_alloc<int>(temp_memory, num_elements);
-	result->start_size = mem_alloc<float>(temp_memory, num_elements);
-	result->end_size= mem_alloc<float>(temp_memory, num_elements);
+	result->global_position = mem_alloc<IntPair>(temp_memory, num_elements);
+	result->global_move = mem_alloc<Direction>(temp_memory,num_elements);
+	result->start_powers = mem_alloc<PieceData>(temp_memory,num_elements); //true if should be drawn.
+	result->end_powers = mem_alloc<PieceData>(temp_memory,num_elements);
+	result->flash_powers = mem_alloc<PieceData>(temp_memory,num_elements);
 	return result;
 }
 
@@ -854,9 +873,39 @@ void symbolglobalanimation_alloc_internal(SymbolGlobalAnimation* to_alloc, Memor
 	to_alloc->to_move = mem_alloc<Direction>(temp_memory, num_elements);
 	to_alloc->pos = mem_alloc<IntPair>(temp_memory, num_elements);
 }
-PieceMovementAnimation* gamestate_animationmoveinfo_create_internal(int num_elements, Memory* temp_memory)
+void copy_piece_animation_to_symbol_animation(PieceData* crates, int len_pieces, int len_symbols, MaskedMovementAnimation* pieces, MaskedMovementAnimation* symbol)
 {
-	PieceMovementAnimation* result = (PieceMovementAnimation*)memory_alloc(temp_memory, sizeof(PieceMovementAnimation));
+	int current_len_symbols = 0;
+	for (int i = 0; i < len_pieces; i++)
+	{
+		for(int j = 0; j < CP_COUNT;j++)
+			if (crates[i].powers[j])
+			{
+				symbol->pos[current_len_symbols] = pieces->pos[i];
+				symbol->img_value[current_len_symbols] = j;
+				symbol->to_move[current_len_symbols]= pieces->to_move[i];
+				current_len_symbols++;
+			}
+	}
+}
+void masked_movement_animation_clone_internal(int len, MaskedMovementAnimation* copy, MaskedMovementAnimation* original)
+{
+	for (int i = 0; i < len; i++)
+	{
+		copy->img_value[i] = original->img_value[i];
+	}
+	for (int i = 0; i < len; i++)
+	{
+		copy->pos[i] = original->pos[i];
+	}
+	for (int i = 0; i < len; i++)
+	{
+		copy->to_move[i] = original->to_move[i];
+	}
+}
+MaskedMovementAnimation* gamestate_animationmoveinfo_create_internal(int num_elements, Memory* temp_memory)
+{
+	MaskedMovementAnimation* result = (MaskedMovementAnimation*)memory_alloc(temp_memory, sizeof(MaskedMovementAnimation));
 	result->pos = (IntPair*)memory_alloc(temp_memory, sizeof(IntPair) * num_elements);
 	result->to_move = (Direction*)memory_alloc(temp_memory, sizeof(Direction) * num_elements);
 	result->img_value = (int*)memory_alloc(temp_memory, sizeof(int) * num_elements);
@@ -868,7 +917,7 @@ PieceMovementAnimation* gamestate_animationmoveinfo_create_internal(int num_elem
 	}
 	return result;
 }
-void animationmoveinfo_set_default_positions(PieceMovementAnimation* info, GameState* state)
+void animationmoveinfo_set_default_positions(MaskedMovementAnimation* info, GameState* state)
 {
 	int w = state->w;
 	int h = state->h;
@@ -879,7 +928,7 @@ void animationmoveinfo_set_default_positions(PieceMovementAnimation* info, GameS
 			info->pos[z] = math_intpair_create(i, j);
 		}
 }
-void animationmoveinfo_copy_from_gamestate_internal(PieceMovementAnimation* info, GameState* state)
+void animationmoveinfo_copy_from_gamestate_internal(MaskedMovementAnimation* info, GameState* state)
 {
 	int num_to_draw = state->w * state->h;
 	for (int i = 0; i < num_to_draw; i++)
@@ -889,7 +938,7 @@ void animationmoveinfo_copy_from_gamestate_internal(PieceMovementAnimation* info
 	}
 
 }
-void animationmoveinfo_apply_movements(GameState* state, PieceMovementAnimation* start,PieceMovementAnimation* end, bool* moves, Direction movement, int num_to_draw)
+void animationmoveinfo_apply_movements(GameState* state, MaskedMovementAnimation* start,MaskedMovementAnimation* end, bool* moves, Direction movement, int num_to_draw)
 {
 	int z = 0;
 	for(int i = 0; i < state->w;i++)
@@ -901,6 +950,37 @@ void animationmoveinfo_apply_movements(GameState* state, PieceMovementAnimation*
 			IntPair next_goal = move_pos_wrapped_2d(math_intpair_create(i,j),movement, state->w, state->h);
 			end->pos[z] = next_goal;
 		}
+}
+
+glm::vec2 piecedata_calculate_scale(PieceData piece)
+{
+	int total = 0;
+	for (int i = 0; i < CP_COUNT; i++)
+		total += piece.powers[i];
+	int width = (int)ceil(sqrt(total));
+	glm::vec2 scale;
+	scale.x = 1.0f / (float)width;
+	scale.y = 1.0f / (float)width;
+	return scale;
+}
+
+void piecedata_calculate_local_positions(PieceData piece, glm::vec2* scale, glm::vec2* out_positions)
+{
+	int total = 0;
+	for (int i = 0; i < CP_COUNT; i++)
+		total += piece.powers[i];
+	int width = (int)ceil(sqrt(total));
+
+	int num_drawn = 0;
+	for (int j = 0; j < CP_COUNT; j++)
+	{
+		if (piece.powers[j])
+		{
+			out_positions[num_drawn].x = float(num_drawn % width);
+			out_positions[num_drawn].y = float(num_drawn / width);
+			num_drawn++;
+		}
+	}
 }
 
 /****************************GAME ACTION + MISC**********************/
@@ -1017,19 +1097,13 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 			cancel_moves_by_rigid(&rigid_data, square_moving, player_rigid_number, state->w * state->h);
 		}
 	}
-	//build the symbol animation.
+	//build the symbol_start animation.
 	{
-		int num_symbols_total = 0;
-		for (int i = 0; i < w * h; i++)
-		{
-			for (int j = 0; j < CP_COUNT; j++)
-			{
-				num_symbols_total += state->piece_data->powers[j];
-			}
-		}
-	
-		symbolglobalanimation_alloc_internal(&animation->starts_symbol,temp_memory, num_symbols_total);
-		symbolglobalanimation_alloc_internal(&animation->ends_symbol,temp_memory, num_symbols_total);
+		animation->symbol_start = *symbollocalanimation_create_internal(w * h, temp_memory);
+		animation->symbol_end = *symbollocalanimation_create_internal(w * h, temp_memory);
+		//allocate the starting values.
+		symbollocalanimation_alloc_internal(state, &animation->symbol_start, w, h);
+		symbollocalanimation_alloc_internal(state, &animation->symbol_end, w, h);
 	}
 	cancel_blocked_nonmerge_moves(&rigid_data, square_moving, pieces, state->piece_data, action, w, h);
 	//if the player is moving and they are standing on top of a cold grill, turn the grill hot.
@@ -1037,12 +1111,15 @@ GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* 
 	if (square_moving[player_1d] && state->floor[player_1d] == F_GRILL_COLD)
 		state->floor[player_1d] = F_GRILL_HOT;
 	}
-	apply_merge_moves(state->piece_data, square_moving, pieces, action, w, h);
+	
+	//calculate the animation for merging crates.
+	//apply any merge moves, where a crate is merging with another crate.
+	apply_merge_moves(state->piece_data, square_moving, pieces, action, w, h,animation);
 
 	//get final values (e.g. after curses)
 	animationmoveinfo_copy_from_gamestate_internal(&animation->ends, state);
 
-	//calculate animation
+	//calculate animation. For each thing, move it!
 	animationmoveinfo_apply_movements(state,&animation->starts, &animation->ends, square_moving, action, w * h);
 
 	//apply moves.

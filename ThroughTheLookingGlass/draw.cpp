@@ -299,7 +299,6 @@ void draw_gamestate_pieces(GameState* gamestate, IntPair offset, AllWrite* info)
 			if (next->piece[i] == P_CRATE)
 			{
 				PieceData piece_data = next->piece_data[i];
-				//count the number of elements to draw.
 				IntPair state_offset = offset;
 				IntPair grid_offset = t2D(i, next->w, next->h);
 				glm::vec2 draw_offset = glm::vec2(state_offset.x + grid_offset.x, state_offset.y + grid_offset.y);

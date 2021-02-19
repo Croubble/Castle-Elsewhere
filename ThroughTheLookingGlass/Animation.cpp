@@ -13,7 +13,7 @@ MovementAnimation* movement_animation_build(GameStateAnimation* animation, GameS
 	result->end_offset = (glm::vec2*) memory_alloc(clear_on_gamestate_update_memory, sizeof(glm::vec2) * num_elements * 2);
 	//build out the animation.
 	{
-		PieceMovementAnimation* info = &animation->starts;
+		MaskedMovementAnimation* info = &animation->starts;
 		for (int i = 0; i < num_elements; i++)
 		{
 			result->position[i] = glm::vec3(info->pos[i].x + gamestate_start.x, info->pos[i].y + gamestate_start.y, z_pos);
@@ -30,7 +30,7 @@ MovementAnimation* movement_animation_build(GameStateAnimation* animation, GameS
 		}
 	}
 	{
-		PieceMovementAnimation* info = &animation->ends;
+		MaskedMovementAnimation* info = &animation->ends;
 		for (int i = 0; i < num_elements; i++)
 		{
 			IntPair move = direction_to_intpair(info->to_move[i]);
