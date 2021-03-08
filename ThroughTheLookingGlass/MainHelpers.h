@@ -58,7 +58,7 @@ GameSpaceCamera math_camera_build_for_gamestate(GameState* gamestate, IntPair po
 /***********************************************************/
 /***********************stateful utils**********************/
 //highly stateful main action.
-void take_player_action(Animations** maybe_animation, GamestateTimeMachine* maybe_time_machine, IntPair draw_position, EditorUIState* ui_state, Direction action, Memory* level_memory, Memory* frame_memory, Memory* animation_memory);
+void take_player_action(GamestateTimeMachine* maybe_time_machine, IntPair draw_position, EditorUIState* ui_state, Direction action, Memory* level_memory, Memory* frame_memory, Memory* animation_memory);
 
 
 bool MaybeApplyBrush(GamestateBrush* palete, int currentBrush, EditorUIState* ui_state, TimeMachineEditor* timeMachine, glm::vec2 mouseGamePos);

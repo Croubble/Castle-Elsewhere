@@ -283,14 +283,14 @@ Action calculate_what_action_to_take_next_stateful()
 	}
 	return (Action) A_NONE;
 }
-void handle_next_action_stateful(GamestateTimeMachine* maybe_time_machine, IntPair draw_position, Animations** maybe_animation)
+void handle_next_action_stateful(GamestateTimeMachine* maybe_time_machine, IntPair draw_position)
 {
 	Action next_action = calculate_what_action_to_take_next_stateful();
 
 	Direction to_take = action_to_direction(next_action);
 
 	if (to_take != NO_DIRECTION)
-		take_player_action(maybe_animation,
+		take_player_action(
 			maybe_time_machine,
 			draw_position,
 			&ui_state,
@@ -306,12 +306,10 @@ void handle_next_action_stateful(GamestateTimeMachine* maybe_time_machine, IntPa
 	    void* memory_cleared = gamestate_timemachine_undo(maybe_time_machine);
 		memory_pop_stack(level_memory, memory_cleared);
 		ui_state.time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
-		*maybe_animation = NULL;
 	}
 	if (next_action == A_RESET)
 	{
 		gamestate_timemachine_reset(maybe_time_machine, level_memory);
-		*maybe_animation = NULL;
 	}
 }
 
@@ -985,9 +983,7 @@ void mainloopfunction()
 			}
 			else if (ui_state.type == ECS_NEUTRAL)
 			{
-				Animations* maybe_animation = NULL;
-				Animations** maybe_animation_ptr = &maybe_animation;
-				handle_next_action_stateful(play_scene_state.timeMachine, play_scene_state.loc, maybe_animation_ptr);
+				handle_next_action_stateful(play_scene_state.timeMachine, play_scene_state.loc);
 				if (ui_state.spacebar.pressed_this_frame)
 				{
 					GameState* current_edit_state = &play_scene_state.timeMachine_edit->state_array[play_scene_state.timeMachine_edit->num_gamestates_stored - 1];
@@ -1137,7 +1133,7 @@ void mainloopfunction()
 #pragma endregion 
 #pragma region handle events
 			//if we should be allowed to take actions:
-				handle_next_action_stateful(world_play_scene_state->time_machine,world_play_scene_state->draw_position, &world_play_scene_state->maybe_animation);
+				handle_next_action_stateful(world_play_scene_state->time_machine,world_play_scene_state->draw_position);
 
 
 #pragma endregion
@@ -1372,18 +1368,11 @@ void mainloopfunction()
 				int current_level = world_scene_state->current_level;
 				IntPair* to_draw_position = &world_play_scene_state->draw_position;
 				//IntPair* to_draw_position = &world_scene_state->level_position[current_level];
-				if (world_play_scene_state->maybe_animation)
-				{
-					draw_gamespace_animated(&to_draw, &world_play_scene_state->maybe_animation, to_draw_position, 1, all_write, ui_state.time_since_last_player_action);
-				}
-				else
-				{
-					draw_gamespace(
-						&to_draw,
-						to_draw_position,
-						1,
-						all_write);
-				}
+				draw_gamespace(
+					&to_draw,
+					to_draw_position,
+					1,
+					all_write);
 			}
 #pragma endregion
 		}
@@ -1599,15 +1588,15 @@ int main(int argc, char *argv[])
 
 #pragma region Memory_AND_TimeMachine_AND_Clock_Setup
 	printf("Hello world abc\n");
-	frame_memory = memory_create(1000000);
-	permanent_memory = memory_create(10000000);
-	menu_memory = memory_create(1000000);
-	editor_memory = memory_create(10000000);
+	frame_memory = memory_create(3000000);
+	permanent_memory = memory_create(30000000);
+	menu_memory = memory_create(3000000);
+	editor_memory = memory_create(30000000);
 	play_memory = memory_create(3000000);
-	world_memory = memory_create(10000000);
-	level_memory = memory_create(10000000);
-	animation_memory = memory_create(1000000);
-	text_memory = memory_create(100000);
+	world_memory = memory_create(30000000);
+	level_memory = memory_create(30000000);
+	animation_memory = memory_create(3000000);
+	text_memory = memory_create(300000);
 	//Clock* clock = clock_create(permanent_memory);
 
 #pragma endregion
@@ -1684,7 +1673,7 @@ int main(int argc, char *argv[])
 				floor_atlas_2,
 				fullSpriteShader,
 				permanent_memory,
-				1000,
+				5000,
 				vertices_VBO,
 				vertices_EBO,
 				textureAssets::FLOOR_positions(permanent_memory)
@@ -1694,7 +1683,7 @@ int main(int argc, char *argv[])
 				piece_atlas_2,
 				fullSpriteShader,
 				permanent_memory,
-				1000,
+				5000,
 				vertices_VBO,
 				vertices_EBO,
 				textureAssets::PIECE_positions(permanent_memory)
@@ -1704,7 +1693,7 @@ int main(int argc, char *argv[])
 				symbol_atlas_2,
 				fullSpriteShader,
 				permanent_memory,
-				1000,
+				5000,
 				vertices_VBO,
 				vertices_EBO,
 				textureAssets::SYMBOLS_positions(permanent_memory)
@@ -1714,7 +1703,7 @@ int main(int argc, char *argv[])
 				ui_atlas_2,
 				fullSpriteShader,
 				permanent_memory,
-				1000,
+				5000,
 				vertices_VBO,
 				vertices_EBO,
 				textureAssets::UI_positions(permanent_memory)
@@ -2035,14 +2024,12 @@ int main(int argc, char *argv[])
 		return 0;
 }
 
-void take_player_action(Animations** maybe_animation, GamestateTimeMachine* maybe_time_machine, IntPair draw_position, EditorUIState* ui_state, Direction action, Memory* level_memory, Memory* frame_memory, Memory* animation_memory)
+void take_player_action(GamestateTimeMachine* maybe_time_machine, IntPair draw_position, EditorUIState* ui_state, Direction action, Memory* level_memory, Memory* frame_memory, Memory* animation_memory)
 {
 	GameActionJournal* journal = gamestate_timemachine_take_action(maybe_time_machine, action, level_memory, frame_memory);
 	GameStateAnimation* animation = journal->maybe_animation;
 	ui_state->time_till_player_can_move = WAIT_BETWEEN_PLAYER_MOVE_REPEAT;
 	ui_state->time_since_last_player_action = 0;
-	Animations* a = animation_build_from_world(journal, maybe_time_machine, draw_position, animation_memory);
-	*maybe_animation = a;
 }
 /*
 float draw_text_to_screen(glm::vec3 position, 

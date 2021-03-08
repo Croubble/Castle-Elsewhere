@@ -3,18 +3,7 @@
 #include "Parse.h"
 
 
-Animations* animation_build_from_world(GameActionJournal* journal, GamestateTimeMachine* maybe_time_machine, IntPair draw_position, Memory* animation_memory)
-{
-	if (maybe_time_machine == NULL)
-	{
-		std::cout << "calling animation_build_from_world when there is no time machine" << std::endl;
-		abort();
-	}
-	if (journal == NULL)
-		return NULL;
-	GameState* to_draw = gamestate_timemachine_get_latest_gamestate(maybe_time_machine);
-	return animations_build(journal, to_draw, draw_position, animation_memory, Z_POSITION_STARTING_LAYER + LN_PIECE);
-}
+
 WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory* level_memory)
 {
 	//grab some useful information that we will reuse.
@@ -121,7 +110,6 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 				//scene->maybe_time_machine = gamestate_timemachine_create(next_scene, level_memory, 1024);
 				result->time_machine = gamestate_timemachine_create(next_scene, level_memory, 1024);
 				result->draw_position = scene->level_position[next_square_level];
-				result->maybe_animation = NULL;
 				return result;
 			}
 		}

@@ -793,7 +793,7 @@ int** gamestate_get_layers(GameState* gamestate, int* num_layers_found, Memory* 
 int* gamestate_get_layer(GameState* gamestate, int layer_num)
 {
 	if (layer_num == 0)
-		return gamestate->floor;
+	return gamestate->floor;
 	if (layer_num == 1)
 		return gamestate->piece;
 	crash_err("uh ohh, we tried to get a layer that doesn't exist!");

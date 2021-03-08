@@ -2,7 +2,7 @@
 #include "GameState.h"
 #include "Editor.h"
 
-const int palete_length = 16;
+const int palete_length = 18;
 struct EditorScene
 {
 	TimeMachineEditor* timeMachine;
@@ -16,7 +16,7 @@ struct EditorScene
 EditorScene* editorscene_setup_with_start_state(Memory* editor_memory, ViewPortCamera camera_viewport, TimeMachineEditorStartState* start_state)
 {
 	EditorScene* result = (EditorScene*)memory_alloc(editor_memory, sizeof(EditorScene));
-	result->timeMachine = gamestate_timemachine_editor_create(editor_memory, memory_create(10000000));
+	result->timeMachine = gamestate_timemachine_editor_create(editor_memory, memory_create(50000000));
 	result->time_machine_start_state = start_state;
 	gamestate_timemachine_editor_initialise_from_start(result->timeMachine, result->time_machine_start_state);
 
@@ -32,6 +32,7 @@ EditorScene* editorscene_setup_with_start_state(Memory* editor_memory, ViewPortC
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, Piece::P_NONE, false, gamestate_piecedata_make());
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_WALL, false, gamestate_piecedata_make());
 		result->palete[i++] = gamestate_brush_create(true, F_GRILL_COLD, true, P_NONE, true, gamestate_piecedata_make());
+		result->palete[i++] = gamestate_brush_create(true, F_GRILL_HOT, true, P_NONE, true, gamestate_piecedata_make());
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_WALL_ALT,  false,gamestate_piecedata_make());
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRUMBLE,  false,gamestate_piecedata_make());
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PUSH));
@@ -39,13 +40,14 @@ EditorScene* editorscene_setup_with_start_state(Memory* editor_memory, ViewPortC
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PARALLEL));
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_MERGE));
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PUSH,CP_MERGE));
+		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PUSH,CP_PULL));
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PUSH,CP_PARALLEL));
-
-
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_PLAYER,  false,gamestate_piecedata_make());
 		if (i != palete_length)
 		{
-			crash_err("you need the number of elements in the palete to be teh same as the length of the palete");
+			std::cout << i << std::endl;
+			std::cout << palete_length << std::endl;
+			crash_err("you need the number of elements in the palete to be teh same as the length of the palete.");
 		}
 			
 		return result;
