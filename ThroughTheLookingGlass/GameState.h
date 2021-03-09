@@ -34,6 +34,7 @@ enum Floor {
 	F_LURKING_WALL,
 	F_GRILL_COLD,
 	F_GRILL_HOT,
+	F_EXIT,
 	F_COUNT
 };
 enum CratePower {
@@ -212,5 +213,7 @@ void piecedata_calculate_local_positions(PieceData piece, glm::vec2* scale, glm:
 /********************************************************************/
 
 GameActionJournal* gamestate_action(GameState* state, Direction action, Memory* temp_memory);
+
+void gamestate_startup(GameState* state);
 void gamestate_crumble(GameState* state);
 void gamestate_extrude_lurking_walls(GameState* state);

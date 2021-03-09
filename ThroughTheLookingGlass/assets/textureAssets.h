@@ -1,16 +1,16 @@
-#pragma once
+
 #include "Math.h"
 namespace textureAssets {
 enum FLOOR
 {
+    Exit,
     Floor,
     GrillCot,
     GrillHot,
     Outline,
     Start,
     Target,
-    ZBlack,
-    ZBZ
+    ZBlack
 };
 
 glm::vec4* FLOOR_positions(Memory* memory);

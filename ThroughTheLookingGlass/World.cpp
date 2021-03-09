@@ -104,7 +104,7 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 				memory_clear(level_memory);
 				GameState* next_scene_before_extrude = scene->level_state[scene->current_level];
 				GameState* next_scene = gamestate_clone(next_scene_before_extrude, level_memory);
-				gamestate_extrude_lurking_walls(next_scene);
+				gamestate_startup(next_scene);
 				WorldPlayScene* result = (WorldPlayScene*) memory_alloc(level_memory, sizeof(WorldPlayScene));
 				//result->draw_position;
 				//scene->maybe_time_machine = gamestate_timemachine_create(next_scene, level_memory, 1024);

@@ -22,6 +22,8 @@ textureAssets::FLOOR resource_floor_to_sprite(Floor floor)
 		return textureAssets::FLOOR::Target;
 	if (floor == F_START)
 		return textureAssets::FLOOR::Start;
+	if (floor == F_EXIT)
+		return textureAssets::FLOOR::ZBZ;
 	if (floor == F_ZBLACK)
 		return textureAssets::FLOOR::ZBlack;
 	if (floor == F_LURKING_WALL)

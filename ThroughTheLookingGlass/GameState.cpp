@@ -586,11 +586,10 @@ bool gamestate_is_in_win_condition(GameState* state)
 	int len = state->w * state->h;
 	for (int i = 0; i < len; i++)
 	{
-		if (state->floor[i] == F_START && !is_player(state->piece[i]))
+		if (state->floor[i] == F_EXIT && !is_player(state->piece[i]))
 		{
 			return false;
 		}
-
 	}
 	for (int i = 0; i < len; i++)
 	{
@@ -1142,6 +1141,47 @@ void gamestate_crumble(GameState* state)
 	{
 		if (state->floor[i] == F_START || state->floor[i] == F_TARGET)
 			state->floor[i] = F_NONE;
+	}
+	for (int i = 0; i < len; i++)
+	{
+		if (state->floor[i] == F_EXIT)
+			state->floor[i] = F_NONE;
+	}
+}
+void gamestate_startup(GameState* state)
+{
+	gamestate_extrude_lurking_walls(state);
+	//setup the entrance // exit.
+	{
+		bool found_entrance = false;
+		bool found_exit = false;
+		int entrance = 0;
+		int exit = 0;
+		for (int i = 0; i < state->w * state->h; i++)
+		{
+			if (state->floor[i] == F_START)
+			{
+				found_entrance = true;
+				entrance = i;
+				break;
+			}
+		}
+		for (int i = 0; i < state->w * state->h; i++)
+		{
+				
+			if (state->floor[i] == F_EXIT)
+			{
+				found_exit = true;
+				exit = i;
+				break;
+			}
+		}
+		
+		if (found_entrance && !found_exit)
+		{
+			state->floor[entrance] = F_EXIT;
+		}
+
 	}
 }
 void gamestate_extrude_lurking_walls(GameState* state)

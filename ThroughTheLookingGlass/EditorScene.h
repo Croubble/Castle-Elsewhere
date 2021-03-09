@@ -2,7 +2,7 @@
 #include "GameState.h"
 #include "Editor.h"
 
-const int palete_length = 18;
+const int palete_length = 19;
 struct EditorScene
 {
 	TimeMachineEditor* timeMachine;
@@ -43,6 +43,7 @@ EditorScene* editorscene_setup_with_start_state(Memory* editor_memory, ViewPortC
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PUSH,CP_PULL));
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PUSH,CP_PARALLEL));
 		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_PLAYER,  false,gamestate_piecedata_make());
+		result->palete[i++] = gamestate_brush_create(true, F_EXIT, false, P_NONE, false, gamestate_piecedata_make());
 		if (i != palete_length)
 		{
 			std::cout << i << std::endl;
