@@ -1386,93 +1386,89 @@ void mainloopfunction()
 		if (scene == ST_MENU)
 		{
 #pragma region send draw data to gpu
-		//draw the first text
+			//get the camera, and break it into i + 2 chunks.
+			GameSpaceCamera camera_fifth;
+			float fifth_w = (camera_game.left + camera_game.right) / 5.0f;
+			camera_fifth.left = camera_game.left + fifth_w;
+			camera_fifth.right = camera_game.right - fifth_w;
+			float fifth_h = (camera_game.up - camera_game.down) / 5.0f;
+			camera_fifth.down = camera_game.down + fifth_h;
+			camera_fifth.up = camera_fifth.down + fifth_h;
+
+			//draw wasd with arrows helper.
 			{
-				//draw all the text.
-				//get the camera, and break it into i + 2 chunks.
-				GameSpaceCamera camera_fifth;
-				float fifth_w = (camera_game.left + camera_game.right) / 5.0f;
-				camera_fifth.left = camera_game.left + fifth_w;
-				camera_fifth.right = camera_game.right - fifth_w;
-				float fifth_h = (camera_game.up - camera_game.down) / 5.0f;
-				camera_fifth.down = camera_game.down + fifth_h;
-				camera_fifth.up = camera_fifth.down + fifth_h;
+				GameSpaceCamera bottom_fifth = camera_game;
+				float camera_width = camera_game.right - camera_game.left;
+				float camera_height = camera_game.up - camera_game.down;
+				bottom_fifth.right = bottom_fifth.left + camera_width / 5.0f;
+				bottom_fifth.up = bottom_fifth.down + camera_height / 5.0f;
 
-				//draw wasd with arrows helper.
+				float w = bottom_fifth.right - bottom_fifth.left;
+				float h = bottom_fifth.up - bottom_fifth.down;
+
+				float goal_w = (h * 5.0f) / 4.0f;
+
+				if (goal_w > w)
 				{
-					GameSpaceCamera bottom_fifth = camera_game;
-					float camera_width = camera_game.right - camera_game.left;
-					float camera_height = camera_game.up - camera_game.down;
-					bottom_fifth.right = bottom_fifth.left + camera_width / 5.0f;
-					bottom_fifth.up = bottom_fifth.down + camera_height / 5.0f;
-
-					float w = bottom_fifth.right - bottom_fifth.left;
-					float h = bottom_fifth.up - bottom_fifth.down;
-
-					float goal_w = (h * 5.0f) / 4.0f;
-
-					if (goal_w > w)
-					{
-						crash_err("foolish mortal, you have made an assumption in your code base (namely, that you will only need to reduce the width, but never reduce the height), and that assumption has failed. Now we are crashing to save you a really mean debug session.");
-					}
-					float width_adjustment = (w - goal_w);
-					bottom_fifth.right -= width_adjustment;
-
-					//draw left
-					{
-						GameSpaceCamera temp_pos = area_get_grid_element(1, 1, 5, 4, bottom_fifth);
-						draw_text_maximized_centered_to_screen(temp_pos, "A", &text_draw_info);
-					}
-					{
-						GameSpaceCamera temp_pos = area_get_grid_element(0, 1, 5, 4, bottom_fifth);
-						draw_ui_to_gamespace(temp_pos, textureAssets::UI::LeftArrow, ui_write);
-					}
-					//draw up
-					{
-						GameSpaceCamera temp_pos = area_get_grid_element(2, 2, 5, 4, bottom_fifth);
-						draw_text_maximized_centered_to_screen(temp_pos, "W", &text_draw_info);
-					}
-					{
-						GameSpaceCamera temp_pos = area_get_grid_element(2, 3, 5, 4, bottom_fifth);
-						draw_ui_to_gamespace(temp_pos, textureAssets::UI::UpArrow, ui_write);
-					}
-					//draw down
-					{
-						GameSpaceCamera temp_pos = area_get_grid_element(2, 1, 5, 4, bottom_fifth);
-						draw_text_maximized_centered_to_screen(temp_pos, "S", &text_draw_info);
-					}
-					{
-						GameSpaceCamera temp_pos = area_get_grid_element(2, 0, 5, 4, bottom_fifth);
-						draw_ui_to_gamespace(temp_pos, textureAssets::UI::DownArrow, ui_write);
-					}
-					//draw right
-					{
-						GameSpaceCamera temp_pos = area_get_grid_element(3, 1, 5, 4, bottom_fifth);
-						draw_text_maximized_centered_to_screen(temp_pos, "D", &text_draw_info);
-					}
-					{
-						GameSpaceCamera temp_pos = area_get_grid_element(4, 1, 5, 4, bottom_fifth);
-						draw_ui_to_gamespace(temp_pos, textureAssets::UI::RightArrow, ui_write);
-					}
+					crash_err("foolish mortal, you have made an assumption in your code base (namely, that you will only need to reduce the width, but never reduce the height), and that assumption has failed. Now we are crashing to save you a really mean debug session.");
 				}
-				//draw buttons and their text.
-				for (int i = 0; i < menu_scene_state->num_buttons; i++)
+				float width_adjustment = (w - goal_w);
+				bottom_fifth.right -= width_adjustment;
+
+				//draw left
 				{
-					GameSpaceCamera camera_fifth_smaller = camera_fifth;
-					float width = camera_fifth_smaller.right - camera_fifth_smaller.left;
-					float height = camera_fifth_smaller.up - camera_fifth_smaller.down;
-					camera_fifth_smaller.left += (width / 5.0f);
-					camera_fifth_smaller.right -= (width / 5.0f);
-					camera_fifth_smaller.up -= (height / 10.0f);
-					camera_fifth_smaller.down += (height / 10.0f);
-					if (i == menu_scene_state->current_highlighted_button)
-						draw_button_to_gamespace(camera_fifth, ui_write, glm::vec4(0.7, 0.7, 1, 1));
-					else
-						draw_button_to_gamespace(camera_fifth, ui_write);
-					draw_text_maximized_centered_to_screen(camera_fifth_smaller, menu_scene_state->buttons[i].button_text, &text_draw_info);
-					camera_fifth.down += fifth_h;
-					camera_fifth.up += fifth_h;
+					GameSpaceCamera temp_pos = area_get_grid_element(1, 1, 5, 4, bottom_fifth);
+					draw_text_maximized_centered_to_screen(temp_pos, "A", &text_draw_info);
 				}
+				{
+					GameSpaceCamera temp_pos = area_get_grid_element(0, 1, 5, 4, bottom_fifth);
+					draw_ui_to_gamespace(temp_pos, textureAssets::UI::LeftArrow, ui_write);
+				}
+				//draw up
+				{
+					GameSpaceCamera temp_pos = area_get_grid_element(2, 2, 5, 4, bottom_fifth);
+					draw_text_maximized_centered_to_screen(temp_pos, "W", &text_draw_info);
+				}
+				{
+					GameSpaceCamera temp_pos = area_get_grid_element(2, 3, 5, 4, bottom_fifth);
+					draw_ui_to_gamespace(temp_pos, textureAssets::UI::UpArrow, ui_write);
+				}
+				//draw down
+				{
+					GameSpaceCamera temp_pos = area_get_grid_element(2, 1, 5, 4, bottom_fifth);
+					draw_text_maximized_centered_to_screen(temp_pos, "S", &text_draw_info);
+				}
+				{
+					GameSpaceCamera temp_pos = area_get_grid_element(2, 0, 5, 4, bottom_fifth);
+					draw_ui_to_gamespace(temp_pos, textureAssets::UI::DownArrow, ui_write);
+				}
+				//draw right
+				{
+					GameSpaceCamera temp_pos = area_get_grid_element(3, 1, 5, 4, bottom_fifth);
+					draw_text_maximized_centered_to_screen(temp_pos, "D", &text_draw_info);
+				}
+				{
+					GameSpaceCamera temp_pos = area_get_grid_element(4, 1, 5, 4, bottom_fifth);
+					draw_ui_to_gamespace(temp_pos, textureAssets::UI::RightArrow, ui_write);
+				}
+			}
+			//draw buttons and their text.
+			for (int i = 0; i < menu_scene_state->num_buttons; i++)
+			{
+				GameSpaceCamera camera_fifth_smaller = camera_fifth;
+				float width = camera_fifth_smaller.right - camera_fifth_smaller.left;
+				float height = camera_fifth_smaller.up - camera_fifth_smaller.down;
+				camera_fifth_smaller.left += (width / 5.0f);
+				camera_fifth_smaller.right -= (width / 5.0f);
+				camera_fifth_smaller.up -= (height / 10.0f);
+				camera_fifth_smaller.down += (height / 10.0f);
+				if (i == menu_scene_state->current_highlighted_button)
+					draw_button_to_gamespace(camera_fifth, ui_write, glm::vec4(0.7, 0.7, 1, 1));
+				else
+					draw_button_to_gamespace(camera_fifth, ui_write);
+				draw_text_maximized_centered_to_screen(camera_fifth_smaller, menu_scene_state->buttons[i].button_text, &text_draw_info);
+				camera_fifth.down += fifth_h;
+				camera_fifth.up += fifth_h;
 			}
 		}
 #pragma endregion
@@ -1551,7 +1547,7 @@ int main(int argc, char *argv[])
 {
 #pragma region SDL_Setup
 
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_WINDOW_RESIZABLE);
+	SDL_Init(SDL_INIT_AUDIO |  SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_WINDOW_RESIZABLE);
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
