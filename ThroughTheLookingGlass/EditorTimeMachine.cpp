@@ -1,6 +1,7 @@
 #include "Editor.h"
 #include <iostream>
 
+
 void delete_gamestate_from_list_internal(TimeMachineEditor* editor, int index_to_delete)
 {
 	editor->gamestates[index_to_delete] = NULL;
