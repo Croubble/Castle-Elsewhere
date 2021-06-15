@@ -1543,6 +1543,7 @@ void mainloopfunction()
 		//return running;
 		keep_running_infinite_loop = running;
 }
+
 int main(int argc, char *argv[])
 {
 #pragma region SDL_Setup

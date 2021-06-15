@@ -55,6 +55,7 @@ struct FloorData
 	//target match rules.
 	PieceData target_union_rules;	//crate must meet criteria
 	PieceData target_disjoint_rules; //crate must NOT meet criteria
+	char teleporter_id; //if we teleporting, which of our levels rules we want to refer to.
 };
 
 struct GameState {
