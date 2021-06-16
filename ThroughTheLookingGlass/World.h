@@ -11,7 +11,7 @@ struct WorldScene
 	SCENE_TYPE go_to_on_backspace;
 	int num_levels;
 	int current_level;
-	char level_names[MAX_NUMBER_GAMESTATES * GAME_LEVEL_NAME_MAX_SIZE];
+	LevelName level_names[MAX_NUMBER_GAMESTATES];
 	GameState* level_state[MAX_NUMBER_GAMESTATES];
 	IntPair level_position[MAX_NUMBER_GAMESTATES];
 	bool level_solved[MAX_NUMBER_GAMESTATES];

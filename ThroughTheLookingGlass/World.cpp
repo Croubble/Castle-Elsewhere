@@ -140,7 +140,7 @@ WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene
 	{
 		result->level_state[i] = gamestate_clone(build_from->gamestates[i], world_scene_memory);
 	}
-	for (int i = 0; i < num_gamestates * GAME_LEVEL_NAME_MAX_SIZE; i++)
+	for (int i = 0; i < num_gamestates;i++)
 	{
 		result->level_names[i] = build_from->names[i];
 	}
@@ -218,7 +218,7 @@ std::string world_serialize(WorldScene* world, Memory* scope, Memory* temp_memor
 		output_consumed += sprintf_s(output + output_consumed, max_length, "names:");
 		for (int i = 0; i < num_gamestates; i++)
 		{
-			char* name = &world->level_names[i * GAME_LEVEL_NAME_MAX_SIZE];
+			char* name = world->level_names[i].name;
 			output_consumed += sprintf_s(output + output_consumed, max_length, "%s,", name);
 		}
 		output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
@@ -250,9 +250,10 @@ WorldScene* world_deserialize(std::string world_string, Memory* scope, Memory* t
 	{
 		result->level_state[i] = NULL;
 	}
-	for (int i = 0; i < GAME_LEVEL_NAME_MAX_SIZE * MAX_NUMBER_GAMESTATES; i++)
+	for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
+		for(int j = 0; j < GAME_LEVEL_NAME_MAX_SIZE;j++)
 	{
-		result->level_names[i] = '\0';
+		result->level_names[i].name[j] = '\0';
 	}
 	//get input
 	char* input = &(world_string[0]);

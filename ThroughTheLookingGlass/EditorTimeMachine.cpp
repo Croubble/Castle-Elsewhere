@@ -25,22 +25,24 @@ TimeMachineEditor* gamestate_timemachine_editor_create(Memory* memory, Memory* g
 	result->current_number_of_gamestates = 0;
 	result->current_number_of_actions = 0;
 	result->gamestates[0] = (GameState*) memory_alloc(gamestate_memory, sizeof(GameState*) * MAX_NUMBER_GAMESTATES);
-	for (int i = 0; i < MAX_NUMBER_GAMESTATES * GAME_LEVEL_NAME_MAX_SIZE; i++)
-		result->names[i] = '\0';
+	for (int i = 0; i < MAX_NUMBER_GAMESTATES ; i++)
+		for(int j = 0; j < GAME_LEVEL_NAME_MAX_SIZE;j++)
+			result->names[i].name[j] = '\0';
 	return result;
 }
 void gamestate_timemachine_startstate_empty_init(TimeMachineEditorStartState* start_state)
 {
 	start_state->number_of_gamestates = 0;
-	for (int i = 0; i < MAX_NUMBER_GAMESTATES * GAME_LEVEL_NAME_MAX_SIZE; i++)
-		start_state->names[i] = '\0';
+	for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
+		for(int j = 0; j < GAME_LEVEL_NAME_MAX_SIZE;j++)
+		start_state->names[i].name[j] = '\0';
 }
 void gamestate_timemachine_editor_initialise_from_start(TimeMachineEditor* editor, TimeMachineEditorStartState* pos)
 {
 	memory_clear(editor->gamestate_memory);
 	//editor->current_number_of_actions = 0; //removed for now, think inits to 0 anyway first time.
 	editor->current_number_of_gamestates = pos->number_of_gamestates;
-	for (int i = 0; i < GAME_LEVEL_NAME_MAX_SIZE * MAX_NUMBER_GAMESTATES; i++)
+	for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
 		editor->names[i] = pos->names[i];
 	for (int i = 0; i < pos->number_of_gamestates; i++)
 	{
@@ -156,7 +158,7 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 		editor->gamestates[pos] = state;
 		for (int i = 0; i < GAME_LEVEL_NAME_MAX_SIZE; i++)
 		{
-			editor->names[pos * GAME_LEVEL_NAME_MAX_SIZE + i] = action.u.replace.name[i];
+			editor->names[pos].name[i] = action.u.replace.name[i];
 		}
 	}
 	else if (action.action == TM_UPDATE_GAMESTATE)
@@ -178,8 +180,9 @@ void gamestate_timemachine_editor_take_action(TimeMachineEditor* editor, TimeMac
 		if (!maybe_start_state)
 			crash_err("hmm, when doing an undo action, we passed, a NULL when we should have given a pos state. Fix it!");
 		gamestate_timemachine_editor_initialise_from_start(editor, maybe_start_state);
-		for (int i = 0; i < MAX_NUMBER_GAMESTATES * GAME_LEVEL_NAME_MAX_SIZE; i++)
-			editor->names[i] = '\0';
+		for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
+			for(int j = 0; j < GAME_LEVEL_NAME_MAX_SIZE;j++)
+			editor->names[i].name[j] = '\0';
 		for (int i = 0; i < editor->current_number_of_actions; i++)
 		{
 			take_unlogged_action(editor, editor->actionList[i]);
@@ -281,7 +284,7 @@ TimeMachineEditorAction gamestate_timemachineaction_create_replace_gamestate(Gam
 	}
 	return action;
 }
-TimeMachineEditorAction gamestate_timemachineaction_create_update_gamestate(GameState* replacement, int to_replace, const char* name)
+TimeMachineEditorAction gamestate_timemachineaction_create_update_gamestate(GameState* replacement, int to_replace, LevelName name)
 {
 	TimeMachineEditorAction action;
 	action.action = TM_UPDATE_GAMESTATE;
@@ -289,7 +292,7 @@ TimeMachineEditorAction gamestate_timemachineaction_create_update_gamestate(Game
 	action.u.update.index_to_replace = to_replace;
 	for (int i = 0; i < GAME_LEVEL_NAME_MAX_SIZE; i++)
 	{
-		action.u.replace.name[i] = name[i];
+		action.u.replace.name[i] = name.name[i];
 	}
 	return action;
 }

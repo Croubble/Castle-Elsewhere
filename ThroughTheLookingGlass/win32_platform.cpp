@@ -646,7 +646,7 @@ void mainloopfunction()
 						IntPair grid_clicked = calculate_floor_cell_clicked(state, state_start, ui_state.mouseGamePos);
 						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
 						GameState* next = gamestate_add_row(state, editor_scene_state->timeMachine->gamestate_memory, grid_clicked.x, grid_clicked.y);
-						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, &editor_scene_state->timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, editor_scene_state->timeMachine->names[index_clicked]);
 						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 
@@ -662,7 +662,7 @@ void mainloopfunction()
 						IntPair grid_clicked = calculate_floor_cell_clicked(state, state_start, ui_state.mouseGamePos);
 						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
 						GameState* next = gamestate_add_column(state, permanent_memory, grid_clicked.x, grid_clicked.y);
-						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, &editor_scene_state->timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, editor_scene_state->timeMachine->names[index_clicked]);
 						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 				}
@@ -674,7 +674,7 @@ void mainloopfunction()
 					{
 						GameState* state = editor_scene_state->timeMachine->gamestates[index_clicked];
 						GameState* next = gamestate_surround_with_walls(state, permanent_memory);
-						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, &editor_scene_state->timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, editor_scene_state->timeMachine->names[index_clicked ]);
 						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 				}
@@ -711,8 +711,10 @@ void mainloopfunction()
 							play_scene_state.game_name[i] = 0;
 						}
 						play_scene_state.game_name_length = 0;
-						strcpy_s(play_scene_state.game_name, &editor_scene_state->timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
-						play_scene_state.game_name_length = (int) strlen(&editor_scene_state->timeMachine->names[index_clicked * GAME_LEVEL_NAME_MAX_SIZE]);
+						//strcpy_s(play_scene_state.game_name, &editor_scene_state->timeMachine->names[index_clicked].name);
+						for (int i = 0; i < GAME_LEVEL_NAME_MAX_SIZE; i++)
+							play_scene_state.game_name[i] = editor_scene_state->timeMachine->names[index_clicked].name[i];
+						play_scene_state.game_name_length = (int) strlen(editor_scene_state->timeMachine->names[index_clicked].name);
 						//switch our scene to that gamestate.
 						scene = ST_EDIT_LEVEL;
 						ui_state.time_since_scene_started = 0;
@@ -1101,7 +1103,7 @@ void mainloopfunction()
 				scene = SCENE_TYPE::ST_SHOW_TEXT;
 				ui_state.time_since_scene_started = 0;
 				ui_state.time_since_last_player_action = 0;
-				text_scene_state = level_popup(&world_scene_state->level_names[world_scene_state->current_level * GAME_LEVEL_NAME_MAX_SIZE], text_memory, ui_state.total_time_passed);
+				text_scene_state = level_popup(world_scene_state->level_names[world_scene_state->current_level].name, text_memory, ui_state.total_time_passed);
 			}
 
 #pragma endregion	
@@ -1311,7 +1313,7 @@ void mainloopfunction()
 				int len = editor_scene_state->timeMachine->current_number_of_gamestates;
 				for (int i = 0; i < len; i++)
 				{
-					char* name = &editor_scene_state->timeMachine->names[i * GAME_LEVEL_NAME_MAX_SIZE];
+					char* name = &editor_scene_state->timeMachine->names[i].name[0];
 					float x_pos = (float)editor_scene_state->timeMachine->gamestates_positions[i].x;
 					float y_pos = (float)(editor_scene_state->timeMachine->gamestates_positions[i].y + editor_scene_state->timeMachine->gamestates[i]->h) + 0.2f;
 					glm::vec3 draw_pos = glm::vec3(x_pos, y_pos, 0);

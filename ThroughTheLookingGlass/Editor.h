@@ -87,12 +87,18 @@ struct TimeMachineEditorAction
 		UpdateGamestate update;
 	} u;
 };
+
+struct LevelName
+{
+	char name[GAME_LEVEL_NAME_MAX_SIZE];
+};
+
 struct TimeMachineEditorStartState
 {
 	int number_of_gamestates;
 	IntPair gamestates_positions[MAX_NUMBER_GAMESTATES];
 	GameState* gamestates[MAX_NUMBER_GAMESTATES];
-	char names[MAX_NUMBER_GAMESTATES * GAME_LEVEL_NAME_MAX_SIZE];
+	LevelName names[MAX_NUMBER_GAMESTATES];
 };
 
 struct TimeMachineEditor
@@ -101,7 +107,7 @@ struct TimeMachineEditor
 	TimeMachineEditorAction actionList[MAX_EDITOR_ACTIONS];
 	IntPair gamestates_positions[MAX_NUMBER_GAMESTATES];
 	GameState* gamestates[MAX_NUMBER_GAMESTATES];
-	char names[MAX_NUMBER_GAMESTATES * GAME_LEVEL_NAME_MAX_SIZE];
+	LevelName names[MAX_NUMBER_GAMESTATES];
 	int current_number_of_gamestates;
 	int current_number_of_actions;
 };
@@ -126,5 +132,5 @@ TimeMachineEditorAction gamestate_timemachineaction_create_resize_gamsestate(int
 TimeMachineEditorAction gamestate_timemachineaction_create_move_gamestate(int target_gamestate, IntPair movement);
 TimeMachineEditorAction gamestate_timemachineaction_create_delete_gamestate(int target_gamestate);
 TimeMachineEditorAction gamestate_timemachineaction_create_replace_gamestate(GameState* replacement, int to_replace, const char* name);
-TimeMachineEditorAction gamestate_timemachineaction_create_update_gamestate(GameState* replacement, int to_replace, const char* name);
+TimeMachineEditorAction gamestate_timemachineaction_create_update_gamestate(GameState* replacement, int to_replace, LevelName name);
 

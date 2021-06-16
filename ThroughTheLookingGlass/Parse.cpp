@@ -383,7 +383,7 @@ bool try_parse_bools(Tokenizer* t, bool* result, Memory* final_memory, Memory* t
 	}
 	return true;
 }
-bool try_parse_names(Tokenizer* t, char* result, Memory* final_memory, Memory* temp_memory)
+bool try_parse_names(Tokenizer* t, LevelName* result, Memory* final_memory, Memory* temp_memory)
 {
 	char* on_fail = t->at;
 	bool is_names_parse = try_parse_string(t, "names:");
@@ -405,13 +405,12 @@ bool try_parse_names(Tokenizer* t, char* result, Memory* final_memory, Memory* t
 				std::cout << "parse failed, we've run across a hideous, hideous thing, we've run across" << std::endl;
 				abort();
 			}
-			result[num_gamestates * GAME_LEVEL_NAME_MAX_SIZE + i] = t->at[0];
+			result[num_gamestates].name[i] = t->at[0];
 			i++;
 			t->at++;
 		}
-		int z = num_gamestates * GAME_LEVEL_NAME_MAX_SIZE;
-		for (; i < (num_gamestates + 1) * GAME_LEVEL_NAME_MAX_SIZE; i++)
-			result[z + i] = '\0';
+		for (; i <GAME_LEVEL_NAME_MAX_SIZE; i++)
+			result[num_gamestates].name[i] = '\0';
 
 		t->at++;
 		num_gamestates++;
@@ -434,9 +433,10 @@ TimeMachineEditorStartState* parse_deserialize_timemachine(std::string input_str
 	{
 		result->gamestates[i] = NULL;
 	}
-	for (int i = 0; i < GAME_LEVEL_NAME_MAX_SIZE * MAX_NUMBER_GAMESTATES; i++)
+	for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
+		for(int j = 0; j < GAME_LEVEL_NAME_MAX_SIZE;j++)
 	{
-		result->names[i] = '\0';
+		result->names[i].name[j] = '\0';
 	}
 	//get input
 	char* input = &(input_string[0]);
