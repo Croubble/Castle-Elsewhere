@@ -14,6 +14,10 @@ void delete_gamestate_from_list_internal(TimeMachineEditor* editor, int index_to
 	{
 		editor->gamestates_positions[i] = editor->gamestates_positions[i + 1];
 	}
+	for (int i = index_to_delete; i < current_number_of_gamestates; i++)
+	{
+		editor->names[i] = editor->names[i + 1];
+	}
 	editor->current_number_of_gamestates--;
 }
 
