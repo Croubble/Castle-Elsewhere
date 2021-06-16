@@ -6,6 +6,33 @@ void delete_gamestate_from_list_internal(TimeMachineEditor* editor, int index_to
 {
 	editor->gamestates[index_to_delete] = NULL;
 	int current_number_of_gamestates = editor->current_number_of_gamestates;
+	for (int i = 0; i < current_number_of_gamestates; i++)
+	{
+		if (i == index_to_delete)
+			continue;
+		
+		for (int z = 0; z < editor->gamestates[i]->w * editor->gamestates[i]->h;z++)
+		{
+			//if we find a staircase on this floortile...
+			if (editor->gamestates[i]->floor[z] == Floor::F_STAIRCASE)
+			{
+				int tele_link = editor->gamestates[i]->floor_data[z].teleporter_id;
+				//and the staircase is pointing to the level we are deleting...
+				if (tele_link == index_to_delete)
+				{
+					editor->gamestates[i]->floor_data[z].teleporter_id = 0;
+					editor->gamestates[i]->floor[z] = Floor::F_NONE;
+				}
+				//and the staircase is pointing to a level that is not been deleted....
+				else
+				{
+					//explination: if the index of the gamestate is greater, then our link decrements by one. 
+					if(tele_link > index_to_delete)
+						editor->gamestates[i]->floor_data[z].teleporter_id -= 1;
+				}
+			}
+		}
+	}
 	for (int i = index_to_delete; i < current_number_of_gamestates; i++)
 	{
 		editor->gamestates[i] = editor->gamestates[i + 1];

@@ -35,6 +35,7 @@ enum Floor {
 	F_GRILL_COLD,
 	F_GRILL_HOT,
 	F_EXIT,
+	F_STAIRCASE,
 	F_COUNT
 };
 enum CratePower {
