@@ -25,25 +25,25 @@ EditorScene* editorscene_setup_with_start_state(Memory* editor_memory, ViewPortC
 	result->palete_screen_start = math_intpair_create(camera_viewport.left + 60, camera_viewport.up - 120);
 	{
 		int i = 0;
-		result->palete[i++] = gamestate_brush_create(true, F_NONE, true, P_NONE, false, gamestate_piecedata_make());
-		result->palete[i++] = gamestate_brush_create(true, F_TARGET, false, P_NONE, false, gamestate_piecedata_make());
-		result->palete[i++] = gamestate_brush_create(true, F_START, false, P_NONE, false, gamestate_piecedata_make());
-		result->palete[i++] = gamestate_brush_create(true, F_LURKING_WALL, false, P_NONE, false, gamestate_piecedata_make());
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, Piece::P_NONE, false, gamestate_piecedata_make());
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_WALL, false, gamestate_piecedata_make());
-		result->palete[i++] = gamestate_brush_create(true, F_GRILL_COLD, true, P_NONE, true, gamestate_piecedata_make());
-		result->palete[i++] = gamestate_brush_create(true, F_GRILL_HOT, true, P_NONE, true, gamestate_piecedata_make());
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_WALL_ALT,  false,gamestate_piecedata_make());
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRUMBLE,  false,gamestate_piecedata_make());
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PUSH));
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PULL));
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PARALLEL));
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_MERGE));
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PUSH,CP_MERGE));
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PUSH,CP_PULL));
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PUSH,CP_PARALLEL));
-		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_PLAYER,  false,gamestate_piecedata_make());
-		result->palete[i++] = gamestate_brush_create(true, F_EXIT, false, P_NONE, false, gamestate_piecedata_make());
+		result->palete[i++] = gamestate_brush_create(true, F_NONE, true, P_NONE, false, gamestate_piecedata_make(),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(true, F_TARGET, false, P_NONE, false, gamestate_piecedata_make(),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(true, F_START, false, P_NONE, false, gamestate_piecedata_make(),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(true, F_LURKING_WALL, false, P_NONE, false, gamestate_piecedata_make(),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, Piece::P_NONE, false, gamestate_piecedata_make(),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_WALL, false, gamestate_piecedata_make(),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(true, F_GRILL_COLD, true, P_NONE, true, gamestate_piecedata_make(),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(true, F_GRILL_HOT, true, P_NONE, true, gamestate_piecedata_make(),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_WALL_ALT,  false,gamestate_piecedata_make(),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRUMBLE,  false,gamestate_piecedata_make(),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PUSH),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PULL),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PARALLEL),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_MERGE),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PUSH,CP_MERGE),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PUSH,CP_PULL),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_CRATE,  true,gamestate_piecedata_make(CP_PUSH,CP_PARALLEL),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(false, F_NONE, true, P_PLAYER,  false,gamestate_piecedata_make(),false,gamestate_floordata_make());
+		result->palete[i++] = gamestate_brush_create(true, F_EXIT, false, P_NONE, false, gamestate_piecedata_make(),false,gamestate_floordata_make());
 		if (i != palete_length)
 		{
 			std::cout << i << std::endl;

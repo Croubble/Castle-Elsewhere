@@ -56,7 +56,7 @@ struct FloorData
 	//target match rules.
 	PieceData target_union_rules;	//crate must meet criteria
 	PieceData target_disjoint_rules; //crate must NOT meet criteria
-	char teleporter_id; //if we teleporting, which of our levels rules we want to refer to.
+	int teleporter_id; //if we teleporting, which of our levels rules we want to refer to.
 };
 
 struct GameState {
@@ -75,6 +75,8 @@ struct GamestateBrush {
 	Piece piece;
 	bool applyCratePower;
 	PieceData piece_data;
+	bool applyFloorPower;
+	FloorData floor_data;
 };
 
 struct GamestateTimeMachine
@@ -170,7 +172,7 @@ GamestateTimeMachine* gamestate_timemachine_create(GameState* start_state, Memor
 GameActionJournal* gamestate_timemachine_take_action(GamestateTimeMachine* timeMachine, Direction action, Memory* scope_memory, Memory* temp_memory);
 /*************************PALETTE_BRUSH*******************************/
 /*********************************************************************/
-GamestateBrush gamestate_brush_create(bool applyFloor, Floor floor, bool applyPiece, Piece piece, bool applyPieceData, PieceData pieceData);
+GamestateBrush gamestate_brush_create(bool applyFloor, Floor floor, bool applyPiece, Piece piece, bool applyPieceData, PieceData pieceData, bool applyFloorData, FloorData floorData);
 
 /*************************PIECE/FLOOR DATA*******************************/
 /*********************************************************************/

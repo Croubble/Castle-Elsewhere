@@ -705,9 +705,18 @@ bool gamestate_apply_brush(GameState* state, GamestateBrush brush, int x, int y)
 		for (int i = 0; i < CP_COUNT; i++)
 			state->piece_data[target].powers[i] = brush.piece_data.powers[i];
 	}
+	if (brush.applyFloorPower)
+	{
+		int w = state->w;
+		int h = state->h;
+		int target = f2D(x, y, w,h);
+		{
+			state->floor_data[target] = brush.floor_data;
+		}
+	}
 	return accept;
 }
-GamestateBrush gamestate_brush_create(bool applyFloor, Floor floor, bool applyPiece, Piece piece, bool applyPieceData, PieceData pieceData)
+GamestateBrush gamestate_brush_create(bool applyFloor, Floor floor, bool applyPiece, Piece piece, bool applyPieceData, PieceData pieceData,bool applyFloorData, FloorData floorData)
 {
 	GamestateBrush result;
 	result.applyFloor = applyFloor;
@@ -716,6 +725,8 @@ GamestateBrush gamestate_brush_create(bool applyFloor, Floor floor, bool applyPi
 	result.piece = piece;
 	result.applyCratePower = applyPieceData;
 	result.piece_data = pieceData;
+	result.applyFloorPower = applyFloorData;
+	result.floor_data = floorData;
 	return result;
 }
 
@@ -777,6 +788,7 @@ FloorData gamestate_floordata_make()
 	FloorData result;
 	result.target_union_rules = gamestate_piecedata_make();
 	result.target_disjoint_rules = gamestate_piecedata_make();
+	result.teleporter_id = 0;
 	return result;
 }
 
