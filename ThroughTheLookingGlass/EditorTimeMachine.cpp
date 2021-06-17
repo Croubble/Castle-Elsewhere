@@ -21,6 +21,7 @@ void delete_gamestate_from_list_internal(TimeMachineEditor* editor, int index_to
 				if (tele_link == index_to_delete)
 				{
 					editor->gamestates[i]->floor_data[z].teleporter_id = 0;
+					editor->gamestates[i]->floor_data[z].teleporter_target_square = math_intpair_create(0, 0);
 					editor->gamestates[i]->floor[z] = Floor::F_NONE;
 				}
 				//and the staircase is pointing to a level that is not been deleted....
@@ -101,11 +102,41 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 		int y = target_brush_square.y;
 		GamestateBrush gamestate_brush = action.u.brush.brush;
 
-
+		//check if we are in fact, applying a staircase brush action. If we are, check if we also need to update the last placed staircase.
+		{
+		}
 		bool action_accepted = gamestate_apply_brush(gamestate, gamestate_brush, x, y);
 		if (!action_accepted)
 		{
 			return false;
+		}
+		else
+		{	//if we accept the action, check if we need to update staircase teleporter links, and if we do, update em!
+			int num_actions = editor->current_number_of_actions;
+			TimeMachineEditorAction	lastAction = editor->actionList[num_actions - 1];
+			if (num_actions > 2 &&
+				lastAction.action == TM_APPLY_BRUSH)
+			{
+				
+				IntPair last_target_square = lastAction.u.brush.target_square;
+				int last_target_level = lastAction.u.brush.target_gamestate_index;
+				int last_w = editor->gamestates[last_target_level]->w;
+				int last_h = editor->gamestates[last_target_level]->h;
+				int last_target_square_1d = f2D(last_target_square.x, last_target_square.y, last_w, last_h);
+				if (editor->gamestates[last_target_level]->floor[last_target_square_1d] == Floor::F_STAIRCASE)
+				{
+					int target_level = action.u.brush.target_gamestate_index;
+					IntPair target_square = action.u.brush.target_square;
+					int target_w = editor->gamestates[target_level]->w;
+					int target_h = editor->gamestates[target_level]->h;
+					int target_square_1d = f2D(target_square.x, target_square.y, target_w, target_h);
+					editor->gamestates[last_target_level]->floor_data->teleporter_id = target_level;
+					editor->gamestates[last_target_level]->floor_data->teleporter_target_square = target_square;
+					editor->gamestates[target_level]->floor_data->teleporter_id = last_target_level;
+					editor->gamestates[target_level]->floor_data->teleporter_target_square = last_target_square;
+				}
+			}
+
 		}
 	}
 	else if (action.action == TM_MERGE_GAMESTATES)

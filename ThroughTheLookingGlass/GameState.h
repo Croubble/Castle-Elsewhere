@@ -51,12 +51,15 @@ struct PieceData
 {
 	bool powers[CP_COUNT];
 };
+
+struct Teleporter_Location;
 struct FloorData
 {
 	//target match rules.
 	PieceData target_union_rules;	//crate must meet criteria
 	PieceData target_disjoint_rules; //crate must NOT meet criteria
 	int teleporter_id; //if we teleporting, which of our levels rules we want to refer to.
+	IntPair teleporter_target_square;
 };
 
 struct GameState {
