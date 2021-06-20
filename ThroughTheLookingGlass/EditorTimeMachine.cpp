@@ -124,17 +124,19 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 				int last_h = editor->gamestates[last_target_level]->h;
 				int last_target_square_1d = f2D(last_target_square.x, last_target_square.y, last_w, last_h);
 				if (editor->gamestates[last_target_level]->floor[last_target_square_1d] == Floor::F_STAIRCASE &&
-					editor->gamestates[target_gamestate_index] ->floor[target_brush_square_1d] == Floor::F_STAIRCASE)
+					editor->gamestates[target_gamestate_index]->floor[target_brush_square_1d] == Floor::F_STAIRCASE &&
+					editor->gamestates[last_target_level]->floor_data[last_target_square_1d].teleporter_id == -1
+					)
 				{
-					int target_level = action.u.brush.target_gamestate_index;
-					IntPair target_square = action.u.brush.target_square;
-					int target_w = editor->gamestates[target_level]->w;
-					int target_h = editor->gamestates[target_level]->h;
-					int target_square_1d = f2D(target_square.x, target_square.y, target_w, target_h);
-					editor->gamestates[last_target_level]->floor_data[last_target_square_1d].teleporter_id = target_level;
-					editor->gamestates[last_target_level]->floor_data[last_target_square_1d].teleporter_target_square = target_square;
-					editor->gamestates[target_level]->floor_data[target_square_1d].teleporter_id = last_target_level;
-					editor->gamestates[target_level]->floor_data[target_square_1d].teleporter_target_square = last_target_square;
+						int target_level = action.u.brush.target_gamestate_index;
+						IntPair target_square = action.u.brush.target_square;
+						int target_w = editor->gamestates[target_level]->w;
+						int target_h = editor->gamestates[target_level]->h;
+						int target_square_1d = f2D(target_square.x, target_square.y, target_w, target_h);
+						editor->gamestates[last_target_level]->floor_data[last_target_square_1d].teleporter_id = target_level;
+						editor->gamestates[last_target_level]->floor_data[last_target_square_1d].teleporter_target_square = target_square;
+						editor->gamestates[target_level]->floor_data[target_square_1d].teleporter_id = last_target_level;
+						editor->gamestates[target_level]->floor_data[target_square_1d].teleporter_target_square = last_target_square;
 				}
 			}
 

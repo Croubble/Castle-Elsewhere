@@ -788,7 +788,7 @@ FloorData gamestate_floordata_make()
 	FloorData result;
 	result.target_union_rules = gamestate_piecedata_make();
 	result.target_disjoint_rules = gamestate_piecedata_make();
-	result.teleporter_id = 0;
+	result.teleporter_id = -1;
 	return result;
 }
 
