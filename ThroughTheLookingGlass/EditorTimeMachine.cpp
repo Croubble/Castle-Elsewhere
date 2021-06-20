@@ -100,6 +100,7 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 		IntPair target_brush_square = action.u.brush.target_square;
 		int x = target_brush_square.x;
 		int y = target_brush_square.y;
+		int target_brush_square_1d = f2D(x, y, gamestate->w, gamestate->h);
 		GamestateBrush gamestate_brush = action.u.brush.brush;
 
 		//check if we are in fact, applying a staircase brush action. If we are, check if we also need to update the last placed staircase.
@@ -122,7 +123,8 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 				int last_w = editor->gamestates[last_target_level]->w;
 				int last_h = editor->gamestates[last_target_level]->h;
 				int last_target_square_1d = f2D(last_target_square.x, last_target_square.y, last_w, last_h);
-				if (editor->gamestates[last_target_level]->floor[last_target_square_1d] == Floor::F_STAIRCASE)
+				if (editor->gamestates[last_target_level]->floor[last_target_square_1d] == Floor::F_STAIRCASE &&
+					editor->gamestates[target_gamestate_index] ->floor[target_brush_square_1d] == Floor::F_STAIRCASE)
 				{
 					int target_level = action.u.brush.target_gamestate_index;
 					IntPair target_square = action.u.brush.target_square;
