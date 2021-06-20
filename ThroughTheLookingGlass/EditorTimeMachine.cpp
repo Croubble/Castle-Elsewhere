@@ -114,10 +114,9 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 		{	//if we accept the action, check if we need to update staircase teleporter links, and if we do, update em!
 			int num_actions = editor->current_number_of_actions;
 			TimeMachineEditorAction	lastAction = editor->actionList[num_actions - 1];
-			if (num_actions > 2 &&
+			if (num_actions >= 1 &&
 				lastAction.action == TM_APPLY_BRUSH)
 			{
-				
 				IntPair last_target_square = lastAction.u.brush.target_square;
 				int last_target_level = lastAction.u.brush.target_gamestate_index;
 				int last_w = editor->gamestates[last_target_level]->w;
@@ -130,10 +129,10 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 					int target_w = editor->gamestates[target_level]->w;
 					int target_h = editor->gamestates[target_level]->h;
 					int target_square_1d = f2D(target_square.x, target_square.y, target_w, target_h);
-					editor->gamestates[last_target_level]->floor_data->teleporter_id = target_level;
-					editor->gamestates[last_target_level]->floor_data->teleporter_target_square = target_square;
-					editor->gamestates[target_level]->floor_data->teleporter_id = last_target_level;
-					editor->gamestates[target_level]->floor_data->teleporter_target_square = last_target_square;
+					editor->gamestates[last_target_level]->floor_data[last_target_square_1d].teleporter_id = target_level;
+					editor->gamestates[last_target_level]->floor_data[last_target_square_1d].teleporter_target_square = target_square;
+					editor->gamestates[target_level]->floor_data[target_square_1d].teleporter_id = last_target_level;
+					editor->gamestates[target_level]->floor_data[target_square_1d].teleporter_target_square = last_target_square;
 				}
 			}
 

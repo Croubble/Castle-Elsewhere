@@ -113,6 +113,33 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 				return result;
 			}
 		}
+		//if the player is standing on a staircase tile after a move, apply a teleport to them.
+		{
+			int f = next_state->floor[next_square_position_1d];
+			bool standing_on_teleporter = f == Floor::F_STAIRCASE;
+			if (standing_on_teleporter)
+			{
+				//find the position that our teleporter links to.
+				int link_location;
+				IntPair link_square_2d;
+				int link_square_1d;
+				{
+					FloorData next_floordata = next_state->floor_data[next_square_position_1d];
+					link_location = next_floordata.teleporter_id;
+					link_square_2d = next_floordata.teleporter_target_square;
+					int link_w = scene->level_state[link_location]->w;
+					int link_h = scene->level_state[link_location]->h;
+					link_square_1d = f2D(link_square_2d.x, link_square_2d.y, link_w,link_h);
+				}
+				//remove the player from their current position, and teleport them to our new position.
+				{
+					next_state->piece[next_square_position_1d] = 0;
+					scene->level_state[link_location]->piece[link_square_1d] = Piece::P_PLAYER;
+					scene->current_level = link_location;
+				}
+			}
+
+		}
 	}
 	return NULL;
 }
