@@ -103,9 +103,6 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 		int target_brush_square_1d = f2D(x, y, gamestate->w, gamestate->h);
 		GamestateBrush gamestate_brush = action.u.brush.brush;
 
-		//check if we are in fact, applying a staircase brush action. If we are, check if we also need to update the last placed staircase.
-		{
-		}
 		bool action_accepted = gamestate_apply_brush(gamestate, gamestate_brush, x, y);
 		if (!action_accepted)
 		{
@@ -134,7 +131,12 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 						int target_h = editor->gamestates[target_level]->h;
 						int target_square_1d = f2D(target_square.x, target_square.y, target_w, target_h);
 						editor->gamestates[last_target_level]->floor_data[last_target_square_1d].teleporter_id = target_level;
+						
 						editor->gamestates[last_target_level]->floor_data[last_target_square_1d].teleporter_target_square = target_square;
+						std::cout << "first teleporter id" << target_level << ", target_level" << target_level << std::endl;
+						std::cout << "second teleporter id" << last_target_level << ",last target level" << last_target_level << std::endl;
+						std::cout << "target square 1d" << target_square_1d << std::endl;
+						std::cout << "last target square 1d" << last_target_square_1d << std::endl;
 						editor->gamestates[target_level]->floor_data[target_square_1d].teleporter_id = last_target_level;
 						editor->gamestates[target_level]->floor_data[target_square_1d].teleporter_target_square = last_target_square;
 				}

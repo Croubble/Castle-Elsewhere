@@ -834,6 +834,24 @@ FloorData gamestate_floordata_make()
 
 /******************************GAMESTATE READ************************/
 /********************************************************************/
+
+void gamestate_print_staircase_tele_value(GameState** gamestate, int len)
+{
+	for (int z = 0; z < len; z++)
+	{
+
+		int w = gamestate[z]->w;
+		int h = gamestate[z]->h;
+		for (int i = 0; i < w * h; i++)
+		{
+			if (gamestate[z]->floor[i] == F_STAIRCASE || gamestate[z]->floor[i] == F_STAIRCASE_LEVELSTART)
+			{
+				std::cout << "i" << i << ",tele_link" << gamestate[z]->floor_data[i].teleporter_id << std::endl;
+			}
+		}
+	}
+		
+}
 int** gamestate_get_layers(GameState* gamestate, int* num_layers_found, Memory* temp_memory)
 {
 	int** result = (int**)memory_alloc(temp_memory, sizeof(int*) * 2);

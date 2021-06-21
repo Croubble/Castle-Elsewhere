@@ -204,6 +204,7 @@ GameState* gamestate_merge_with_allocate(GameState* first, GameState* second, In
 void gamestate_merge(GameState* left, GameState* right, GameState* output, IntPair left_merge_offset, IntPair right_merge_offset);
 /******************************GAMESTATE READ************************/
 /********************************************************************/
+void gamestate_print_staircase_tele_value(GameState** gamestate,int len);
 int** gamestate_get_layers(GameState* gamestate, int* num_layers_found, Memory* temp_memory);
 int* gamestate_get_layer(GameState* gamestate, int layer_num);
 //unsigned int gamestate_player_find(GameState* gamestate);

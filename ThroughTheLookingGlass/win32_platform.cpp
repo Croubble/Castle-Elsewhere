@@ -186,6 +186,7 @@ void setup_world_screen_stateful(SCENE_TYPE go_to_on_backspace)
 	GameState* current_gamestate = world_scene_state->level_state[current_num];
 	IntPair gamestate_pos = world_scene_state->level_position[current_num];
 	world_camera = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport);
+
 	world_camera_start = world_camera;
 	world_camera_goal = world_camera;
 	world_camera_lerp = CAMERA_LERP_TIME;
@@ -210,6 +211,21 @@ void setup_world_screen_continue_stateful(std::string to_load)
 
 }
 
+void text_scene_reset()
+{
+		scene = text_scene_state->scene_to_revert_to;
+		ui_state.time_since_scene_started = 0;
+		ui_state.time_since_last_player_action = 0;
+		//set the camera location to its final position.
+		if (scene == SCENE_TYPE::ST_PLAY_LEVEL)
+		{
+			int current_level = world_scene_state->current_level;
+			GameState* current_gamestate = world_scene_state->level_state[current_level];
+			IntPair gamestate_pos = world_scene_state->level_position[current_level];
+			world_camera_goal = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport); //, 0.3f, 0.3f);
+			world_camera_start = world_camera;
+		}	
+}
 void menu_action_new_game()
 {
 	//TODO:
@@ -1153,12 +1169,10 @@ void mainloopfunction()
 				}
 				GameState* current_gamestate = world_scene_state->level_state[current_num_player_standing_on];
 				IntPair gamestate_pos = world_scene_state->level_position[current_num_player_standing_on];
-				world_camera_goal = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport, 0.3f, 0.3f);
-				world_camera_start = world_camera;
-				//world_camera_goal
-				//world_camera_start
-				//world_camera
-				//camera
+
+				//commented out so we only do this exactly once, rather than each frame.
+				//world_camera_goal = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport, 0.3f, 0.3f);
+				//world_camera_start = world_camera;
 			}
 			world_camera = math_camera_move_towards_lerp(world_camera_start, world_camera_goal, world_camera_lerp, CAMERA_LERP_TIME);
 			//camera = camera_make_matrix(world_camera);
@@ -1192,19 +1206,14 @@ void mainloopfunction()
 #pragma region update
 			if (text_scene_state->end_time <= ui_state.total_time_passed)
 			{
-				scene = text_scene_state->scene_to_revert_to;
-				ui_state.time_since_scene_started = 0;
-				ui_state.time_since_last_player_action = 0;
+				text_scene_reset();
+
 			}
 #pragma endregion
 #pragma region handle_events
-		//TODO: if the player presses the action key (x, for now), the scene immediately ends. if the player presses 
 		if (ui_state.letters['x' - 'a'].pressed_this_frame)
 		{
-			scene = text_scene_state->scene_to_revert_to;
-			ui_state.time_since_scene_started = 0;
-			ui_state.time_since_last_player_action = 0;
-			//TODO.
+			text_scene_reset();
 		}
 #pragma endregion
 		}
@@ -1278,6 +1287,8 @@ void mainloopfunction()
 			}
 			//parse gamestates
 			{
+
+				gamestate_print_staircase_tele_value(editor_scene_state->timeMachine->gamestates,editor_scene_state->timeMachine->current_number_of_gamestates);
 				draw_gamespace(
 					editor_scene_state->timeMachine->gamestates,
 					editor_scene_state->timeMachine->gamestates_positions,
@@ -1472,8 +1483,8 @@ void mainloopfunction()
 				camera_fifth.down += fifth_h;
 				camera_fifth.up += fifth_h;
 			}
-		}
 #pragma endregion
+		}
 #pragma region draw gpu data
 
 		//update camera.

@@ -129,21 +129,25 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 			}
 
 		}
-		//if the player is standing on a "pos level" tile OR the player just entered into a level staircase, initiate a new time_machine.
 		{
-			//Floor tile_player_standing_on = next_state->floor[next_square_position_1d];
-			int tile_player_standing_on = scene->level_state[final_level_index]->floor[final_position_1d];
-			bool standing_on_start_tile = tile_player_standing_on == F_START || tile_player_standing_on == F_STAIRCASE_LEVELSTART;
-			if (standing_on_start_tile)
+			bool next_square_level;
+			bool next_square_position_1d;
+			//if the player is standing on a "pos level" tile OR the player just entered into a level staircase, initiate a new time_machine.
 			{
-				memory_clear(level_memory);
-				GameState* next_scene_before_extrude = scene->level_state[scene->current_level];
-				GameState* next_scene = gamestate_clone(next_scene_before_extrude, level_memory);
-				gamestate_startup(next_scene);
-				WorldPlayScene* result = (WorldPlayScene*) memory_alloc(level_memory, sizeof(WorldPlayScene));
-				result->time_machine = gamestate_timemachine_create(next_scene, level_memory, 1024);
-				result->draw_position = scene->level_position[next_square_level];
-				return result;
+				//Floor tile_player_standing_on = next_state->floor[next_square_position_1d];
+				int tile_player_standing_on = scene->level_state[final_level_index]->floor[final_position_1d];
+				bool standing_on_start_tile = tile_player_standing_on == F_START || tile_player_standing_on == F_STAIRCASE_LEVELSTART;
+				if (standing_on_start_tile)
+				{
+					memory_clear(level_memory);
+					GameState* next_scene_before_extrude = scene->level_state[scene->current_level];
+					GameState* next_scene = gamestate_clone(next_scene_before_extrude, level_memory);
+					gamestate_startup(next_scene);
+					WorldPlayScene* result = (WorldPlayScene*) memory_alloc(level_memory, sizeof(WorldPlayScene));
+					result->time_machine = gamestate_timemachine_create(next_scene, level_memory, 1024);
+					result->draw_position = scene->level_position[final_level_index];
+					return result;
+				}
 			}
 		}
 	}

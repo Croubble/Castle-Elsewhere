@@ -223,6 +223,7 @@ void draw_gamestate_pieces(GameState* gamestate, IntPair offset, AllWrite* info)
 void draw_gamespace(GameState** gamestates, IntPair* offsets, int number_of_gamestates, AllWrite* info)
 {
 	{
+
 		draw_layer_to_gamespace(gamestates, offsets, number_of_gamestates, info->floor, 0);
 		draw_layer_to_gamespace(gamestates, offsets, number_of_gamestates, info->piece, 1);
 		//draw crate symbols.
