@@ -95,28 +95,15 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 			next_state->piece[next_square_position_1d] = current_player_value;
 			scene->current_level = next_square_level;
 		}
-		//if the player is standing on a "pos level" tile, initiate a new time_machine.
-		{
-			bool standing_on_start_tile = next_state->floor[next_square_position_1d] == F_START;
-			if (standing_on_start_tile)
-			{
-				//TODO.
-				memory_clear(level_memory);
-				GameState* next_scene_before_extrude = scene->level_state[scene->current_level];
-				GameState* next_scene = gamestate_clone(next_scene_before_extrude, level_memory);
-				gamestate_startup(next_scene);
-				WorldPlayScene* result = (WorldPlayScene*) memory_alloc(level_memory, sizeof(WorldPlayScene));
-				//result->draw_position;
-				//scene->maybe_time_machine = gamestate_timemachine_create(next_scene, level_memory, 1024);
-				result->time_machine = gamestate_timemachine_create(next_scene, level_memory, 1024);
-				result->draw_position = scene->level_position[next_square_level];
-				return result;
-			}
-		}
-		//if the player is standing on a staircase tile after a move, apply a teleport to them.
+		
+
+		//if the player is standing on a staircase tile after a move, apply a teleport to them. Store the final position that our player ends up standing on.
+		//todo store the final position as what happens if no teleport.
+		int final_level_index = next_square_level;
+		int final_position_1d = next_square_position_1d;
 		{
 			int f = next_state->floor[next_square_position_1d];
-			bool standing_on_teleporter = f == Floor::F_STAIRCASE;
+			bool standing_on_teleporter = is_staircase(f);
 			if (standing_on_teleporter)
 			{
 				//find the position that our teleporter links to.
@@ -131,14 +118,33 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 					int link_h = scene->level_state[link_location]->h;
 					link_square_1d = f2D(link_square_2d.x, link_square_2d.y, link_w,link_h);
 				}
-				//remove the player from their current position, and teleport them to our new position.
+				//remove the player from their current position, teleport them to our new position, and update the new final position for the player.
 				{
 					next_state->piece[next_square_position_1d] = 0;
 					scene->level_state[link_location]->piece[link_square_1d] = Piece::P_PLAYER;
 					scene->current_level = link_location;
+					final_level_index = link_location;
+					final_position_1d = link_square_1d;
 				}
 			}
 
+		}
+		//if the player is standing on a "pos level" tile OR the player just entered into a level staircase, initiate a new time_machine.
+		{
+			//Floor tile_player_standing_on = next_state->floor[next_square_position_1d];
+			int tile_player_standing_on = scene->level_state[final_level_index]->floor[final_position_1d];
+			bool standing_on_start_tile = tile_player_standing_on == F_START || tile_player_standing_on == F_STAIRCASE_LEVELSTART;
+			if (standing_on_start_tile)
+			{
+				memory_clear(level_memory);
+				GameState* next_scene_before_extrude = scene->level_state[scene->current_level];
+				GameState* next_scene = gamestate_clone(next_scene_before_extrude, level_memory);
+				gamestate_startup(next_scene);
+				WorldPlayScene* result = (WorldPlayScene*) memory_alloc(level_memory, sizeof(WorldPlayScene));
+				result->time_machine = gamestate_timemachine_create(next_scene, level_memory, 1024);
+				result->draw_position = scene->level_position[next_square_level];
+				return result;
+			}
 		}
 	}
 	return NULL;
@@ -205,7 +211,7 @@ bool any_levels_left_active(WorldScene* to_check)
 		int len = w * h;
 		for (int z = 0; z < len; z++)
 		{
-			if (state->floor[z] == Floor::F_START)
+			if (state->floor[z] == Floor::F_START || state->floor[z] == Floor::F_STAIRCASE_LEVELSTART)
 				return true;
 		}
 	}

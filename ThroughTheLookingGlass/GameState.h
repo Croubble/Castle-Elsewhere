@@ -36,6 +36,7 @@ enum Floor {
 	F_GRILL_HOT,
 	F_EXIT,
 	F_STAIRCASE,
+	F_STAIRCASE_LEVELSTART,
 	F_COUNT
 };
 enum CratePower {
@@ -211,6 +212,9 @@ AABB* gamestate_create_colliders(Memory* memory, GameState** states, IntPair* lo
 bool gamestate_is_in_win_condition(GameState* state);
 
 
+int maybe_find_exit_or_return_neg1(GameState* state);
+bool is_level_start(int val);
+bool is_staircase(int val);
 bool is_player(int val);
 
 glm::vec2 piecedata_calculate_scale(PieceData piece);

@@ -2221,20 +2221,6 @@ bool MaybeApplyBrush(GamestateBrush* palete,int currentBrush, EditorUIState* ui_
 
 			IntPair target_square = math_intpair_create(x_floor_cell_clicked, y_floor_cell_clicked);
 			int target_square_1d = f2D(target_square.x, target_square.y, timeMachine->gamestates[i]->w, timeMachine->gamestates[i]->h);
-			GamestateBrush brush_to_apply = palete[currentBrush];
-			if (brush_to_apply.floor == Floor::F_STAIRCASE)
-			{
-				//if we are waiting to apply a second staircase, do that.
-				{
-
-				}
-				//otherwise, set the data for the second staircase.
-				{
-
-				}
-				//brush_to_apply.floor_data.teleporter_id = target_square_1d;
-			}
-			brush_to_apply.floor_data.teleporter_id;
 			TimeMachineEditorAction action = gamestate_timemachineaction_create_apply_brush(palete[currentBrush], i, target_square);
 			//make the application.
 			gamestate_timemachine_editor_take_action(timeMachine, NULL, action);

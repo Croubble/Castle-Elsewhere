@@ -14,7 +14,7 @@ void delete_gamestate_from_list_internal(TimeMachineEditor* editor, int index_to
 		for (int z = 0; z < editor->gamestates[i]->w * editor->gamestates[i]->h;z++)
 		{
 			//if we find a staircase on this floortile...
-			if (editor->gamestates[i]->floor[z] == Floor::F_STAIRCASE)
+			if (editor->gamestates[i]->floor[z] == Floor::F_STAIRCASE || editor->gamestates[i]->floor[z] == F_STAIRCASE_LEVELSTART)
 			{
 				int tele_link = editor->gamestates[i]->floor_data[z].teleporter_id;
 				//and the staircase is pointing to the level we are deleting...
@@ -123,8 +123,8 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 				int last_w = editor->gamestates[last_target_level]->w;
 				int last_h = editor->gamestates[last_target_level]->h;
 				int last_target_square_1d = f2D(last_target_square.x, last_target_square.y, last_w, last_h);
-				if (editor->gamestates[last_target_level]->floor[last_target_square_1d] == Floor::F_STAIRCASE &&
-					editor->gamestates[target_gamestate_index]->floor[target_brush_square_1d] == Floor::F_STAIRCASE &&
+				if (is_staircase(editor->gamestates[last_target_level]->floor[last_target_square_1d]) &&
+					is_staircase(editor->gamestates[target_gamestate_index]->floor[target_brush_square_1d]) &&
 					editor->gamestates[last_target_level]->floor_data[last_target_square_1d].teleporter_id == -1
 					)
 				{
@@ -191,6 +191,9 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 		//update the reference in the editor to use this new resize.
 		editor->gamestates[target_gamestate] = next;
 		editor->gamestates_positions[target_gamestate] = action.u.resize.next_starting_position;
+
+		//update the links to refer to the new position, not the old position. 
+		//wait, how do we do this? 
 	}
 	else if (action.action == TM_CREATE_GAMESTATE)
 	{

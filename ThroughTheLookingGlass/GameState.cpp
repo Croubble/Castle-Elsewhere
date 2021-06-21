@@ -586,10 +586,11 @@ bool gamestate_is_in_win_condition(GameState* state)
 	int len = state->w * state->h;
 	for (int i = 0; i < len; i++)
 	{
-		if (state->floor[i] == F_EXIT && !is_player(state->piece[i]))
-		{
-			return false;
-		}
+		if (state->floor[i] == F_EXIT || state->floor[i] == F_START || state->floor[i] == F_STAIRCASE_LEVELSTART)
+			if(!is_player(state->piece[i]))
+			{
+				return false;
+			}
 	}
 	for (int i = 0; i < len; i++)
 	{
@@ -597,6 +598,45 @@ bool gamestate_is_in_win_condition(GameState* state)
 			return false;
 	}
 	return true;
+}
+
+int maybe_find_exit_or_return_neg1(GameState* state)
+{
+	int len = state->w * state->h;
+	for (int i = 0; i < len; i++)
+	{
+		if (state->floor[i] == Floor::F_EXIT)
+		{
+			return i;
+			break;
+		}
+	}
+	for (int i = 0; i < len; i++)
+	{
+		if (state->floor[i] == Floor::F_START)
+		{
+			return i;
+			break;
+		}
+	}
+	for (int i = 0; i < len; i++)
+	{
+		if (state->floor[i] == Floor::F_STAIRCASE_LEVELSTART)
+		{
+			return i;
+			break;
+		}
+	}
+	return -1;
+}
+
+bool is_level_start(int val)
+{
+	return val == F_START || val == F_STAIRCASE_LEVELSTART;
+}
+bool is_staircase(int val)
+{
+	return val == F_STAIRCASE || val == F_STAIRCASE_LEVELSTART;
 }
 bool is_player(int val)
 {
@@ -1163,7 +1203,26 @@ void gamestate_crumble(GameState* state)
 void gamestate_startup(GameState* state)
 {
 	gamestate_extrude_lurking_walls(state);
+
+	//decide what exit we are going to treat as our king exit. 
+	int exit = maybe_find_exit_or_return_neg1(state);
+	//if we can't find ANY exit, that's a huge wierd thing, we need an exit-like to even enter the level, so this means crash, crash now.
+	if (exit == -1)
+	{
+		crash_err("a gamestate was started up, but an exit couldn't be found. Uh oh.");
+	}
+	//Delete any exit that isn't that exit.
+	for(int i = 0; i < state->w * state->h;i++)
+	{
+		if (i == exit)
+			continue;
+		if (state->floor[i] == F_EXIT || state->floor[i] == F_START || state->floor[i] == F_STAIRCASE_LEVELSTART)
+		{
+			state->floor[i] = F_NONE;
+		}
+	}
 	//setup the entrance // exit.
+	if(false)
 	{
 		bool found_entrance = false;
 		bool found_exit = false;
@@ -1171,7 +1230,7 @@ void gamestate_startup(GameState* state)
 		int exit = 0;
 		for (int i = 0; i < state->w * state->h; i++)
 		{
-			if (state->floor[i] == F_START)
+			if (is_level_start(state->floor[i]))
 			{
 				found_entrance = true;
 				entrance = i;
