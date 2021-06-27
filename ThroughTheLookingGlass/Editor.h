@@ -14,8 +14,16 @@ enum TimeMachineEditorActionName
 	TM_REPLACE_GAMESTATE,
 	TM_UPDATE_GAMESTATE,
 	TM_UNDO,
+	TM_CHANGE_LEVEL_MODE,
 	TM_COUNT
 };
+enum LevelMode
+{
+	Crumble,
+	Repeat,
+	Overworld
+};
+
 struct SplitGamestate
 {
 	int target_gamestate_index;
@@ -68,6 +76,11 @@ struct ReplaceGamestate
 	int index_to_replace;
 	char name[GAME_LEVEL_NAME_MAX_SIZE];
 };
+struct ChangeLevelMode
+{
+	int index_to_replace;
+	LevelMode replace_value;
+};
 struct UpdateGamestate
 {
 	GameState* replace_state;
@@ -85,6 +98,7 @@ struct TimeMachineEditorAction
 		CreateGameState create;
 		ReplaceGamestate replace;
 		UpdateGamestate update;
+		ChangeLevelMode level;
 	} u;
 };
 
@@ -93,12 +107,14 @@ struct LevelName
 	char name[GAME_LEVEL_NAME_MAX_SIZE];
 };
 
+
 struct TimeMachineEditorStartState
 {
 	int number_of_gamestates;
 	IntPair gamestates_positions[MAX_NUMBER_GAMESTATES];
 	GameState* gamestates[MAX_NUMBER_GAMESTATES];
 	LevelName names[MAX_NUMBER_GAMESTATES];
+	LevelMode modes[MAX_NUMBER_GAMESTATES];
 };
 
 struct TimeMachineEditor
@@ -108,6 +124,7 @@ struct TimeMachineEditor
 	IntPair gamestates_positions[MAX_NUMBER_GAMESTATES];
 	GameState* gamestates[MAX_NUMBER_GAMESTATES];
 	LevelName names[MAX_NUMBER_GAMESTATES];
+	LevelMode modes[MAX_NUMBER_GAMESTATES];
 	int current_number_of_gamestates;
 	int current_number_of_actions;
 };
@@ -133,4 +150,4 @@ TimeMachineEditorAction gamestate_timemachineaction_create_move_gamestate(int ta
 TimeMachineEditorAction gamestate_timemachineaction_create_delete_gamestate(int target_gamestate);
 TimeMachineEditorAction gamestate_timemachineaction_create_replace_gamestate(GameState* replacement, int to_replace, const char* name);
 TimeMachineEditorAction gamestate_timemachineaction_create_update_gamestate(GameState* replacement, int to_replace, LevelName name);
-
+TimeMachineEditorAction gamestate_timemachineaction_create_change_level_mode(int target_gamestate, LevelMode next_mode);

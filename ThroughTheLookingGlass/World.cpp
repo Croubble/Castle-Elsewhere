@@ -34,7 +34,7 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 		}
 
 	}
-
+	
 	//calculate what square we are moving too.
 	IntPair next_player_square_position;
 	int next_square_level;
@@ -70,7 +70,7 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 			}
 		}
 	}
-
+	
 	//check to see that the square we are moving to is empty, and if its not, just leave the function.
 	GameState* next_state = scene->level_state[next_square_level];
 	{
@@ -95,7 +95,6 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 			next_state->piece[next_square_position_1d] = current_player_value;
 			scene->current_level = next_square_level;
 		}
-		
 
 		//if the player is standing on a staircase tile after a move, apply a teleport to them. Store the final position that our player ends up standing on.
 		//todo store the final position as what happens if no teleport.
@@ -122,6 +121,10 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 				{
 					next_state->piece[next_square_position_1d] = 0;
 					scene->level_state[link_location]->piece[link_square_1d] = Piece::P_PLAYER;
+
+					scene->staircase_we_entered_level_from.level_index = scene->current_level;
+					scene->staircase_we_entered_level_from.level_position = next_player_square_position;
+
 					scene->current_level = link_location;
 					final_level_index = link_location;
 					final_position_1d = link_square_1d;
@@ -129,25 +132,27 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 			}
 
 		}
+		
+		//if the player is standing on a "pos level" tile OR the player just entered into a level staircase, initiate a new time_machine.
 		{
-			bool next_square_level;
-			bool next_square_position_1d;
-			//if the player is standing on a "pos level" tile OR the player just entered into a level staircase, initiate a new time_machine.
+			//Floor tile_player_standing_on = next_state->floor[next_square_position_1d];
+			int tile_player_standing_on = scene->level_state[final_level_index]->floor[final_position_1d];
+			bool standing_on_start_tile = tile_player_standing_on == F_START || tile_player_standing_on == F_STAIRCASE_LEVELSTART;
+			if (standing_on_start_tile)
 			{
-				//Floor tile_player_standing_on = next_state->floor[next_square_position_1d];
-				int tile_player_standing_on = scene->level_state[final_level_index]->floor[final_position_1d];
-				bool standing_on_start_tile = tile_player_standing_on == F_START || tile_player_standing_on == F_STAIRCASE_LEVELSTART;
-				if (standing_on_start_tile)
-				{
-					memory_clear(level_memory);
-					GameState* next_scene_before_extrude = scene->level_state[scene->current_level];
-					GameState* next_scene = gamestate_clone(next_scene_before_extrude, level_memory);
-					gamestate_startup(next_scene);
-					WorldPlayScene* result = (WorldPlayScene*) memory_alloc(level_memory, sizeof(WorldPlayScene));
-					result->time_machine = gamestate_timemachine_create(next_scene, level_memory, 1024);
-					result->draw_position = scene->level_position[final_level_index];
-					return result;
-				}
+				memory_clear(level_memory);
+				GameState* next_scene_before_extrude = scene->level_state[scene->current_level];
+				GameState* next_scene = gamestate_clone(next_scene_before_extrude, level_memory);
+				gamestate_startup(next_scene);
+				WorldPlayScene* result = (WorldPlayScene*) memory_alloc(level_memory, sizeof(WorldPlayScene));
+				result->time_machine = gamestate_timemachine_create(next_scene, level_memory, 1024);
+				result->draw_position = scene->level_position[final_level_index];
+				return result;
+			}
+			else
+			{
+				scene->staircase_we_entered_level_from.level_index = -1;
+				scene->staircase_we_entered_level_from.level_position = math_intpair_create(0,0);
 			}
 		}
 	}
@@ -180,6 +185,10 @@ WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene
 	for (int i = 0; i < num_gamestates;i++)
 	{
 		result->level_names[i] = build_from->names[i];
+	}
+	for (int i = 0; i < num_gamestates;i++)
+	{
+		result->level_mode[i] = build_from->modes[i];
 	}
 	//find a player in our starter level.
 	{
@@ -223,6 +232,21 @@ bool any_levels_left_active(WorldScene* to_check)
 }
 
 
+WorldPosition world_maybe_find_player(WorldScene* scene)
+{
+	for (int z = 0; z < scene->num_levels; z++)
+	{
+		int pos_1d = gamestate_maybe_find_player(scene->level_state[z]);
+		IntPair pos_2d = t2D(pos_1d, scene->level_state[z]->w, scene->level_state[z]->h);
+		WorldPosition result;
+		result.level_index = z;
+		result.level_position = pos_2d;
+	}
+
+	WorldPosition result;
+	result.level_index = -1;
+	return result;
+}
 std::string world_serialize(WorldScene* world, Memory* scope, Memory* temp_memory)
 {
 	//serialize num levels.

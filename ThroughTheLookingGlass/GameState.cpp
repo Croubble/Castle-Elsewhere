@@ -630,6 +630,13 @@ int maybe_find_exit_or_return_neg1(GameState* state)
 	return -1;
 }
 
+int gamestate_maybe_find_player(GameState* state)
+{
+	for (int i = 0; i < state->w * state->h; i++)
+		if (state->piece[i] == Piece::P_PLAYER)
+			return i;
+	return -1;
+}
 bool is_level_start(int val)
 {
 	return val == F_START || val == F_STAIRCASE_LEVELSTART;

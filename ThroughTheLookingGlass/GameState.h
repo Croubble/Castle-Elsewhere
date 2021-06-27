@@ -212,7 +212,7 @@ AABB* gamestate_create_colliders(Memory* memory, GameState** states, IntPair* lo
 AABB* gamestate_create_colliders(Memory* memory, GameState** states, IntPair* locations, int length, int skip_index);
 bool gamestate_is_in_win_condition(GameState* state);
 
-
+int gamestate_maybe_find_player(GameState* state);
 int maybe_find_exit_or_return_neg1(GameState* state);
 bool is_level_start(int val);
 bool is_staircase(int val);

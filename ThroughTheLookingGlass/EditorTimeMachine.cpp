@@ -6,6 +6,7 @@ void delete_gamestate_from_list_internal(TimeMachineEditor* editor, int index_to
 {
 	editor->gamestates[index_to_delete] = NULL;
 	int current_number_of_gamestates = editor->current_number_of_gamestates;
+	//delete staircase links.
 	for (int i = 0; i < current_number_of_gamestates; i++)
 	{
 		if (i == index_to_delete)
@@ -34,6 +35,7 @@ void delete_gamestate_from_list_internal(TimeMachineEditor* editor, int index_to
 			}
 		}
 	}
+	//move list values down.
 	for (int i = index_to_delete; i < current_number_of_gamestates; i++)
 	{
 		editor->gamestates[i] = editor->gamestates[i + 1];
@@ -45,6 +47,10 @@ void delete_gamestate_from_list_internal(TimeMachineEditor* editor, int index_to
 	for (int i = index_to_delete; i < current_number_of_gamestates; i++)
 	{
 		editor->names[i] = editor->names[i + 1];
+	}
+	for (int i = index_to_delete; i < current_number_of_gamestates; i++)
+	{
+		editor->modes[i] = editor->modes[i + 1];
 	}
 	editor->current_number_of_gamestates--;
 }
@@ -84,6 +90,10 @@ void gamestate_timemachine_editor_initialise_from_start(TimeMachineEditor* edito
 	{
 		editor->gamestates_positions[i].x = pos->gamestates_positions[i].x;
 		editor->gamestates_positions[i].y = pos->gamestates_positions[i].y;
+	}
+	for (int i = 0; i < pos->number_of_gamestates; i++)
+	{
+		editor->modes[i] = pos->modes[i];
 	}
 }
 bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction action)
@@ -237,6 +247,10 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 		GameState* state = action.u.update.replace_state;
 		editor->gamestates[pos] = state;
 	}
+	else if (action.action == TM_CHANGE_LEVEL_MODE)
+	{
+		editor->modes[action.u.level.index_to_replace] = action.u.level.replace_value;
+	}
 	return true; //we accept action.
 }
 void gamestate_timemachine_editor_take_action(TimeMachineEditor* editor, TimeMachineEditorStartState* maybe_start_state, TimeMachineEditorAction action)
@@ -364,5 +378,13 @@ TimeMachineEditorAction gamestate_timemachineaction_create_update_gamestate(Game
 	{
 		action.u.replace.name[i] = name.name[i];
 	}
+	return action;
+}
+TimeMachineEditorAction gamestate_timemachineaction_create_change_level_mode(int target_gamestate, LevelMode next_mode)
+{
+	TimeMachineEditorAction action;
+	action.action = TM_CHANGE_LEVEL_MODE;
+	action.u.level.index_to_replace = target_gamestate;
+	action.u.level.replace_value = next_mode;
 	return action;
 }

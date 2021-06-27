@@ -605,7 +605,7 @@ void mainloopfunction()
 				//rebuild the editor camera. 
 				resize_screen_stateful(ui_state.next_camera_size.x, ui_state.next_camera_size.y);
 			}
-			if (ui_state.letters['y' - 'a'].pressed_this_frame)
+			if (ui_state.letters['k' - 'a'].pressed_this_frame)
 			{
 				SDL_SetWindowSize(window,1200, 900);
 				resize_screen_stateful(1200, 900);
@@ -620,6 +620,37 @@ void mainloopfunction()
 			}
 			if (ui_state.type == ECS_NEUTRAL)
 			{
+				//HANDLE changing a games mode.
+				if (ui_state.letters['y' - 'a'].pressed_this_frame)
+				{
+					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					if (index_clicked >= 0)
+					{
+						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_change_level_mode(index_clicked,LevelMode::Crumble);
+						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
+					}
+				}
+				if (ui_state.letters['u' - 'a'].pressed_this_frame)
+				{
+					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					if (index_clicked >= 0)
+					{
+						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_change_level_mode(index_clicked,LevelMode::Crumble);
+						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
+					}
+				}
+				if (ui_state.letters['i' - 'a'].pressed_this_frame)
+				{
+					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					if (index_clicked >= 0)
+					{
+						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_change_level_mode(index_clicked,LevelMode::Crumble);
+						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
+					}
+				}
 				//HANDLE entering game.
 				if (ui_state.letters['m' - 'a'].pressed_this_frame)
 				{
@@ -1180,11 +1211,31 @@ void mainloopfunction()
 			if (gamestate_is_in_win_condition(&world_play_scene_state->time_machine->state_array[world_play_scene_state->time_machine->num_gamestates_stored - 1]))
 			{
 				world_scene_state->level_solved[world_scene_state->current_level] = true;
-				int num_states = world_play_scene_state->time_machine->num_gamestates_stored;
-				GameState* current_state = &world_play_scene_state->time_machine->state_array[num_states - 1];
-				GameState* cloned_state = gamestate_clone(current_state, world_memory);
-				gamestate_crumble(cloned_state);
-				world_scene_state->level_state[world_scene_state->current_level] = cloned_state;
+				if (world_scene_state->level_mode[world_scene_state->current_level] == LevelMode::Crumble)
+				{
+					int num_states = world_play_scene_state->time_machine->num_gamestates_stored;
+					GameState* current_state = &world_play_scene_state->time_machine->state_array[num_states - 1];
+					GameState* cloned_state = gamestate_clone(current_state, world_memory);
+					gamestate_crumble(cloned_state);
+					world_scene_state->level_state[world_scene_state->current_level] = cloned_state;
+				}
+				//TODO: Finish the code for this.
+				if (world_scene_state->level_mode[world_scene_state->current_level] == LevelMode::Repeat)
+				{
+					if (world_scene_state->staircase_we_entered_level_from.level_index >= 0)
+					{
+						//delete the player from the current position.
+						int current_level = world_scene_state->current_level;
+
+						//world_scene_state->level_state[current_level]->piece[]
+						//create the player on the next position.
+					}
+				}
+				if (world_scene_state->level_mode[world_scene_state->current_level] == LevelMode::Overworld)
+				{
+					
+				}
+				world_scene_state->staircase_we_entered_level_from.level_index = -1;//we aren't in level, so there is no staircase to store.
 				world_play_scene_state->time_machine = NULL;
 			}
 			//handle returning to world map by request.
