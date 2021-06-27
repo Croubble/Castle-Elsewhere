@@ -3,7 +3,30 @@
 #include "Parse.h"
 
 
-
+void world_try_reversing_staircase(WorldScene* scene)
+{
+	if (scene->staircase_we_entered_level_from.level_index >= 0)
+	{
+		WorldPosition current_pos = world_maybe_find_player(scene);
+		WorldPosition revert_pos = scene->staircase_we_entered_level_from;
+		if (current_pos.level_index == -1)
+			crash_err("uh ohhh, we tried to find a player but couldn't find one, that shouldn't have happened");
+		int player_val = scene->level_state[current_pos.level_index]->piece[current_pos.level_position_1d];
+		
+		//delete the player from the current position, and put them on our old position. TODO: do this when we backspace as well.
+		scene->level_state[current_pos.level_index]->piece[current_pos.level_position_1d] = P_NONE;
+		scene->level_state[revert_pos.level_index]->piece[revert_pos.level_position_1d] = player_val;
+		scene->current_level = revert_pos.level_index;
+	}
+}
+WorldPosition world_make_world_position(int level_index, IntPair pos_2d, int pos_1d)
+{
+	WorldPosition result;
+	result.level_index = level_index;
+	result.level_position = pos_2d;
+	result.level_position_1d = pos_1d;
+	return result;
+}
 WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory* level_memory)
 {
 	//grab some useful information that we will reuse.
@@ -12,8 +35,9 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 	IntPair current_state_position = scene->level_position[scene->current_level];
 
 	//Find the player.
-	IntPair current_player_position;
-	int current_player_value;
+	WorldPosition player_pos = world_maybe_find_player(scene);
+	int current_player_value = scene->level_state[player_pos.level_index]->piece[player_pos.level_position_1d];
+	/*
 	{
 		int len = current_state->w * current_state->h;
 		bool found_player = false;
@@ -34,12 +58,12 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 		}
 
 	}
-	
+	*/	
 	//calculate what square we are moving too.
 	IntPair next_player_square_position;
 	int next_square_level;
 	{
-		IntPair tentative_next = math_intpair_add(move, current_player_position);
+		IntPair tentative_next = math_intpair_add(move, player_pos.level_position );
 		bool inside_level = math_within_grid(tentative_next.x, tentative_next.y, current_state->w, current_state->h);
 		if (inside_level)
 		{
@@ -86,7 +110,7 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 	{
 		//remove the player from the current position.
 		{
-			int current_state_position_1d = f2D(current_player_position.x, current_player_position.y, current_state->w, current_state->h);
+			int current_state_position_1d = f2D(player_pos.level_position.x, player_pos.level_position.y, current_state->w, current_state->h);
 			current_state->piece[current_state_position_1d] = P_NONE;
 		}
 		//add the player to the next position
@@ -122,9 +146,9 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 					next_state->piece[next_square_position_1d] = 0;
 					scene->level_state[link_location]->piece[link_square_1d] = Piece::P_PLAYER;
 
-					scene->staircase_we_entered_level_from.level_index = scene->current_level;
-					scene->staircase_we_entered_level_from.level_position = next_player_square_position;
-
+					GameState* next = scene->level_state[next_square_level];
+					int level_pos_1d = f2D(next_player_square_position.x, next_player_square_position.y, next->w, next->h);
+					scene->staircase_we_entered_level_from = world_make_world_position(scene->current_level, next_player_square_position, level_pos_1d);
 					scene->current_level = link_location;
 					final_level_index = link_location;
 					final_position_1d = link_square_1d;
@@ -151,8 +175,7 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 			}
 			else
 			{
-				scene->staircase_we_entered_level_from.level_index = -1;
-				scene->staircase_we_entered_level_from.level_position = math_intpair_create(0,0);
+				scene->staircase_we_entered_level_from = world_make_world_position(-1, math_intpair_create(-1, -1), -1);
 			}
 		}
 	}
@@ -237,15 +260,14 @@ WorldPosition world_maybe_find_player(WorldScene* scene)
 	for (int z = 0; z < scene->num_levels; z++)
 	{
 		int pos_1d = gamestate_maybe_find_player(scene->level_state[z]);
-		IntPair pos_2d = t2D(pos_1d, scene->level_state[z]->w, scene->level_state[z]->h);
-		WorldPosition result;
-		result.level_index = z;
-		result.level_position = pos_2d;
+		if (pos_1d != -1)
+		{
+			IntPair pos_2d = t2D(pos_1d, scene->level_state[z]->w, scene->level_state[z]->h);
+			WorldPosition result = world_make_world_position(z,pos_2d,pos_1d);
+			return world_make_world_position(z,pos_2d,pos_1d);
+		}
 	}
-
-	WorldPosition result;
-	result.level_index = -1;
-	return result;
+	return world_make_world_position(-1,math_intpair_create(-1,-1),-1);
 }
 std::string world_serialize(WorldScene* world, Memory* scope, Memory* temp_memory)
 {

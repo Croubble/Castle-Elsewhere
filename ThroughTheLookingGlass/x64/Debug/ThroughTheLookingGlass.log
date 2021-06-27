@@ -1,24 +1,8 @@
-﻿  Animation.cpp
-  Camera.cpp
-  EditorTimeMachine.cpp
-  GameState.cpp
-  Parse.cpp
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Parse.cpp(580,71): warning C4477: 'sprintf_s' : format string '%s' requires an argument of type 'char *', but variadic argument 1 has type 'LevelName *'
-  Regex.cpp
-  ResourceLoadText.cpp
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
-D:\OpenGL\Include\glad\glad.h(32): message : see previous definition of 'APIENTRY'
-  Shader.cpp
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
-D:\OpenGL\Include\glad\glad.h(32): message : see previous definition of 'APIENTRY'
-  World.cpp
-  draw.cpp
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
-D:\OpenGL\Include\glad\glad.h(32): message : see previous definition of 'APIENTRY'
+﻿  World.cpp
   win32_platform.cpp
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
 D:\OpenGL\Include\glad\glad.h(32): message : see previous definition of 'APIENTRY'
 C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\TextScene.h(17,77): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\MenuScene.h(28,36): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\win32_platform.cpp(1229,60): error C2059: syntax error: ']'
   Generating Code...
+  ThroughTheLookingGlass.vcxproj -> C:\Users\User\source\repos\ThroughTheLookingGlass\x64\Debug\ThroughTheLookingGlass.exe

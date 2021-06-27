@@ -637,7 +637,7 @@ void mainloopfunction()
 					if (index_clicked >= 0)
 					{
 						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
-						TimeMachineEditorAction action = gamestate_timemachineaction_create_change_level_mode(index_clicked,LevelMode::Crumble);
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_change_level_mode(index_clicked,LevelMode::Repeat);
 						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 				}
@@ -647,7 +647,7 @@ void mainloopfunction()
 					if (index_clicked >= 0)
 					{
 						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
-						TimeMachineEditorAction action = gamestate_timemachineaction_create_change_level_mode(index_clicked,LevelMode::Crumble);
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_change_level_mode(index_clicked,LevelMode::Overworld);
 						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 				}
@@ -1222,18 +1222,11 @@ void mainloopfunction()
 				//TODO: Finish the code for this.
 				if (world_scene_state->level_mode[world_scene_state->current_level] == LevelMode::Repeat)
 				{
-					if (world_scene_state->staircase_we_entered_level_from.level_index >= 0)
-					{
-						//delete the player from the current position.
-						int current_level = world_scene_state->current_level;
-
-						//world_scene_state->level_state[current_level]->piece[]
-						//create the player on the next position.
-					}
+					world_try_reversing_staircase(world_scene_state);
 				}
 				if (world_scene_state->level_mode[world_scene_state->current_level] == LevelMode::Overworld)
 				{
-					
+					//TODO: implement this.	
 				}
 				world_scene_state->staircase_we_entered_level_from.level_index = -1;//we aren't in level, so there is no staircase to store.
 				world_play_scene_state->time_machine = NULL;
@@ -1241,6 +1234,7 @@ void mainloopfunction()
 			//handle returning to world map by request.
 			if (ui_state.backspace_key_down_this_frame)
 			{
+				world_try_reversing_staircase(world_scene_state);
 				world_play_scene_state->time_machine = NULL;
 			}
 			//handle returning to world map by level finished.
