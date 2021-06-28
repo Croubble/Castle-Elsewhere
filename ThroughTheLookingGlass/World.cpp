@@ -19,6 +19,7 @@ void world_try_reversing_staircase(WorldScene* scene)
 		scene->current_level = revert_pos.level_index;
 	}
 }
+
 WorldPosition world_make_world_position(int level_index, IntPair pos_2d, int pos_1d)
 {
 	WorldPosition result;
@@ -26,6 +27,11 @@ WorldPosition world_make_world_position(int level_index, IntPair pos_2d, int pos
 	result.level_position = pos_2d;
 	result.level_position_1d = pos_1d;
 	return result;
+}
+
+WorldPosition world_make_world_position_invalid()
+{
+	return world_make_world_position(-1, math_intpair_create(-1, -1), -1);
 }
 WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory* level_memory)
 {
@@ -269,7 +275,8 @@ WorldPosition world_maybe_find_player(WorldScene* scene)
 	}
 	return world_make_world_position(-1,math_intpair_create(-1,-1),-1);
 }
-std::string world_serialize_v0(WorldScene* world, Memory* scope, Memory* temp_memory)
+
+std::string world_serialize_old(WorldScene* world, Memory* scope, Memory* temp_memory)
 {
 	//serialize num levels.
 	const int max_length = 10000;
@@ -282,58 +289,9 @@ std::string world_serialize_v0(WorldScene* world, Memory* scope, Memory* temp_me
 		output_consumed += sprintf_s(output + output_consumed, max_length, "num_gamestates:%d;\n", num_gamestates);
 	}
 	//parse current level.
-	{
-		output_consumed += sprintf_s(output + output_consumed, max_length, "current_level:%d;\n", world->current_level);
-	}
-
-	//positions:
-	{
-		output_consumed += sprintf_s(output + output_consumed, max_length, "positions:");
-		for (int i = 0; i < num_gamestates; i++)
-			output_consumed += sprintf_s(output + output_consumed, max_length, "%d,%d,", world->world_state.level_position[i].x, world->world_state.level_position[i].y);
-		output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
-	}
-	
-	//serialize all gamestate elements.
-	parse_serialize_gamestate_layers(output, &output_consumed, max_length, num_gamestates, world->world_state.level_state);
-	//serialize the gamestates names.
-	{
-		output_consumed += sprintf_s(output + output_consumed, max_length, "names:");
-		for (int i = 0; i < num_gamestates; i++)
-		{
-			char* name = world->world_state.level_names[i].name;
-			output_consumed += sprintf_s(output + output_consumed, max_length, "%s,", name);
-		}
-		output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
-	}
-
-	//ttttt
-	{
-		output_consumed += sprintf_s(output + output_consumed, max_length, "solved:");
-		for (int i = 0; i < num_gamestates; i++)
-		{
-			output_consumed += sprintf_s(output + output_consumed, max_length, "%d,", world->world_state.level_solved[i]);
-		}
-		output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
-	}
-	return std::string(output);
-}
-std::string world_serialize_v1(WorldScene* world, Memory* scope, Memory* temp_memory)
-{
-	//serialize num levels.
-	const int max_length = 10000;
-	int output_consumed = 0;
-	char* output = (char*)memory_alloc(temp_memory, sizeof(char) * max_length);
-	const int num_gamestates = world->world_state.num_level;
-
-	//parse num gamestates.
-	{
-		output_consumed += sprintf_s(output + output_consumed, max_length, "num_gamestates:%d;\n", num_gamestates);
-	}
-	//parse current level.
-	{
-		output_consumed += sprintf_s(output + output_consumed, max_length, "current_level:%d;\n", world->current_level);
-	}
+	//{
+//		output_consumed += sprintf_s(output + output_consumed, max_length, "current_level:%d;\n", world->current_level);
+//	}
 
 	//positions:
 	{
@@ -368,155 +326,34 @@ std::string world_serialize_v1(WorldScene* world, Memory* scope, Memory* temp_me
 	return std::string(output);
 }
 
-std::string world_serialize(WorldScene* world, Memory* scope, Memory* temp_memory)
+WorldScene* world_serialize()
 {
-	//serialize num levels.
-	const int max_length = 10000;
-	int output_consumed = 0;
-	char* output = (char*)memory_alloc(temp_memory, sizeof(char) * max_length);
-	const int num_gamestates = world->world_state.num_level;
 
-	//parse num gamestates.
-	{
-		output_consumed += sprintf_s(output + output_consumed, max_length, "num_gamestates:%d;\n", num_gamestates);
-	}
-	//parse current level.
-	{
-		output_consumed += sprintf_s(output + output_consumed, max_length, "current_level:%d;\n", world->current_level);
-	}
-
-	//positions:
-	{
-		output_consumed += sprintf_s(output + output_consumed, max_length, "positions:");
-		for (int i = 0; i < num_gamestates; i++)
-			output_consumed += sprintf_s(output + output_consumed, max_length, "%d,%d,", world->world_state.level_position[i].x, world->world_state.level_position[i].y);
-		output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
-	}
-	
-	//serialize all gamestate elements.
-	parse_serialize_gamestate_layers(output, &output_consumed, max_length, num_gamestates, world->world_state.level_state);
-	//serialize the gamestates names.
-	{
-		output_consumed += sprintf_s(output + output_consumed, max_length, "names:");
-		for (int i = 0; i < num_gamestates; i++)
-		{
-			char* name = world->world_state.level_names[i].name;
-			output_consumed += sprintf_s(output + output_consumed, max_length, "%s,", name);
-		}
-		output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
-	}
-
-	//ttttt
-	{
-		output_consumed += sprintf_s(output + output_consumed, max_length, "solved:");
-		for (int i = 0; i < num_gamestates; i++)
-		{
-			output_consumed += sprintf_s(output + output_consumed, max_length, "%d,", world->world_state.level_solved[i]);
-		}
-		output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
-	}
-	return std::string(output);
 }
-
-
-WorldScene* world_deserialize_v0(std::string world_string, Memory* scope, Memory* temp_memory)
-{	
-	WorldScene* result = (WorldScene*)memory_alloc(scope, sizeof(WorldScene));
-	for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
-	{
-		result->world_state.level_state[i] = NULL;
-	}
-	for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
-		for(int j = 0; j < GAME_LEVEL_NAME_MAX_SIZE;j++)
-	{
-		result->world_state.level_names[i].name[j] = '\0';
-	}
-	//get input
-	char* input = &(world_string[0]);
-	Tokenizer tokenizer;
-	tokenizer.at = input;
-
-	//parse number gamestates.
-	int* maybe_num_gamestates = try_parse_num_gamestates(&tokenizer, temp_memory);
-	if (!maybe_num_gamestates)
-		crash_err("failed to pass num gamestates");
-	result->world_state.num_level = *maybe_num_gamestates;
-	//parse current level.
-	int* current_level = try_parse_current_level(&tokenizer, temp_memory);
-	if (!current_level)
-		crash_err("failed to pass current level");
-	result->current_level = *current_level;
-	//parse positions:
-	{
-		bool success = try_parse_positions(&tokenizer, result->world_state.level_position, temp_memory);
-		if (!success)
-			crash_err("failed to parse positions when loading a saved game");
-	}
-	//parse gamestate elements.
-	{
-		for(int i = 0; i < LN_COUNT;i++)
-			bool success = try_parse_layer(&tokenizer, result->world_state.level_state, scope, temp_memory);
-	}
-	//parse gamestate names.
-bool parsed_names = try_parse_names(&tokenizer, result->world_state.level_names, scope, temp_memory);
-	//parse solved.
-bool parsed_solved = try_parse_bools(&tokenizer, result->world_state.level_solved, scope, temp_memory);
-	return result;
-}
-WorldScene* world_deserialize_v1(std::string world_string, Memory* scope, Memory* temp_memory)
-{	
-	//strip all whitespace from the input.
-	{
-		// end_pos = std::remove(input_string.begin(), input_string.end(), ' ');
-		//input_string.erase(end_pos, input_string.end());
-		std::string::iterator end_pos = std::remove(world_string.begin(), world_string.end(), '\n');
-		world_string.erase(end_pos, world_string.end());
-	}
-
-	WorldScene* result = (WorldScene*)memory_alloc(scope, sizeof(WorldScene));
-	for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
-	{
-		result->world_state.level_state[i] = NULL;
-	}
-	for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
-		for(int j = 0; j < GAME_LEVEL_NAME_MAX_SIZE;j++)
-	{
-		result->world_state.level_names[i].name[j] = '\0';
-	}
-	//get input
-	char* input = &(world_string[0]);
-	Tokenizer tokenizer;
-	tokenizer.at = input;
-
-	//parse number gamestates.
-	int* maybe_num_gamestates = try_parse_num_gamestates(&tokenizer, temp_memory);
-	if (!maybe_num_gamestates)
-		crash_err("failed to pass num gamestates");
-	result->world_state.num_level = *maybe_num_gamestates;
-	//parse current level.
-	int* current_level = try_parse_current_level(&tokenizer, temp_memory);
-	if (!current_level)
-		crash_err("failed to pass current level");
-	result->current_level = *current_level;
-	//parse positions:
-	{
-		bool success = try_parse_positions(&tokenizer, result->world_state.level_position, temp_memory);
-		if (!success)
-			crash_err("failed to parse positions when loading a saved game");
-	}
-	//parse gamestate elements.
-	{
-		for(int i = 0; i < LN_COUNT;i++)
-			bool success = try_parse_layer(&tokenizer, result->world_state.level_state, scope, temp_memory);
-	}
-	//parse gamestate names.
-bool parsed_names = try_parse_names(&tokenizer, result->world_state.level_names, scope, temp_memory);
-	//parse solved.
-bool parsed_solved = try_parse_bools(&tokenizer, result->world_state.level_solved, scope, temp_memory);
-	return result;
-}
-
 WorldScene* world_deserialize(std::string world_string, Memory* scope, Memory* temp_memory)
+{
+	WorldState* world_state = parse_deserialize_timemachine(world_string, scope, temp_memory);
+	WorldScene* result = (WorldScene*)memory_alloc(scope, sizeof(WorldScene));
+	//put default values into the worldscene
+	{
+		for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
+		{
+			result->world_state.level_state[i] = NULL;
+		}
+		for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
+			for(int j = 0; j < GAME_LEVEL_NAME_MAX_SIZE;j++)
+			{
+				result->world_state.level_names[i].name[j] = '\0';
+			}
+	}
+
+	result->world_state = *world_state;
+	result->current_level = world_maybe_find_player(result).level_index;
+	result->staircase_we_entered_level_from = world_make_world_position_invalid();
+	result->go_to_on_backspace = SCENE_TYPE::ST_COUNT; //default value, this is determined elsewhere.
+	return result;
+}
+WorldScene* world_deserialize_old(std::string world_string, Memory* scope, Memory* temp_memory)
 {	
 	//strip all whitespace from the input.
 	{

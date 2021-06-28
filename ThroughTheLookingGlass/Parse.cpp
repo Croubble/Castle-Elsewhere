@@ -442,7 +442,6 @@ bool try_parse_names(Tokenizer* t, LevelName* result, Memory* final_memory, Memo
 	}
 	return true;
 }
-
 WorldState* parse_deserialize_timemachine(std::string input_string, Memory* final_memory, Memory* temp_memory)
 {
 	//strip all whitespace from the input.
@@ -485,6 +484,7 @@ WorldState* parse_deserialize_timemachine(std::string input_string, Memory* fina
 		bool parsed_layer = try_parse_layer(&tokenizer, result->level_state, final_memory, temp_memory);
 		bool parsed_piece_data = try_parse_piece_data(&tokenizer, result->level_state, final_memory, temp_memory);
 		bool parsed_names = try_parse_names(&tokenizer, result->level_names, final_memory, temp_memory);
+		bool parsed_level_solved = try_parse_bools(&tokenizer, result->level_solved, final_memory, temp_memory);
 		if (!maybe_num_gamestates && !parsed_positions && !parsed_layer && !parsed_names && !parsed_piece_data)
 		{
 			std::cout << "uh oh, we've failed to parse something and the parsing isn't over. Better crash!" << std::endl;
@@ -607,6 +607,15 @@ std::string parse_serialize_timemachine(TimeMachineEditor* timeMachine, Memory* 
 		for (int i = 0; i < num_gamestates; i++)
 		{
 			output_consumed += sprintf_s(output + output_consumed, max_length, "%s,", &timeMachine->world_state.level_names[i * GAME_LEVEL_NAME_MAX_SIZE]);
+		}
+		output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
+	}
+	//serialize the gamestate solved data.
+	{
+		output_consumed += sprintf_s(output + output_consumed, max_length, "solved:");
+		for (int i = 0; i < num_gamestates; i++)
+		{
+			output_consumed += sprintf_s(output + output_consumed, max_length, "%d,", timeMachine->world_state.level_solved[i]);
 		}
 		output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
 	}

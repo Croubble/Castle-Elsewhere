@@ -30,6 +30,7 @@ struct WorldPlayScene
 };
 
 void world_try_reversing_staircase(WorldScene* scene);
+WorldPosition world_make_world_position_invalid();
 WorldPosition world_make_world_position(int level_index, IntPair pos_2d, int pos_1d);
 WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory* level_memory);
 WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene_memory, SCENE_TYPE go_to_on_backspace);

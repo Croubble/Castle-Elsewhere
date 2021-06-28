@@ -1,15 +1,3 @@
-﻿  EditorTimeMachine.cpp
-  Parse.cpp
+﻿  Parse.cpp
 C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Parse.cpp(609,71): warning C4477: 'sprintf_s' : format string '%s' requires an argument of type 'char *', but variadic argument 1 has type 'LevelName *'
-  Regex.cpp
-  World.cpp
-  draw.cpp
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
-D:\OpenGL\Include\glad\glad.h(32): message : see previous definition of 'APIENTRY'
-  win32_platform.cpp
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
-D:\OpenGL\Include\glad\glad.h(32): message : see previous definition of 'APIENTRY'
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\TextScene.h(17,77): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\MenuScene.h(28,36): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-  Generating Code...
   ThroughTheLookingGlass.vcxproj -> C:\Users\User\source\repos\ThroughTheLookingGlass\x64\Debug\ThroughTheLookingGlass.exe
