@@ -20,14 +20,7 @@ struct WorldScene
 	int current_level;
 
 	//data that is just the state our 
-	Foo val;
-
-	//int val.num_levels;
-	//LevelMode val.level_modes[MAX_NUMBER_GAMESTATES];
-	//LevelName val.level_names[MAX_NUMBER_GAMESTATES];
-	//GameState* val.level_state[MAX_NUMBER_GAMESTATES];
-	//IntPair val.level_position[MAX_NUMBER_GAMESTATES];
-	//bool val.level_solved[MAX_NUMBER_GAMESTATES];
+	WorldState world_state;
 };
 
 struct WorldPlayScene

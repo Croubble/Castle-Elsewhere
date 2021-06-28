@@ -138,7 +138,7 @@ void load_editor_level_stateful(std::string to_load)
 		bar++;
 	}
 	memory_clear(editor_memory);
-	TimeMachineEditorStartState* res = parse_deserialize_timemachine(to_load, editor_memory, frame_memory);
+	WorldState* res = parse_deserialize_timemachine(to_load, editor_memory, frame_memory);
 	editor_scene_state = editorscene_setup_with_start_state(editor_memory, camera_viewport, res);
 	editor_scene_state->timeMachine->current_number_of_actions = 0;
 	std::cout << "ALL DONE!" << std::endl;
@@ -183,8 +183,8 @@ void setup_world_screen_stateful(SCENE_TYPE go_to_on_backspace)
 	//setup world camera.
 	//TODO: Compress this code and the world scene camera code into something better.
 	int current_num = world_scene_state->current_level;
-	GameState* current_gamestate = world_scene_state->val.level_state[current_num];
-	IntPair gamestate_pos = world_scene_state->val.level_position[current_num];
+	GameState* current_gamestate = world_scene_state->world_state.level_state[current_num];
+	IntPair gamestate_pos = world_scene_state->world_state.level_position[current_num];
 	world_camera = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport);
 
 	world_camera_start = world_camera;
@@ -202,8 +202,8 @@ void setup_world_screen_continue_stateful(std::string to_load)
 	//setup world camera.
 	//TODO: Compress this code and the world scene camera code into something better.
 	int current_num = world_scene_state->current_level;
-	GameState* current_gamestate = world_scene_state->val.level_state[current_num];
-	IntPair gamestate_pos = world_scene_state->val.level_position[current_num];
+	GameState* current_gamestate = world_scene_state->world_state.level_state[current_num];
+	IntPair gamestate_pos = world_scene_state->world_state.level_position[current_num];
 	world_camera = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport);
 	world_camera_start = world_camera;
 	world_camera_goal = world_camera;
@@ -220,8 +220,8 @@ void text_scene_reset()
 		if (scene == SCENE_TYPE::ST_PLAY_LEVEL)
 		{
 			int current_level = world_scene_state->current_level;
-			GameState* current_gamestate = world_scene_state->val.level_state[current_level];
-			IntPair gamestate_pos = world_scene_state->val.level_position[current_level];
+			GameState* current_gamestate = world_scene_state->world_state.level_state[current_level];
+			IntPair gamestate_pos = world_scene_state->world_state.level_position[current_level];
 			world_camera_goal = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport); //, 0.3f, 0.3f);
 			world_camera_start = world_camera;
 		}	
@@ -688,12 +688,12 @@ void mainloopfunction()
 					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
-						GameState* state = editor_scene_state->timeMachine->val.level_state[index_clicked];
-						IntPair state_start = editor_scene_state->timeMachine->val.level_position[index_clicked];
+						GameState* state = editor_scene_state->timeMachine->world_state.level_state[index_clicked];
+						IntPair state_start = editor_scene_state->timeMachine->world_state.level_position[index_clicked];
 						IntPair grid_clicked = calculate_floor_cell_clicked(state, state_start, ui_state.mouseGamePos);
 						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
 						GameState* next = gamestate_add_row(state, editor_scene_state->timeMachine->gamestate_memory, grid_clicked.x, grid_clicked.y);
-						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, editor_scene_state->timeMachine->val.level_names[index_clicked]);
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, editor_scene_state->timeMachine->world_state.level_names[index_clicked]);
 						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 
@@ -704,12 +704,12 @@ void mainloopfunction()
 					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
-						GameState* state = editor_scene_state->timeMachine->val.level_state[index_clicked];
-						IntPair state_start = editor_scene_state->timeMachine->val.level_position[index_clicked];
+						GameState* state = editor_scene_state->timeMachine->world_state.level_state[index_clicked];
+						IntPair state_start = editor_scene_state->timeMachine->world_state.level_position[index_clicked];
 						IntPair grid_clicked = calculate_floor_cell_clicked(state, state_start, ui_state.mouseGamePos);
 						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
 						GameState* next = gamestate_add_column(state, permanent_memory, grid_clicked.x, grid_clicked.y);
-						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, editor_scene_state->timeMachine->val.level_names[index_clicked]);
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, editor_scene_state->timeMachine->world_state.level_names[index_clicked]);
 						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 				}
@@ -719,9 +719,9 @@ void mainloopfunction()
 					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
-						GameState* state = editor_scene_state->timeMachine->val.level_state[index_clicked];
+						GameState* state = editor_scene_state->timeMachine->world_state.level_state[index_clicked];
 						GameState* next = gamestate_surround_with_walls(state, permanent_memory);
-						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, editor_scene_state->timeMachine->val.level_names[index_clicked ]);
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, editor_scene_state->timeMachine->world_state.level_names[index_clicked ]);
 						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 				}
@@ -731,7 +731,7 @@ void mainloopfunction()
 					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
-						GameState* currentState = editor_scene_state->timeMachine->val.level_state[index_clicked];
+						GameState* currentState = editor_scene_state->timeMachine->world_state.level_state[index_clicked];
 						TimeMachineEditorAction action = gamestate_timemachineaction_create_delete_gamestate(index_clicked);
 						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 						left_click_action_resolved = true;
@@ -744,12 +744,12 @@ void mainloopfunction()
 					if (index_clicked >= 0)
 					{
 						//get the gamestate we want. 
-						GameState* start_state = editor_scene_state->timeMachine->val.level_state[index_clicked];
+						GameState* start_state = editor_scene_state->timeMachine->world_state.level_state[index_clicked];
 
 						//create the play_scene_state scene based on that gamestate.
 						play_scene_state.timeMachine = gamestate_timemachine_create(start_state, play_memory, max_actions_in_puzzle);
 						play_scene_state.timeMachine_edit = gamestate_timemachine_create(start_state, play_memory, max_actions_in_puzzle);
-						play_scene_state.loc = editor_scene_state->timeMachine->val.level_position[index_clicked];
+						play_scene_state.loc = editor_scene_state->timeMachine->world_state.level_position[index_clicked];
 						play_scene_state.loc_edit = play_scene_state.loc;
 						play_scene_state.loc_edit.x += (start_state->w + 2);
 						play_scene_state.editor_position_in_time_machine = index_clicked;
@@ -760,8 +760,8 @@ void mainloopfunction()
 						play_scene_state.game_name_length = 0;
 						//strcpy_s(play_scene_state.game_name, &editor_scene_state->timeMachine->names[index_clicked].name);
 						for (int i = 0; i < GAME_LEVEL_NAME_MAX_SIZE; i++)
-							play_scene_state.game_name[i] = editor_scene_state->timeMachine->val.level_names[index_clicked].name[i];
-						play_scene_state.game_name_length = (int) strlen(editor_scene_state->timeMachine->val.level_names[index_clicked].name);
+							play_scene_state.game_name[i] = editor_scene_state->timeMachine->world_state.level_names[index_clicked].name[i];
+						play_scene_state.game_name_length = (int) strlen(editor_scene_state->timeMachine->world_state.level_names[index_clicked].name);
 						//switch our scene to that gamestate.
 						scene = ST_EDIT_LEVEL;
 						ui_state.time_since_scene_started = 0;
@@ -777,13 +777,13 @@ void mainloopfunction()
 				if (ui_state.mouse_left_click_down && !ui_state.shift_key_down && !left_click_action_resolved)
 				{
 					//determine if we are clicking on a gamestate border.
-					for (int i = 0; i < editor_scene_state->timeMachine->val.num_level; i++)
+					for (int i = 0; i < editor_scene_state->timeMachine->world_state.num_level; i++)
 					{
-						float box_left = (float)editor_scene_state->timeMachine->val.level_position[i].x;
-						float box_width = (float)editor_scene_state->timeMachine->val.level_state[i]->w;
+						float box_left = (float)editor_scene_state->timeMachine->world_state.level_position[i].x;
+						float box_width = (float)editor_scene_state->timeMachine->world_state.level_state[i]->w;
 						float box_right = box_left + box_width;
-						float box_down = (float)editor_scene_state->timeMachine->val.level_position[i].y;
-						float box_height = (float)editor_scene_state->timeMachine->val.level_state[i]->h;
+						float box_down = (float)editor_scene_state->timeMachine->world_state.level_position[i].y;
+						float box_height = (float)editor_scene_state->timeMachine->world_state.level_state[i]->h;
 						float box_up = box_down + box_height;
 						AABB left = math_AABB_create(box_left - OUTLINE_DRAW_SIZE,
 							box_down - OUTLINE_DRAW_SIZE,
@@ -866,8 +866,8 @@ void mainloopfunction()
 					//determine (using ints to round down) how far away from the starting position we are.
 					glm::vec2 offset = ui_state.mouseGamePos - dragging_start_position_in_gamespace;
 					//get the width and height of the targetted gamestate.
-					IntPair targetted_gamestate_position = editor_scene_state->timeMachine->val.level_position[ui_state.un.resize.dragging_gamestate_index];
-					GameState* targetted_gamestate = editor_scene_state->timeMachine->val.level_state[ui_state.un.resize.dragging_gamestate_index];
+					IntPair targetted_gamestate_position = editor_scene_state->timeMachine->world_state.level_position[ui_state.un.resize.dragging_gamestate_index];
+					GameState* targetted_gamestate = editor_scene_state->timeMachine->world_state.level_state[ui_state.un.resize.dragging_gamestate_index];
 					int targetted_gamestate_width = targetted_gamestate->w;
 					int targetted_gamestate_height = targetted_gamestate->h;
 
@@ -944,11 +944,11 @@ void mainloopfunction()
 					if (changeOccured)
 					{
 						AABB* boxes = gamestate_create_colliders(frame_memory,
-							editor_scene_state->timeMachine->val.level_state,
-							editor_scene_state->timeMachine->val.level_position,
-							editor_scene_state->timeMachine->val.num_level,
+							editor_scene_state->timeMachine->world_state.level_state,
+							editor_scene_state->timeMachine->world_state.level_position,
+							editor_scene_state->timeMachine->world_state.num_level,
 							ui_state.un.resize.dragging_gamestate_index);
-						bool changeValid = !math_AABB_is_colliding(next, boxes, editor_scene_state->timeMachine->val.num_level - 1);
+						bool changeValid = !math_AABB_is_colliding(next, boxes, editor_scene_state->timeMachine->world_state.num_level - 1);
 						if (changeValid)
 						{
 							IntPair next_size;
@@ -974,11 +974,11 @@ void mainloopfunction()
 					//calculate the space we are currently under
 					AABB next = calculate_outline_from_move_info(frame_memory, editor_scene_state->timeMachine, ui_state);
 					AABB* boxes = gamestate_create_colliders(frame_memory,
-						editor_scene_state->timeMachine->val.level_state,
-						editor_scene_state->timeMachine->val.level_position,
-						editor_scene_state->timeMachine->val.num_level,
+						editor_scene_state->timeMachine->world_state.level_state,
+						editor_scene_state->timeMachine->world_state.level_position,
+						editor_scene_state->timeMachine->world_state.num_level,
 						ui_state.un.move.moving_gamestate_index);
-					bool changeValid = !math_AABB_is_colliding(next, boxes, editor_scene_state->timeMachine->val.num_level - 1);
+					bool changeValid = !math_AABB_is_colliding(next, boxes, editor_scene_state->timeMachine->world_state.num_level - 1);
 					if (changeValid)
 					{
 						//calculate the distance between that space and the starting space.
@@ -1003,10 +1003,10 @@ void mainloopfunction()
 					//calculate the space we are currently under
 					AABB next = calculate_outline_from_create_info(frame_memory, editor_scene_state->timeMachine, ui_state);
 					AABB* boxes = gamestate_create_colliders(frame_memory,
-						editor_scene_state->timeMachine->val.level_state,
-						editor_scene_state->timeMachine->val.level_position,
-						editor_scene_state->timeMachine->val.num_level);
-					bool successful_plant = !math_AABB_is_colliding(next, boxes, editor_scene_state->timeMachine->val.num_level);
+						editor_scene_state->timeMachine->world_state.level_state,
+						editor_scene_state->timeMachine->world_state.level_position,
+						editor_scene_state->timeMachine->world_state.num_level);
+					bool successful_plant = !math_AABB_is_colliding(next, boxes, editor_scene_state->timeMachine->world_state.num_level);
 					if (successful_plant)
 					{
 						AABB current_outline = calculate_outline_from_create_info(frame_memory, editor_scene_state->timeMachine, ui_state);
@@ -1147,7 +1147,7 @@ void mainloopfunction()
 				scene = SCENE_TYPE::ST_SHOW_TEXT;
 				ui_state.time_since_scene_started = 0;
 				ui_state.time_since_last_player_action = 0;
-				text_scene_state = level_popup(world_scene_state->val.level_names[world_scene_state->current_level].name, text_memory, ui_state.total_time_passed);
+				text_scene_state = level_popup(world_scene_state->world_state.level_names[world_scene_state->current_level].name, text_memory, ui_state.total_time_passed);
 			}
 
 #pragma endregion	
@@ -1158,8 +1158,8 @@ void mainloopfunction()
 				if (old_gamestate_num_player_standing_on != current_num_player_standing_on)
 				{
 					world_camera_lerp = 0;
-					GameState* current_gamestate = world_scene_state->val.level_state[current_num_player_standing_on];
-					IntPair gamestate_pos = world_scene_state->val.level_position[current_num_player_standing_on];
+					GameState* current_gamestate = world_scene_state->world_state.level_state[current_num_player_standing_on];
+					IntPair gamestate_pos = world_scene_state->world_state.level_position[current_num_player_standing_on];
 					world_camera_goal = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport);
 					world_camera_start = world_camera;
 				}
@@ -1195,8 +1195,8 @@ void mainloopfunction()
 				{
 					world_camera_lerp += delta;
 				}
-				GameState* current_gamestate = world_scene_state->val.level_state[current_num_player_standing_on];
-				IntPair gamestate_pos = world_scene_state->val.level_position[current_num_player_standing_on];
+				GameState* current_gamestate = world_scene_state->world_state.level_state[current_num_player_standing_on];
+				IntPair gamestate_pos = world_scene_state->world_state.level_position[current_num_player_standing_on];
 
 				//commented out so we only do this exactly once, rather than each frame.
 				//world_camera_goal = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport, 0.3f, 0.3f);
@@ -1207,21 +1207,21 @@ void mainloopfunction()
 			//handle win update.
 			if (gamestate_is_in_win_condition(&world_play_scene_state->time_machine->state_array[world_play_scene_state->time_machine->num_gamestates_stored - 1]))
 			{
-				world_scene_state->val.level_solved[world_scene_state->current_level] = true;
-				if (world_scene_state->val.level_modes[world_scene_state->current_level] == LevelMode::Crumble)
+				world_scene_state->world_state.level_solved[world_scene_state->current_level] = true;
+				if (world_scene_state->world_state.level_modes[world_scene_state->current_level] == LevelMode::Crumble)
 				{
 					int num_states = world_play_scene_state->time_machine->num_gamestates_stored;
 					GameState* current_state = &world_play_scene_state->time_machine->state_array[num_states - 1];
 					GameState* cloned_state = gamestate_clone(current_state, world_memory);
 					gamestate_crumble(cloned_state);
-					world_scene_state->val.level_state[world_scene_state->current_level] = cloned_state;
+					world_scene_state->world_state.level_state[world_scene_state->current_level] = cloned_state;
 				}
 				//TODO: Finish the code for this.
-				if (world_scene_state->val.level_modes[world_scene_state->current_level] == LevelMode::Repeat)
+				if (world_scene_state->world_state.level_modes[world_scene_state->current_level] == LevelMode::Repeat)
 				{
 					world_try_reversing_staircase(world_scene_state);
 				}
-				if (world_scene_state->val.level_modes[world_scene_state->current_level] == LevelMode::Overworld)
+				if (world_scene_state->world_state.level_modes[world_scene_state->current_level] == LevelMode::Overworld)
 				{
 					//TODO: implement this.	
 				}
@@ -1321,20 +1321,20 @@ void mainloopfunction()
 			//parse gamestate outlines.
 			{
 				draw_gamestates_outlines_to_gamespace(
-					editor_scene_state->timeMachine->val.level_state,
-					editor_scene_state->timeMachine->val.level_position,
-					editor_scene_state->timeMachine->val.num_level,
+					editor_scene_state->timeMachine->world_state.level_state,
+					editor_scene_state->timeMachine->world_state.level_position,
+					editor_scene_state->timeMachine->world_state.num_level,
 					floor_write,
 					skip_index);
 			}
 			//parse gamestates
 			{
 
-				gamestate_print_staircase_tele_value(editor_scene_state->timeMachine->val.level_state,editor_scene_state->timeMachine->val.num_level);
+				gamestate_print_staircase_tele_value(editor_scene_state->timeMachine->world_state.level_state,editor_scene_state->timeMachine->world_state.num_level);
 				draw_gamespace(
-					editor_scene_state->timeMachine->val.level_state,
-					editor_scene_state->timeMachine->val.level_position,
-					editor_scene_state->timeMachine->val.num_level,
+					editor_scene_state->timeMachine->world_state.level_state,
+					editor_scene_state->timeMachine->world_state.level_position,
+					editor_scene_state->timeMachine->world_state.num_level,
 					all_write);
 			}
 			//parse palette piece_data to gpu form
@@ -1343,18 +1343,18 @@ void mainloopfunction()
 			{
 				for (int z = 0; z < skip_index; z++)
 				{
-					int w = editor_scene_state->timeMachine->val.level_state[z]->w;
-					int h = editor_scene_state->timeMachine->val.level_state[z]->h;
-					IntPair startPos = editor_scene_state->timeMachine->val.level_position[z];
+					int w = editor_scene_state->timeMachine->world_state.level_state[z]->w;
+					int h = editor_scene_state->timeMachine->world_state.level_state[z]->h;
+					IntPair startPos = editor_scene_state->timeMachine->world_state.level_position[z];
 					dotted_positions_cpu[dotted_total_drawn] = glm::vec3(startPos.x - 0.15f, startPos.y - 0.15f, 8);
 					dotted_scale_cpu[dotted_total_drawn] = glm::vec2(w + 0.30f, h + 0.30f);
 					dotted_total_drawn++;
 				}
-				for (int z = skip_index + 1; z < editor_scene_state->timeMachine->val.num_level; z++)
+				for (int z = skip_index + 1; z < editor_scene_state->timeMachine->world_state.num_level; z++)
 				{
-					int w = editor_scene_state->timeMachine->val.level_state[z]->w;
-					int h = editor_scene_state->timeMachine->val.level_state[z]->h;
-					IntPair startPos = editor_scene_state->timeMachine->val.level_position[z];
+					int w = editor_scene_state->timeMachine->world_state.level_state[z]->w;
+					int h = editor_scene_state->timeMachine->world_state.level_state[z]->h;
+					IntPair startPos = editor_scene_state->timeMachine->world_state.level_position[z];
 					dotted_positions_cpu[dotted_total_drawn] = glm::vec3(startPos.x - 0.15f, startPos.y - 0.15f, 8);
 					dotted_scale_cpu[dotted_total_drawn] = glm::vec2(w + 0.30f, h + 0.30f);
 					dotted_total_drawn++;
@@ -1363,12 +1363,12 @@ void mainloopfunction()
 			//draw text.
 			{
 				//draw_text_to_screen(glm::vec3(0, 0, 0), "FINALLY!", text_draw_info.string_matrix_cpu, text_draw_info.string_atlas_cpu, text_draw_info.true_font_reference, text_draw_info.text_positions, text_draw_info.text_positions_normalized, &string_total_drawn, SCREEN_STARTING_HEIGHT / ui_state.game_height_current);
-				int len = editor_scene_state->timeMachine->val.num_level;
+				int len = editor_scene_state->timeMachine->world_state.num_level;
 				for (int i = 0; i < len; i++)
 				{
-					char* name = &editor_scene_state->timeMachine->val.level_names[i].name[0];
-					float x_pos = (float)editor_scene_state->timeMachine->val.level_position[i].x;
-					float y_pos = (float)(editor_scene_state->timeMachine->val.level_position[i].y + editor_scene_state->timeMachine->val.level_state[i]->h) + 0.2f;
+					char* name = &editor_scene_state->timeMachine->world_state.level_names[i].name[0];
+					float x_pos = (float)editor_scene_state->timeMachine->world_state.level_position[i].x;
+					float y_pos = (float)(editor_scene_state->timeMachine->world_state.level_position[i].y + editor_scene_state->timeMachine->world_state.level_state[i]->h) + 0.2f;
 					glm::vec3 draw_pos = glm::vec3(x_pos, y_pos, 0);
 					//draw_text_to_screen(draw_pos, name, string_matrix_cpu, string_atlas_cpu, string_true_font_reference, text_positions, text_positions_normalized, &string_total_drawn, SCREEN_STARTING_HEIGHT / ui_state.game_height_current);
 					draw_text_to_screen(draw_pos, glm::vec2(1, 1), name, &text_draw_info);
@@ -1406,9 +1406,9 @@ void mainloopfunction()
 		{
 #pragma region send draw data to gpu
 			draw_gamespace(
-				world_scene_state->val.level_state,
-				world_scene_state->val.level_position,
-				world_scene_state->val.num_level,
+				world_scene_state->world_state.level_state,
+				world_scene_state->world_state.level_position,
+				world_scene_state->world_state.num_level,
 				all_write);
 #pragma endregion
 		}
@@ -2153,8 +2153,8 @@ AABB calculate_outline_from_move_info(Memory* frame_memory, TimeMachineEditor* t
 	//transfer that into an int offset to apply to the moved gamestate.
 	IntPair offset = math_intpair_create((int)distance.x, (int)distance.y);
 	int gamestate_index = ui_state.un.move.moving_gamestate_index;
-	GameState* current_gamestate = timeMachine->val.level_state[gamestate_index];
-	IntPair startPosition = timeMachine->val.level_position[gamestate_index];
+	GameState* current_gamestate = timeMachine->world_state.level_state[gamestate_index];
+	IntPair startPosition = timeMachine->world_state.level_position[gamestate_index];
 	AABB outline = math_AABB_create((float) (startPosition.x + offset.x), (float) (startPosition.y + offset.y), (float) current_gamestate->w, (float) current_gamestate->h);
 	return outline;
 }
@@ -2166,8 +2166,8 @@ AABB calculate_outline_position_from_drag_info(Memory* frame_memory,
 	//determine (using ints to round down) how far away from the starting position we are.
 	glm::vec2 offset = ui_state.mouseGamePos - dragging_start_position_in_gamespace;
 	//get the width and height of the targetted gamestate.
-	IntPair targetted_gamestate_position = timeMachine->val.level_position[ui_state.un.resize.dragging_gamestate_index];
-	GameState* targetted_gamestate = timeMachine->val.level_state[ui_state.un.resize.dragging_gamestate_index];
+	IntPair targetted_gamestate_position = timeMachine->world_state.level_position[ui_state.un.resize.dragging_gamestate_index];
+	GameState* targetted_gamestate = timeMachine->world_state.level_state[ui_state.un.resize.dragging_gamestate_index];
 	int targetted_gamestate_width = targetted_gamestate->w;
 	int targetted_gamestate_height = targetted_gamestate->h;
 
@@ -2256,13 +2256,13 @@ IntPair calculate_floor_cell_clicked(GameState* currentState,IntPair position, g
 }
 bool MaybeApplyBrush(GamestateBrush* palete,int currentBrush, EditorUIState* ui_state, TimeMachineEditor* timeMachine,glm::vec2 mouseGamePos)
 {
-	for (int i = 0; i < timeMachine->val.num_level; i++)
+	for (int i = 0; i < timeMachine->world_state.num_level; i++)
 	{
-		GameState* currentState = timeMachine->val.level_state[i];
-		float left = (float) timeMachine->val.level_position[i].x;
-		float right = (float) (timeMachine->val.level_position[i].x + currentState->w);
-		float down = (float) timeMachine->val.level_position[i].y;
-		float up = (float) (timeMachine->val.level_position[i].y + currentState->h);
+		GameState* currentState = timeMachine->world_state.level_state[i];
+		float left = (float) timeMachine->world_state.level_position[i].x;
+		float right = (float) (timeMachine->world_state.level_position[i].x + currentState->w);
+		float down = (float) timeMachine->world_state.level_position[i].y;
+		float up = (float) (timeMachine->world_state.level_position[i].y + currentState->h);
 		bool clickedFloor = math_click_is_inside_AABB(left, down, right, up, mouseGamePos.x, mouseGamePos.y);
 		if (clickedFloor)
 		{
@@ -2273,7 +2273,7 @@ bool MaybeApplyBrush(GamestateBrush* palete,int currentBrush, EditorUIState* ui_
 			int y_floor_cell_clicked = (int)(percentageY * currentState->h);
 
 			IntPair target_square = math_intpair_create(x_floor_cell_clicked, y_floor_cell_clicked);
-			int target_square_1d = f2D(target_square.x, target_square.y, timeMachine->val.level_state[i]->w, timeMachine->val.level_state[i]->h);
+			int target_square_1d = f2D(target_square.x, target_square.y, timeMachine->world_state.level_state[i]->w, timeMachine->world_state.level_state[i]->h);
 			TimeMachineEditorAction action = gamestate_timemachineaction_create_apply_brush(palete[currentBrush], i, target_square);
 			//make the application.
 			gamestate_timemachine_editor_take_action(timeMachine, NULL, action);

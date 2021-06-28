@@ -6,14 +6,14 @@ const int palete_length = 21;
 struct EditorScene
 {
 	TimeMachineEditor* timeMachine;
-	TimeMachineEditorStartState* time_machine_start_state;
+	WorldState* time_machine_start_state;
 	int currentBrush = 0;
 	GamestateBrush* palete;
 	IntPair palete_screen_start;
 };
 //result->time_machine_start_state = (TimeMachineEditorStartState *) memory_alloc(editor_memory,sizeof(TimeMachineEditorStartState));
 
-EditorScene* editorscene_setup_with_start_state(Memory* editor_memory, ViewPortCamera camera_viewport, TimeMachineEditorStartState* start_state)
+EditorScene* editorscene_setup_with_start_state(Memory* editor_memory, ViewPortCamera camera_viewport, WorldState* start_state)
 {
 	EditorScene* result = (EditorScene*)memory_alloc(editor_memory, sizeof(EditorScene));
 	result->timeMachine = gamestate_timemachine_editor_create(editor_memory, memory_create(50000000));
@@ -59,7 +59,7 @@ EditorScene* editorscene_setup_with_start_state(Memory* editor_memory, ViewPortC
 EditorScene* editorscene_setup(Memory* editor_memory, ViewPortCamera camera_viewport)
 {
 	memory_clear(editor_memory);
-	TimeMachineEditorStartState* pass = (TimeMachineEditorStartState*)memory_alloc(editor_memory, sizeof(TimeMachineEditorStartState));
+	WorldState* pass = (WorldState*)memory_alloc(editor_memory, sizeof(WorldState));
 	gamestate_timemachine_startstate_empty_init(pass);
 	return editorscene_setup_with_start_state(editor_memory, camera_viewport, pass);
 }

@@ -4,33 +4,33 @@
 
 void delete_gamestate_from_list_internal(TimeMachineEditor* editor, int index_to_delete)
 {
-	editor->val.level_state[index_to_delete] = NULL;
-	int current_number_of_gamestates = editor->val.num_level;
+	editor->world_state.level_state[index_to_delete] = NULL;
+	int current_number_of_gamestates = editor->world_state.num_level;
 	//delete staircase links.
 	for (int i = 0; i < current_number_of_gamestates; i++)
 	{
 		if (i == index_to_delete)
 			continue;
 		
-		for (int z = 0; z < editor->val.level_state[i]->w * editor->val.level_state[i]->h;z++)
+		for (int z = 0; z < editor->world_state.level_state[i]->w * editor->world_state.level_state[i]->h;z++)
 		{
 			//if we find a staircase on this floortile...
-			if (editor->val.level_state[i]->floor[z] == Floor::F_STAIRCASE || editor->val.level_state[i]->floor[z] == F_STAIRCASE_LEVELSTART)
+			if (editor->world_state.level_state[i]->floor[z] == Floor::F_STAIRCASE || editor->world_state.level_state[i]->floor[z] == F_STAIRCASE_LEVELSTART)
 			{
-				int tele_link = editor->val.level_state[i]->floor_data[z].teleporter_id;
+				int tele_link = editor->world_state.level_state[i]->floor_data[z].teleporter_id;
 				//and the staircase is pointing to the level we are deleting...
 				if (tele_link == index_to_delete)
 				{
-					editor->val.level_state[i]->floor_data[z].teleporter_id = 0;
-					editor->val.level_state[i]->floor_data[z].teleporter_target_square = math_intpair_create(0, 0);
-					editor->val.level_state[i]->floor[z] = Floor::F_NONE;
+					editor->world_state.level_state[i]->floor_data[z].teleporter_id = 0;
+					editor->world_state.level_state[i]->floor_data[z].teleporter_target_square = math_intpair_create(0, 0);
+					editor->world_state.level_state[i]->floor[z] = Floor::F_NONE;
 				}
 				//and the staircase is pointing to a level that is not been deleted....
 				else
 				{
 					//explination: if the index of the gamestate is greater, then our link decrements by one. 
 					if(tele_link > index_to_delete)
-						editor->val.level_state[i]->floor_data[z].teleporter_id -= 1;
+						editor->world_state.level_state[i]->floor_data[z].teleporter_id -= 1;
 				}
 			}
 		}
@@ -38,21 +38,25 @@ void delete_gamestate_from_list_internal(TimeMachineEditor* editor, int index_to
 	//move list values down.
 	for (int i = index_to_delete; i < current_number_of_gamestates; i++)
 	{
-		editor->val.level_state[i] = editor->val.level_state[i + 1];
+		editor->world_state.level_state[i] = editor->world_state.level_state[i + 1];
 	}
 	for (int i = index_to_delete; i < current_number_of_gamestates; i++)
 	{
-		editor->val.level_position[i] = editor->val.level_position[i + 1];
+		editor->world_state.level_position[i] = editor->world_state.level_position[i + 1];
 	}
 	for (int i = index_to_delete; i < current_number_of_gamestates; i++)
 	{
-		editor->val.level_names[i] = editor->val.level_names[i + 1];
+		editor->world_state.level_names[i] = editor->world_state.level_names[i + 1];
 	}
 	for (int i = index_to_delete; i < current_number_of_gamestates; i++)
 	{
-		editor->val.level_modes[i] = editor->val.level_modes[i + 1];
+		editor->world_state.level_modes[i] = editor->world_state.level_modes[i + 1];
 	}
-	editor->val.num_level--;
+	for (int i = index_to_delete; i < current_number_of_gamestates; i++)
+	{
+		editor->world_state.level_solved[i] = editor->world_state.level_solved[i + 1];
+	}
+	editor->world_state.num_level--;
 }
 
 TimeMachineEditor* gamestate_timemachine_editor_create(Memory* memory, Memory* gamestate_memory)
@@ -60,40 +64,44 @@ TimeMachineEditor* gamestate_timemachine_editor_create(Memory* memory, Memory* g
 	std::cout << sizeof(TimeMachineEditor) << std::endl;
 	TimeMachineEditor* result = (TimeMachineEditor*) memory_alloc(memory, sizeof(TimeMachineEditor));
 	result->gamestate_memory = gamestate_memory;
-	result->val.num_level = 0;
+	result->world_state.num_level = 0;
 	result->current_number_of_actions = 0;
-	result->val.level_state[0] = (GameState*) memory_alloc(gamestate_memory, sizeof(GameState*) * MAX_NUMBER_GAMESTATES);
+	result->world_state.level_state[0] = (GameState*) memory_alloc(gamestate_memory, sizeof(GameState*) * MAX_NUMBER_GAMESTATES);
 	for (int i = 0; i < MAX_NUMBER_GAMESTATES ; i++)
 		for(int j = 0; j < GAME_LEVEL_NAME_MAX_SIZE;j++)
-			result->val.level_names[i].name[j] = '\0';
+			result->world_state.level_names[i].name[j] = '\0';
 	return result;
 }
-void gamestate_timemachine_startstate_empty_init(TimeMachineEditorStartState* start_state)
+void gamestate_timemachine_startstate_empty_init(WorldState* start_state)
 {
-	start_state->number_of_gamestates = 0;
+	start_state->num_level = 0;
 	for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
 		for(int j = 0; j < GAME_LEVEL_NAME_MAX_SIZE;j++)
-		start_state->names[i].name[j] = '\0';
+		start_state->level_names[i].name[j] = '\0';
 }
-void gamestate_timemachine_editor_initialise_from_start(TimeMachineEditor* editor, TimeMachineEditorStartState* pos)
+void gamestate_timemachine_editor_initialise_from_start(TimeMachineEditor* editor, WorldState* pos)
 {
 	memory_clear(editor->gamestate_memory);
 	//editor->current_number_of_actions = 0; //removed for now, think inits to 0 anyway first time.
-	editor->val.num_level = pos->number_of_gamestates;
+	editor->world_state.num_level = pos->num_level;
 	for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
-		editor->val.level_names[i] = pos->names[i];
-	for (int i = 0; i < pos->number_of_gamestates; i++)
+		editor->world_state.level_names[i] = pos->level_names[i];
+	for (int i = 0; i < pos->num_level; i++)
 	{
-		editor->val.level_state[i] = gamestate_clone(pos->gamestates[i], editor->gamestate_memory);
+		editor->world_state.level_state[i] = gamestate_clone(pos->level_state[i], editor->gamestate_memory);
 	}
-	for (int i = 0; i < pos->number_of_gamestates; i++)
+	for (int i = 0; i < pos->num_level; i++)
 	{
-		editor->val.level_position[i].x = pos->gamestates_positions[i].x;
-		editor->val.level_position[i].y = pos->gamestates_positions[i].y;
+		editor->world_state.level_position[i].x = pos->level_position[i].x;
+		editor->world_state.level_position[i].y = pos->level_position[i].y;
 	}
-	for (int i = 0; i < pos->number_of_gamestates; i++)
+	for (int i = 0; i < pos->num_level; i++)
 	{
-		editor->val.level_modes[i] = pos->modes[i];
+		editor->world_state.level_modes[i] = pos->level_modes[i];
+	}
+	for (int i = 0; i < pos->num_level; i++)
+	{
+		editor->world_state.level_solved[i] = false;
 	}
 }
 bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction action)
@@ -106,7 +114,7 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 	if (action.action == TM_APPLY_BRUSH)
 	{
 		int target_gamestate_index = action.u.brush.target_gamestate_index;
-		GameState* gamestate = editor->val.level_state[target_gamestate_index];
+		GameState* gamestate = editor->world_state.level_state[target_gamestate_index];
 		IntPair target_brush_square = action.u.brush.target_square;
 		int x = target_brush_square.x;
 		int y = target_brush_square.y;
@@ -127,28 +135,28 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 			{
 				IntPair last_target_square = lastAction.u.brush.target_square;
 				int last_target_level = lastAction.u.brush.target_gamestate_index;
-				int last_w = editor->val.level_state[last_target_level]->w;
-				int last_h = editor->val.level_state[last_target_level]->h;
+				int last_w = editor->world_state.level_state[last_target_level]->w;
+				int last_h = editor->world_state.level_state[last_target_level]->h;
 				int last_target_square_1d = f2D(last_target_square.x, last_target_square.y, last_w, last_h);
-				if (is_staircase(editor->val.level_state[last_target_level]->floor[last_target_square_1d]) &&
-					is_staircase(editor->val.level_state[target_gamestate_index]->floor[target_brush_square_1d]) &&
-					editor->val.level_state[last_target_level]->floor_data[last_target_square_1d].teleporter_id == -1
+				if (is_staircase(editor->world_state.level_state[last_target_level]->floor[last_target_square_1d]) &&
+					is_staircase(editor->world_state.level_state[target_gamestate_index]->floor[target_brush_square_1d]) &&
+					editor->world_state.level_state[last_target_level]->floor_data[last_target_square_1d].teleporter_id == -1
 					)
 				{
 						int target_level = action.u.brush.target_gamestate_index;
 						IntPair target_square = action.u.brush.target_square;
-						int target_w = editor->val.level_state[target_level]->w;
-						int target_h = editor->val.level_state[target_level]->h;
+						int target_w = editor->world_state.level_state[target_level]->w;
+						int target_h = editor->world_state.level_state[target_level]->h;
 						int target_square_1d = f2D(target_square.x, target_square.y, target_w, target_h);
-						editor->val.level_state[last_target_level]->floor_data[last_target_square_1d].teleporter_id = target_level;
+						editor->world_state.level_state[last_target_level]->floor_data[last_target_square_1d].teleporter_id = target_level;
 						
-						editor->val.level_state[last_target_level]->floor_data[last_target_square_1d].teleporter_target_square = target_square;
+						editor->world_state.level_state[last_target_level]->floor_data[last_target_square_1d].teleporter_target_square = target_square;
 						std::cout << "first teleporter id" << target_level << ", target_level" << target_level << std::endl;
 						std::cout << "second teleporter id" << last_target_level << ",last target level" << last_target_level << std::endl;
 						std::cout << "target square 1d" << target_square_1d << std::endl;
 						std::cout << "last target square 1d" << last_target_square_1d << std::endl;
-						editor->val.level_state[target_level]->floor_data[target_square_1d].teleporter_id = last_target_level;
-						editor->val.level_state[target_level]->floor_data[target_square_1d].teleporter_target_square = last_target_square;
+						editor->world_state.level_state[target_level]->floor_data[target_square_1d].teleporter_id = last_target_level;
+						editor->world_state.level_state[target_level]->floor_data[target_square_1d].teleporter_target_square = last_target_square;
 				}
 			}
 
@@ -158,8 +166,8 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 	{
 		int index_left = action.u.merge.gamestate_index_left;
 		int index_right = action.u.merge.gamestate_index_right;
-		GameState* left = editor->val.level_state[index_left];
-		GameState* right = editor->val.level_state[index_right];
+		GameState* left = editor->world_state.level_state[index_left];
+		GameState* right = editor->world_state.level_state[index_right];
 		IntPair worldspace_left = action.u.merge.worldspace_left;
 		IntPair worldspace_right = action.u.merge.worldspace_right;
 
@@ -174,8 +182,8 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 		GameState* next = gamestate_merge_with_allocate(left, right, output_length, editor->gamestate_memory, leftOffset, rightOffset);
 
 		delete_gamestate_from_list_internal(editor, index_right);
-		editor->val.level_state[index_left] = next;
-		editor->val.level_position[index_left] = math_intpair_create(xStart, yStart);
+		editor->world_state.level_state[index_left] = next;
+		editor->world_state.level_position[index_left] = math_intpair_create(xStart, yStart);
 
 	}
 	else if (action.action == TM_MOVE_GAMESTATE)
@@ -183,7 +191,7 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 		int target_gamestate_index = action.u.move.target_gamestate_index;
 		IntPair distance = action.u.move.moveDistance;
 
-		editor->val.level_position[target_gamestate_index] = math_intpair_add(editor->val.level_position[target_gamestate_index], distance);
+		editor->world_state.level_position[target_gamestate_index] = math_intpair_add(editor->world_state.level_position[target_gamestate_index], distance);
 	}
 	else if (action.action == TM_RESIZE_GAMESTATE)
 	{
@@ -194,15 +202,15 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 
 		//grab the gamestates a new gamestate with new size.
 		int target_gamestate = action.u.resize.target_gamestate_index;
-		GameState* old = editor->val.level_state[target_gamestate];
+		GameState* old = editor->world_state.level_state[target_gamestate];
 		GameState* next = gamestate_create(editor->gamestate_memory, w, h);
 
 		//use a resize function from gamestate.cpp to actually resize the gamestate.
 		gamestate_resize(old, next, displacement);
 
 		//update the reference in the editor to use this new resize.
-		editor->val.level_state[target_gamestate] = next;
-		editor->val.level_position[target_gamestate] = action.u.resize.next_starting_position;
+		editor->world_state.level_state[target_gamestate] = next;
+		editor->world_state.level_position[target_gamestate] = action.u.resize.next_starting_position;
 
 		//update the links to refer to the new position, not the old position. 
 		//wait, how do we do this? 
@@ -220,40 +228,40 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 
 		//add the gamestate (and its position on the world) to the editor.
 
-		if (editor->val.num_level > MAX_NUMBER_GAMESTATES)
+		if (editor->world_state.num_level > MAX_NUMBER_GAMESTATES)
 		{
 			crash_err("we have overflowed our level editor gamestate memory. Rats! This means you should implement some proper memory techniques to like not have this happen. ");
 			//Technique TODO 1: Make a new gamestate memory, copy over all _relevant_ gamestate piece_data to it, and then delete the old gamestate memory.
 			//Technique TODO 2: Okay, so rather than been in order, just replace gamestate stuff with malloc/free.
 			abort();
 		}
-		editor->val.level_state[editor->val.num_level] = next;
-		editor->val.level_position[editor->val.num_level] = bottom_left;
-		editor->val.num_level++;
+		editor->world_state.level_state[editor->world_state.num_level] = next;
+		editor->world_state.level_position[editor->world_state.num_level] = bottom_left;
+		editor->world_state.num_level++;
 	}
 	else if (action.action == TM_REPLACE_GAMESTATE)
 	{
 		int pos = action.u.replace.index_to_replace;
 		GameState* state = action.u.replace.replace_state;
-		editor->val.level_state[pos] = state;
+		editor->world_state.level_state[pos] = state;
 		for (int i = 0; i < GAME_LEVEL_NAME_MAX_SIZE; i++)
 		{
-			editor->val.level_names[pos].name[i] = action.u.replace.name[i];
+			editor->world_state.level_names[pos].name[i] = action.u.replace.name[i];
 		}
 	}
 	else if (action.action == TM_UPDATE_GAMESTATE)
 	{
 		int pos = action.u.update.index_to_replace;
 		GameState* state = action.u.update.replace_state;
-		editor->val.level_state[pos] = state;
+		editor->world_state.level_state[pos] = state;
 	}
 	else if (action.action == TM_CHANGE_LEVEL_MODE)
 	{
-		editor->val.level_modes[action.u.level.index_to_replace] = action.u.level.replace_value;
+		editor->world_state.level_modes[action.u.level.index_to_replace] = action.u.level.replace_value;
 	}
 	return true; //we accept action.
 }
-void gamestate_timemachine_editor_take_action(TimeMachineEditor* editor, TimeMachineEditorStartState* maybe_start_state, TimeMachineEditorAction action)
+void gamestate_timemachine_editor_take_action(TimeMachineEditor* editor, WorldState* maybe_start_state, TimeMachineEditorAction action)
 {
 	//if we are using a meta action, perform meta action. Otherwise, add action to list of actions.
 	if (action.action == TM_UNDO && editor->current_number_of_actions > 0)
@@ -266,7 +274,7 @@ void gamestate_timemachine_editor_take_action(TimeMachineEditor* editor, TimeMac
 		gamestate_timemachine_editor_initialise_from_start(editor, maybe_start_state);
 		for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
 			for(int j = 0; j < GAME_LEVEL_NAME_MAX_SIZE;j++)
-			editor->val.level_names[i].name[j] = '\0';
+			editor->world_state.level_names[i].name[j] = '\0';
 		for (int i = 0; i < editor->current_number_of_actions; i++)
 		{
 			take_unlogged_action(editor, editor->actionList[i]);
@@ -287,13 +295,13 @@ void gamestate_timemachine_editor_take_action(TimeMachineEditor* editor, TimeMac
 
 int gamestate_timemachine_get_click_collision(TimeMachineEditor* timeMachine, float mouse_game_pos_x,float mouse_game_pos_y)
 {
-	for (int i = 0; i < timeMachine->val.num_level; i++)
+	for (int i = 0; i < timeMachine->world_state.num_level; i++)
 	{
-		GameState* currentState = timeMachine->val.level_state[i];
-		float left = (float) timeMachine->val.level_position[i].x;
-		float right = (float) timeMachine->val.level_position[i].x + currentState->w;
-		float down = (float) timeMachine->val.level_position[i].y;
-		float up = (float) timeMachine->val.level_position[i].y + currentState->h;
+		GameState* currentState = timeMachine->world_state.level_state[i];
+		float left = (float) timeMachine->world_state.level_position[i].x;
+		float right = (float) timeMachine->world_state.level_position[i].x + currentState->w;
+		float down = (float) timeMachine->world_state.level_position[i].y;
+		float up = (float) timeMachine->world_state.level_position[i].y + currentState->h;
 		bool clickedFloor = math_click_is_inside_AABB(left, down, right, up, mouse_game_pos_x, mouse_game_pos_y);
 		if(clickedFloor)
 			return i;

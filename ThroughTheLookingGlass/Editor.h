@@ -107,16 +107,6 @@ struct LevelName
 	char name[GAME_LEVEL_NAME_MAX_SIZE];
 };
 
-
-struct TimeMachineEditorStartState
-{
-	int number_of_gamestates;
-	IntPair gamestates_positions[MAX_NUMBER_GAMESTATES];
-	GameState* gamestates[MAX_NUMBER_GAMESTATES];
-	LevelName names[MAX_NUMBER_GAMESTATES];
-	LevelMode modes[MAX_NUMBER_GAMESTATES];
-};
-
 struct WorldState
 {
 	int num_level;
@@ -129,26 +119,17 @@ struct WorldState
 struct TimeMachineEditor
 {
 	Memory* gamestate_memory;
-
-	//time machine, for handling
 	int current_number_of_actions;
 	TimeMachineEditorAction actionList[MAX_EDITOR_ACTIONS];
 
-	WorldState val;
-	//data that is actually helpful state stuff.
-	//int val.num_level;
-	//IntPair val.level_position[MAX_NUMBER_GAMESTATES];
-	//GameState* val.level_state[MAX_NUMBER_GAMESTATES];
-	//LevelName val.level_names[MAX_NUMBER_GAMESTATES];
-	//LevelMode val.level_modes[MAX_NUMBER_GAMESTATES];
-	//bool level_solved[MAX_NUMBER_GAMESTATES] <-- all values implicitly false.
+	WorldState world_state;
 };
 
 int gamestate_timemachine_get_click_collision(TimeMachineEditor* timeMachine, float mouse_game_pos_x, float mouse_game_pos_y);
 TimeMachineEditor* gamestate_timemachine_editor_create(Memory* memory, Memory* GamestateMemory);
-void gamestate_timemachine_editor_initialise_from_start(TimeMachineEditor* editor, TimeMachineEditorStartState* pos);
-void gamestate_timemachine_startstate_empty_init(TimeMachineEditorStartState* start_state);
-void gamestate_timemachine_editor_take_action(TimeMachineEditor* editor, TimeMachineEditorStartState* maybe_start_state, TimeMachineEditorAction action);
+void gamestate_timemachine_editor_initialise_from_start(TimeMachineEditor* editor, WorldState* pos);
+void gamestate_timemachine_startstate_empty_init(WorldState* start_state);
+void gamestate_timemachine_editor_take_action(TimeMachineEditor* editor, WorldState* maybe_start_state, TimeMachineEditorAction action);
 
 
 /************************GAMESTATE TIME MACHINE**********************/

@@ -46,7 +46,7 @@ int* try_parse_num_gamestates(Tokenizer* t, Memory* temp_memory);
 bool try_parse_positions(Tokenizer* t, IntPair * result, Memory* temp_memory);
 bool try_parse_layer(Tokenizer* t, GameState** result, Memory* final_memory, Memory* temp_memory);
 bool try_parse_names(Tokenizer* t, LevelName* result, Memory* final_memory, Memory* temp_memory);
-TimeMachineEditorStartState* parse_deserialize_timemachine(std::string input_string, Memory* final_memory, Memory* temp_memory);
+WorldState* parse_deserialize_timemachine(std::string input_string, Memory* final_memory, Memory* temp_memory);
 
 void parse_serialize_gamestate_layers(char* output, int* output_consumed, int max_output_length, int length, GameState** states);
 std::string parse_serialize_timemachine(TimeMachineEditor* timeMachine, Memory* final_memory, Memory* temp_memory);
