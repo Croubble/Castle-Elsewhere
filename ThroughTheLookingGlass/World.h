@@ -14,16 +14,20 @@ struct WorldPosition
 };
 struct WorldScene
 {
+	//data that is used for moving that player around.
 	SCENE_TYPE go_to_on_backspace;
-	int num_levels;
 	WorldPosition staircase_we_entered_level_from;
 	int current_level;
 
-	LevelMode level_mode[MAX_NUMBER_GAMESTATES];
-	LevelName level_names[MAX_NUMBER_GAMESTATES];
-	GameState* level_state[MAX_NUMBER_GAMESTATES];
-	IntPair level_position[MAX_NUMBER_GAMESTATES];
-	bool level_solved[MAX_NUMBER_GAMESTATES];
+	//data that is just the state our 
+	Foo val;
+
+	//int val.num_levels;
+	//LevelMode val.level_modes[MAX_NUMBER_GAMESTATES];
+	//LevelName val.level_names[MAX_NUMBER_GAMESTATES];
+	//GameState* val.level_state[MAX_NUMBER_GAMESTATES];
+	//IntPair val.level_position[MAX_NUMBER_GAMESTATES];
+	//bool val.level_solved[MAX_NUMBER_GAMESTATES];
 };
 
 struct WorldPlayScene
