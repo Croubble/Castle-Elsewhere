@@ -1,3 +1,2 @@
-﻿  Parse.cpp
-C:\Users\User\source\repos\ThroughTheLookingGlass\ThroughTheLookingGlass\Parse.cpp(609,71): warning C4477: 'sprintf_s' : format string '%s' requires an argument of type 'char *', but variadic argument 1 has type 'LevelName *'
+﻿  EditorTimeMachine.cpp
   ThroughTheLookingGlass.vcxproj -> C:\Users\User\source\repos\ThroughTheLookingGlass\x64\Debug\ThroughTheLookingGlass.exe

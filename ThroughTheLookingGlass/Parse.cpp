@@ -553,12 +553,12 @@ void parse_serialize_gamestate_layers(char* output, int* output_consumed, int ma
 	}
 	*output_consumed += sprintf_s(output + *output_consumed, max_output_length, ";\n");
 }
-std::string parse_serialize_timemachine(TimeMachineEditor* timeMachine, Memory* final_memory, Memory* temp_memory)
+std::string parse_serialize_timemachine(WorldState* world_state, Memory* final_memory, Memory* temp_memory)
 {
-	const int max_length = 10000;
+	const int max_length = 60000;
 	int output_consumed = 0;
 	char* output = (char*)memory_alloc(temp_memory, sizeof(char) * max_length);
-	const int num_gamestates = timeMachine->world_state.num_level;
+	const int num_gamestates = world_state->num_level;
 
 	//serialize some nice little numbers, like the number of gamestates.
 	{
@@ -569,12 +569,12 @@ std::string parse_serialize_timemachine(TimeMachineEditor* timeMachine, Memory* 
 		output_consumed += sprintf_s(output + output_consumed, max_length, "positions:");
 		for (int i = 0; i < num_gamestates; i++)
 		{
-			output_consumed += sprintf_s(output + output_consumed, max_length, "%d,%d,", timeMachine->world_state.level_position[i].x, timeMachine->world_state.level_position[i].y);
+			output_consumed += sprintf_s(output + output_consumed, max_length, "%d,%d,", world_state->level_position[i].x, world_state->level_position[i].y);
 		}
 		output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
 	}
 	//serialize all the gamestates layers.
-	parse_serialize_gamestate_layers(output, &output_consumed, max_length, num_gamestates, timeMachine->world_state.level_state);
+	parse_serialize_gamestate_layers(output, &output_consumed, max_length, num_gamestates, world_state->level_state);
 	/*
 	{
 		for (int z = 0; z < GAME_NUM_LAYERS; z++)
@@ -606,7 +606,7 @@ std::string parse_serialize_timemachine(TimeMachineEditor* timeMachine, Memory* 
 		output_consumed += sprintf_s(output + output_consumed, max_length, "names:");
 		for (int i = 0; i < num_gamestates; i++)
 		{
-			output_consumed += sprintf_s(output + output_consumed, max_length, "%s,", &timeMachine->world_state.level_names[i * GAME_LEVEL_NAME_MAX_SIZE]);
+			output_consumed += sprintf_s(output + output_consumed, max_length, "%s,", &world_state->level_names[i].name);
 		}
 		output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
 	}
@@ -615,7 +615,7 @@ std::string parse_serialize_timemachine(TimeMachineEditor* timeMachine, Memory* 
 		output_consumed += sprintf_s(output + output_consumed, max_length, "solved:");
 		for (int i = 0; i < num_gamestates; i++)
 		{
-			output_consumed += sprintf_s(output + output_consumed, max_length, "%d,", timeMachine->world_state.level_solved[i]);
+			output_consumed += sprintf_s(output + output_consumed, max_length, "%d,", world_state->level_solved[i]);
 		}
 		output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
 	}

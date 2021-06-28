@@ -35,6 +35,5 @@ WorldPosition world_make_world_position(int level_index, IntPair pos_2d, int pos
 WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory* level_memory);
 WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene_memory, SCENE_TYPE go_to_on_backspace);
 bool any_levels_left_active(WorldScene* to_check);
-std::string world_serialize(WorldScene* world, Memory* scope, Memory* temp);
 WorldScene* world_deserialize(std::string world, Memory* scope, Memory* temp);
 WorldPosition world_maybe_find_player(WorldScene* scene);

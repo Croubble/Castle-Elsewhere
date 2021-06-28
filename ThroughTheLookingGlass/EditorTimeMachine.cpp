@@ -70,6 +70,12 @@ TimeMachineEditor* gamestate_timemachine_editor_create(Memory* memory, Memory* g
 	for (int i = 0; i < MAX_NUMBER_GAMESTATES ; i++)
 		for(int j = 0; j < GAME_LEVEL_NAME_MAX_SIZE;j++)
 			result->world_state.level_names[i].name[j] = '\0';
+	for(int i = 0; i < MAX_NUMBER_GAMESTATES;i++)
+		result->world_state.level_solved[i] = false;
+	for(int i = 0; i < MAX_NUMBER_GAMESTATES;i++)
+		result->world_state.level_modes[i] = LevelMode::Crumble;
+	for(int i = 0; i < MAX_NUMBER_GAMESTATES;i++)
+		result->world_state.level_position[i] = math_intpair_create(0,0);
 	return result;
 }
 void gamestate_timemachine_startstate_empty_init(WorldState* start_state)

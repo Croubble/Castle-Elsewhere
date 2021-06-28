@@ -326,10 +326,6 @@ std::string world_serialize_old(WorldScene* world, Memory* scope, Memory* temp_m
 	return std::string(output);
 }
 
-WorldScene* world_serialize()
-{
-
-}
 WorldScene* world_deserialize(std::string world_string, Memory* scope, Memory* temp_memory)
 {
 	WorldState* world_state = parse_deserialize_timemachine(world_string, scope, temp_memory);

@@ -673,7 +673,7 @@ void mainloopfunction()
 				if (ui_state.letters['p' - 'a'].pressed_this_frame)
 				{
 
-					std::string to_print = parse_serialize_timemachine(editor_scene_state->timeMachine, frame_memory, frame_memory);
+					std::string to_print = parse_serialize_timemachine(&(editor_scene_state->timeMachine->world_state), frame_memory, frame_memory);
 					save_puzzle_file(to_print);
 					std::cout << to_print << std::endl;
 					//TimeMachineEditorStartState* res = parse_deserialize_timemachine(to_print, permanent_memory, frame_memory);
@@ -1127,7 +1127,8 @@ void mainloopfunction()
 			}
 			if (ui_state.letters['p' - 'a'].pressed_this_frame)
 			{
-				std::string parsed = world_serialize(world_scene_state, permanent_memory, frame_memory);
+				//std::string parsed = world_serialize(world_scene_state, permanent_memory, frame_memory);
+				std::string parsed = parse_serialize_timemachine(&world_scene_state->world_state, permanent_memory, frame_memory);
 				save_continue_file(parsed);
 			}
 			

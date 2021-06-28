@@ -49,4 +49,4 @@ bool try_parse_names(Tokenizer* t, LevelName* result, Memory* final_memory, Memo
 WorldState* parse_deserialize_timemachine(std::string input_string, Memory* final_memory, Memory* temp_memory);
 
 void parse_serialize_gamestate_layers(char* output, int* output_consumed, int max_output_length, int length, GameState** states);
-std::string parse_serialize_timemachine(TimeMachineEditor* timeMachine, Memory* final_memory, Memory* temp_memory);
+std::string parse_serialize_timemachine(WorldState* world_state, Memory* final_memory, Memory* temp_memory);
