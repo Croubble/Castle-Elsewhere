@@ -107,7 +107,7 @@ void gamestate_timemachine_editor_initialise_from_start(TimeMachineEditor* edito
 	}
 	for (int i = 0; i < pos->num_level; i++)
 	{
-		editor->world_state.level_solved[i] = false;
+		editor->world_state.level_solved[i] = pos->level_solved[i];
 	}
 }
 bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction action)

@@ -24,7 +24,6 @@ int parse_number(const char* pos)
 	}
 	return result;
 }
-
 bool parse_strings_match(const char* pos, const char* match, int max_length)
 {
 	for (int i = 0; i < max_length; i++, pos++, match++)
@@ -127,6 +126,19 @@ bool try_parse_char(Tokenizer* t, char c)
 	return false;
 }
 
+int* try_parse_number_char_pair(Tokenizer* t, Memory* temp_memory, char c)
+{
+	char* on_fail = t->at;
+	int* result = try_parse_number(t, temp_memory);
+	bool char_after = try_parse_char(t, c);
+	if (char_after && result)
+	{
+		return result;
+	}
+	t->at = on_fail;
+	return NULL;
+
+}
 int* try_parse_number_comma_pair(Tokenizer* t, Memory* temp_memory)
 {
 	char* on_fail = t->at;
@@ -152,6 +164,31 @@ int* try_parse_number_dash_pair(Tokenizer* t, Memory* temp_memory)
 	t->at = on_fail;
 	return NULL;
 
+}
+FloorData* try_parse_floor_data(Tokenizer* t, Memory* temp_memory)
+{
+	//todo: fix this
+	char* on_fail = t->at;
+	FloorData* result = (FloorData*) memory_alloc(temp_memory, sizeof(FloorData));
+	int num_val = 0;
+	int* first = try_parse_number_char_pair(t, temp_memory,'-');
+	int* second = try_parse_number_char_pair(t, temp_memory,'-');
+	int* third = try_parse_number(t, temp_memory);
+	if (!first || !second || !third)
+	{
+		t->at = on_fail;
+		return NULL;
+	}
+	result->teleporter_id = *first;
+	result->teleporter_target_square.x = *second;
+	result->teleporter_target_square.y = *third;
+
+	bool found_comma = try_parse_char(t, ',');
+	if (!found_comma)
+	{
+		crash_err("parsing floor data error with comma");
+	}
+	return result;
 }
 PieceData* try_parse_piece_data(Tokenizer* t, Memory* temp_memory)
 {
@@ -288,6 +325,48 @@ bool try_parse_version(Tokenizer* t, int* version_result, IntPair* result, Memor
 	return version_number;
 
 }
+
+bool try_parse_floor_data(Tokenizer* t, GameState** result, Memory* final_memory, Memory* temp_memory)
+{
+	//TODO: Get parsing of floor data working! ZZZ
+	char* on_fail = t->at;
+	bool found_floor_data = try_parse_string(t, "floor_data:");
+	if (found_floor_data)
+	{
+		//parse the width and height.
+		int num_gamestates = 0;
+		while (!try_parse_char(t, ';'))
+		{
+			int* wp = try_parse_number_comma_pair(t, temp_memory);
+			int* hp = try_parse_number_comma_pair(t, temp_memory);
+			if (!wp || !hp)
+			{
+				std::cout << "floor_data layer failed on parsing w h." << std::endl;
+				abort();
+			}
+			int w = *wp;
+			int h = *hp;
+			int len = w * h;
+			if (result[num_gamestates] == NULL)
+				result[num_gamestates] = gamestate_create(final_memory, w, h);
+			for (int i = 0; i < len; i++)
+			{
+				FloorData* nextf = try_parse_floor_data(t, temp_memory);
+				if (!nextf)
+				{
+					std::cout << "parse floor data failed on parsing number." << std::endl;
+					abort();
+				}
+				FloorData next = *nextf;
+				result[num_gamestates]->floor_data[i] = next;
+			}
+			num_gamestates++;
+		}
+		return true;
+	}
+	return false;
+}
+
 bool try_parse_piece_data(Tokenizer* t, GameState** result, Memory* final_memory, Memory* temp_memory)
 {
 	char* on_fail = t->at;
@@ -408,6 +487,33 @@ bool try_parse_bools(Tokenizer* t, bool* result, Memory* final_memory, Memory* t
 	}
 	return true;
 }
+bool try_parse_mode(Tokenizer* t, LevelMode* result, Memory* final_memory, Memory* temp_memory)
+{
+	char* on_fail = t->at;
+	bool is_mode_parse = try_parse_string(t, "mode:");
+	if (!is_mode_parse)
+	{
+		t->at = on_fail;
+		return false;
+	}
+	int num_gamestates = 0;
+	while (!try_parse_char(t, ';'))
+	{
+		int* val = try_parse_number(t, temp_memory);
+		bool comma_next = try_parse_char(t, ',');
+		if (val && comma_next)
+		{
+			result[num_gamestates] = (LevelMode) *val;
+		}
+		else
+		{
+			crash_err("uh oh, we tried to parse ourselves a number comma pair for parsing mode, we couldn't find it, oh noooooo");
+		}
+		num_gamestates++;
+	}
+	return true;
+
+}
 bool try_parse_names(Tokenizer* t, LevelName* result, Memory* final_memory, Memory* temp_memory)
 {
 	char* on_fail = t->at;
@@ -483,8 +589,11 @@ WorldState* parse_deserialize_timemachine(std::string input_string, Memory* fina
 		bool parsed_positions = try_parse_positions(&tokenizer, result->level_position, temp_memory);
 		bool parsed_layer = try_parse_layer(&tokenizer, result->level_state, final_memory, temp_memory);
 		bool parsed_piece_data = try_parse_piece_data(&tokenizer, result->level_state, final_memory, temp_memory);
+		bool parsed_floor_data = try_parse_floor_data(&tokenizer, result->level_state, final_memory, temp_memory);
 		bool parsed_names = try_parse_names(&tokenizer, result->level_names, final_memory, temp_memory);
+
 		bool parsed_level_solved = try_parse_bools(&tokenizer, result->level_solved, final_memory, temp_memory);
+		bool parsed_level_mode = try_parse_mode(&tokenizer, result->level_modes, final_memory, temp_memory);
 		if (!maybe_num_gamestates && !parsed_positions && !parsed_layer && !parsed_names && !parsed_piece_data)
 		{
 			std::cout << "uh oh, we've failed to parse something and the parsing isn't over. Better crash!" << std::endl;
@@ -552,6 +661,26 @@ void parse_serialize_gamestate_layers(char* output, int* output_consumed, int ma
 		}
 	}
 	*output_consumed += sprintf_s(output + *output_consumed, max_output_length, ";\n");
+	//serialize floor data.
+	*output_consumed += sprintf_s(output + *output_consumed, max_output_length, "floor_data:");
+	for (int i = 0; i < length; i++)
+	{
+		GameState* state = states[i];
+		const int w = state->w;
+		const int h = state->h;
+		const int layer_len = w * h;
+		*output_consumed += sprintf_s(output + *output_consumed, max_output_length, "%d,%d,", w, h);
+		for (int j = 0; j < w * h; j++)
+		{
+			*output_consumed += sprintf_s(output + *output_consumed, max_output_length, "%d-%d-%d,",
+				state->floor_data[j].teleporter_id,
+				state->floor_data[j].teleporter_target_square.x,
+				state->floor_data[j].teleporter_target_square.y
+			);
+		}
+	}
+
+	*output_consumed += sprintf_s(output + *output_consumed, max_output_length, ";\n");
 }
 std::string parse_serialize_timemachine(WorldState* world_state, Memory* final_memory, Memory* temp_memory)
 {
@@ -575,32 +704,6 @@ std::string parse_serialize_timemachine(WorldState* world_state, Memory* final_m
 	}
 	//serialize all the gamestates layers.
 	parse_serialize_gamestate_layers(output, &output_consumed, max_length, num_gamestates, world_state->level_state);
-	/*
-	{
-		for (int z = 0; z < GAME_NUM_LAYERS; z++)
-		{
-			output_consumed += sprintf_s(output + output_consumed, max_length, "layer%i:", z);
-			for (int i = 0; i < num_gamestates; i++)
-			{
-				GameState* state = timeMachine->gamestates[i];
-				//serialize the gamestate.
-				{
-					const int w = timeMachine->gamestates[i]->w;
-					const int h = timeMachine->gamestates[i]->h;
-					const int layer_len = w * h;
-					output_consumed += sprintf_s(output + output_consumed, max_length, "%d,%d", w, h);
-					for (int j = 0; j < layer_len; j++)
-					{
-						output_consumed += sprintf_s(output + output_consumed, max_length, ",%d", timeMachine->gamestates[i]->layers[z][j]);
-					}
-					output_consumed += sprintf_s(output + output_consumed, max_length, ",");
-				}
-			}
-			//put a little ';' at the end of that serialized gamestate.
-			output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
-		}
-	}
-	*/
 	//serialize the gamestates names.
 	{
 		output_consumed += sprintf_s(output + output_consumed, max_length, "names:");
@@ -618,6 +721,16 @@ std::string parse_serialize_timemachine(WorldState* world_state, Memory* final_m
 			output_consumed += sprintf_s(output + output_consumed, max_length, "%d,", world_state->level_solved[i]);
 		}
 		output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
+	}
+	//serialize the gamestate level mode.
+	{
+		output_consumed += sprintf_s(output + output_consumed, max_length, "mode:");
+		for (int i = 0; i < num_gamestates; i++)
+		{
+			output_consumed += sprintf_s(output + output_consumed, max_length, "%d,", world_state->level_modes[i]);
+		}
+		output_consumed += sprintf_s(output + output_consumed, max_length, ";\n");
+
 	}
 	return std::string(output);
 }
