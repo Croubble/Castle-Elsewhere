@@ -1141,11 +1141,11 @@ void mainloopfunction()
 			//after taking an action, if there's suddenly a time machine, that means its time to switch scenes!
 			if (world_play_scene_state != NULL)
 			{
-				//scene = SCENE_TYPE::ST_PLAY_LEVEL;
-				scene = SCENE_TYPE::ST_SHOW_TEXT;
+				scene = SCENE_TYPE::ST_PLAY_LEVEL;
 				ui_state.time_since_scene_started = 0;
 				ui_state.time_since_last_player_action = 0;
-				text_scene_state = level_popup(world_scene_state->world_state.level_names[world_scene_state->current_level].name, text_memory, ui_state.total_time_passed);
+				//scene = SCENE_TYPE::ST_SHOW_TEXT;
+				//text_scene_state = level_popup(world_scene_state->world_state.level_names[world_scene_state->current_level].name, text_memory, ui_state.total_time_passed);
 			}
 
 #pragma endregion	
