@@ -7,6 +7,8 @@ enum FLOOR
     GrillCot,
     GrillHot,
     Outline,
+    Stair,
+    Staircase,
     Start,
     Target,
     ZBlack,

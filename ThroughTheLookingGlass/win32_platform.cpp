@@ -88,9 +88,6 @@ GameSpaceCamera camera_game;
 ViewPortCamera camera_viewport;
 glm::mat4 camera;
 
-//time machines.
-//TimeMachineEditor* timeMachine;
-//TimeMachineEditorStartState* time_machine_start_state;
 
 //mouse state:
 glm::vec2 dragging_start_position_in_gamespace = glm::vec2(0, 0);
@@ -1691,7 +1688,7 @@ int main(int argc, char *argv[])
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		
 		spriteShader = shader_compile_program("movesprite.vs", "movesprite.f");
-		fullSpriteShader = shader_compile_program("fullsprite.vs", "sprite.f");
+		fullSpriteShader = shader_compile_program("fullsprite.vs", "color_sprite.f");
 		dottedShader = shader_compile_program("dottedlines.vs", "dottedlines.f");
 		textShader = shader_compile_program("text.vs", "sprite.f");
 		stringShader = shader_compile_program("string.vs", "string.f");
@@ -2325,38 +2322,3 @@ bool MaybeApplyBrushInPlayMode(Memory* memory, GamestateBrush* palete,int curren
 	return false;
 }
 
-
-/*
-	
-	okay so what are some things I could do that would make me happier:
-	2. Code compress where possible
-		-we are drawing in 4 different ways, to world edit, view edit, world play, level play. There is alot of overlap.
-		-level play, with all its animations, is unecessarily difficult to read. lets fix that.
-	3. Architecture
-		- mainHelers, while nice, has gotten waaay to big. Let's break those functions into different fill.
-*/
-
-/*
-	//use curse crate
-	//curse crate against wall that needs to stick against wall gets stuck in a "there are two places we are allowed to stand".
-	//curse crate s
-
-
-	Priority:
-	1. Editor helper uitilities: nope
-	2. Menu -> medium (could be optional)
-	3. Animation when player finishes a level -> low
-	4. Sound! Sound! Sound! - high
-	5. animation for shining -> medium
-	6. particle system -> low
-	7. research windows conversion - high
-	8. ui library -> low
-	9. rigidbodies -> no
-
-	4. Sound!
-	5. Enscriptem conversion
-	1. Convert empty file
-	2. Convert example project that relies on sdl2
-	3. Convert actual game! 
-		3a - probs gonna have to do some file conversion ughf.
-*/

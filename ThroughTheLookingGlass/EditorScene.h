@@ -22,7 +22,7 @@ EditorScene* editorscene_setup_with_start_state(Memory* editor_memory, ViewPortC
 
 	result->palete = (GamestateBrush*)memory_alloc(editor_memory, sizeof(GamestateBrush) * palete_length);
 	result->currentBrush = 0;
-	result->palete_screen_start = math_intpair_create(camera_viewport.left + 60, camera_viewport.up - 120);
+	result->palete_screen_start = math_intpair_create(camera_viewport.left, camera_viewport.up - 120);
 	{
 		int i = 0;
 		result->palete[i++] = gamestate_brush_create(true, F_NONE, true, P_NONE, false, gamestate_piecedata_make(),false,gamestate_floordata_make());

@@ -152,11 +152,6 @@ void draw_text_maximized_centered_to_screen(GameSpaceCamera camera, const char* 
 		float x_space_left_half = x_space_left / 2.0f;
 		start_text_x_true_start = camera.left + x_space_left_half;
 	}
-	//TODO: Finish this so the text is actually properly centered on the screen.
-	//	float text_max_height = 
-
-	//	float x_center = (camera.right + camera.left) / 2.0f;
-	//	float x_start = screen_center.x - (text_width * x_scale) / 2.0f;
 	draw_text_to_screen(glm::vec3(start_text_x_true_start, start_text_y_true_start, screen_center.z), glm::vec2(x_scale, x_scale), string_to_draw, text_draw_info);
 }
 

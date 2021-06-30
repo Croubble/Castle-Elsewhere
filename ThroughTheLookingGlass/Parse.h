@@ -9,18 +9,6 @@
 *   [MyVar]: [... all the stuff];
 *   is used to seperate every major kind of parse value. from there, once we've identified what were actually parsing, we have our own system.
 */
-struct StringSegment
-{
-	char* pos;
-	int length;
-};
-
-enum SegmentType
-{
-	FULL_LINE,
-	TEXT,
-
-};
 
 struct Tokenizer
 {
