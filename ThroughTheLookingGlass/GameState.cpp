@@ -643,7 +643,7 @@ bool is_level_start(int val)
 }
 bool is_staircase(int val)
 {
-	return val == F_STAIRCASE || val == F_STAIRCASE_LEVELSTART;
+	return val == F_STAIRCASE || val == F_STAIRCASE_LEVELSTART || val == F_STAIRCASE_SOLVED;
 }
 bool is_player(int val)
 {
@@ -849,7 +849,7 @@ void gamestate_print_staircase_tele_value(GameState** gamestate, int len)
 		int h = gamestate[z]->h;
 		for (int i = 0; i < w * h; i++)
 		{
-			if (gamestate[z]->floor[i] == F_STAIRCASE || gamestate[z]->floor[i] == F_STAIRCASE_LEVELSTART)
+			if (is_staircase(gamestate[z]->floor[i]))
 			{
 				std::cout << "i" << i << ",tele_link" << gamestate[z]->floor_data[i].teleporter_id << std::endl;
 			}

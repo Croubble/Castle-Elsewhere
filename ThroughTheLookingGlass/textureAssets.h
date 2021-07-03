@@ -11,6 +11,7 @@ enum FLOOR
     Staircase,
     Start,
     Target,
+    Tick,
     ZBlack,
     ZBZ
 };

@@ -72,7 +72,6 @@ AABB calculate_outline_position_from_drag_info(Memory* frame_memory,
 	EditorUIState ui_state,
 	glm::vec2 dragging_start_position_in_gamespace);
 AABB calculate_outline_from_move_info(Memory* frame_memory, TimeMachineEditor* timeMachine, EditorUIState ui_state);
-IntPair calculate_floor_cell_clicked(GameState* currentState, IntPair position, glm::vec2 mouseGamePos);
 
 /********************************************************************/
 /**************************text utils********************************/

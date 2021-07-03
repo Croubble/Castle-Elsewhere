@@ -6,12 +6,6 @@
 #include "Constants.h"
 #include <iostream>
 
-struct WorldPosition
-{
-	int level_index;
-	IntPair level_position;
-	int level_position_1d;
-};
 struct WorldScene
 {
 	//data that is used for moving that player around.
@@ -19,6 +13,7 @@ struct WorldScene
 	WorldPosition staircase_we_entered_level_from;
 	int current_level;
 
+	bool last_action_was_teleport;
 	//data that is just the state our 
 	WorldState world_state;
 };
@@ -30,8 +25,6 @@ struct WorldPlayScene
 };
 
 void world_try_reversing_staircase(WorldScene* scene);
-WorldPosition world_make_world_position_invalid();
-WorldPosition world_make_world_position(int level_index, IntPair pos_2d, int pos_1d);
 WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory* level_memory);
 WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene_memory, SCENE_TYPE go_to_on_backspace);
 bool any_levels_left_active(WorldScene* to_check);

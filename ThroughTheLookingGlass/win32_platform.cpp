@@ -620,7 +620,7 @@ void mainloopfunction()
 				//HANDLE changing a games mode.
 				if (ui_state.letters['y' - 'a'].pressed_this_frame)
 				{
-					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					int index_clicked = gamestate_timemachine_get_click_collision_gamestate(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
 						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
@@ -630,7 +630,7 @@ void mainloopfunction()
 				}
 				if (ui_state.letters['u' - 'a'].pressed_this_frame)
 				{
-					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					int index_clicked = gamestate_timemachine_get_click_collision_gamestate(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
 						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
@@ -640,7 +640,7 @@ void mainloopfunction()
 				}
 				if (ui_state.letters['i' - 'a'].pressed_this_frame)
 				{
-					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					int index_clicked = gamestate_timemachine_get_click_collision_gamestate(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
 						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
@@ -682,15 +682,13 @@ void mainloopfunction()
 				//HANDLE expanding width.
 				if (ui_state.letters['w' - 'a'].pressed_this_frame)
 				{
-					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
-					if (index_clicked >= 0)
+					WorldPosition position_clicked = gamestate_timemachine_get_click_collision_full(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					if (position_clicked.level_index >= 0 && position_clicked.level_position_1d >= 0)
 					{
-						GameState* state = editor_scene_state->timeMachine->world_state.level_state[index_clicked];
-						IntPair state_start = editor_scene_state->timeMachine->world_state.level_position[index_clicked];
-						IntPair grid_clicked = calculate_floor_cell_clicked(state, state_start, ui_state.mouseGamePos);
+						GameState* state = editor_scene_state->timeMachine->world_state.level_state[position_clicked.level_index];
 						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
-						GameState* next = gamestate_add_row(state, editor_scene_state->timeMachine->gamestate_memory, grid_clicked.x, grid_clicked.y);
-						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, editor_scene_state->timeMachine->world_state.level_names[index_clicked]);
+						GameState* next = gamestate_add_row(state, editor_scene_state->timeMachine->gamestate_memory, position_clicked.level_position.x, position_clicked.level_position.y);
+						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, position_clicked.level_index, editor_scene_state->timeMachine->world_state.level_names[position_clicked.level_index]);
 						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 
@@ -698,12 +696,13 @@ void mainloopfunction()
 				//HANDLE exapnding height.
 				if (ui_state.letters['h' - 'a'].pressed_this_frame)
 				{
-					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+
+					WorldPosition position_clicked = gamestate_timemachine_get_click_collision_full(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					int index_clicked = position_clicked.level_index;
+					IntPair grid_clicked = position_clicked.level_position;
 					if (index_clicked >= 0)
 					{
 						GameState* state = editor_scene_state->timeMachine->world_state.level_state[index_clicked];
-						IntPair state_start = editor_scene_state->timeMachine->world_state.level_position[index_clicked];
-						IntPair grid_clicked = calculate_floor_cell_clicked(state, state_start, ui_state.mouseGamePos);
 						//TODO: don't use permanent memory, use something else, just a bit easier to waste memory now.
 						GameState* next = gamestate_add_column(state, permanent_memory, grid_clicked.x, grid_clicked.y);
 						TimeMachineEditorAction action = gamestate_timemachineaction_create_update_gamestate(next, index_clicked, editor_scene_state->timeMachine->world_state.level_names[index_clicked]);
@@ -713,7 +712,7 @@ void mainloopfunction()
 				//HANDLE surrounding level with crates.
 				if (ui_state.letters['c' - 'a'].pressed_this_frame)
 				{
-					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					int index_clicked = gamestate_timemachine_get_click_collision_gamestate(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
 						GameState* state = editor_scene_state->timeMachine->world_state.level_state[index_clicked];
@@ -725,7 +724,7 @@ void mainloopfunction()
 				//HANDLE DELETE GAMESTATE
 				if (ui_state.click_left_down_this_frame && ui_state.control_key_down)
 				{
-					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					int index_clicked = gamestate_timemachine_get_click_collision_gamestate(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
 						GameState* currentState = editor_scene_state->timeMachine->world_state.level_state[index_clicked];
@@ -737,7 +736,7 @@ void mainloopfunction()
 				//HANDLE play mode clicking on a gamestate.
 				if (ui_state.click_left_down_this_frame && ui_state.alt_key_down && !left_click_action_resolved)
 				{
-					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					int index_clicked = gamestate_timemachine_get_click_collision_gamestate(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
 						//get the gamestate we want. 
@@ -828,7 +827,7 @@ void mainloopfunction()
 				//HANDLE shift clicking on a gamestate
 				if (ui_state.mouse_left_click_down && ui_state.shift_key_down)
 				{
-					int index_clicked = gamestate_timemachine_get_click_collision(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
+					int index_clicked = gamestate_timemachine_get_click_collision_gamestate(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
 					{
 						ui_state.type = ECS_MOVE_GAMESTATE;
@@ -1159,7 +1158,11 @@ void mainloopfunction()
 					GameState* current_gamestate = world_scene_state->world_state.level_state[current_num_player_standing_on];
 					IntPair gamestate_pos = world_scene_state->world_state.level_position[current_num_player_standing_on];
 					world_camera_goal = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport);
-					world_camera_start = world_camera;
+					//if we teleported, just instantly move the camera, otherwise have it pan.
+					if (world_scene_state->last_action_was_teleport)
+						world_camera_start = world_camera_goal;
+					else
+						world_camera_start = world_camera;
 				}
 				else
 				{
@@ -1182,26 +1185,6 @@ void mainloopfunction()
 
 #pragma endregion
 #pragma region handle_state_update
-			//handle camera
-			{
-				int current_num_player_standing_on = world_scene_state->current_level;
-				if (old_gamestate_num_player_standing_on != current_num_player_standing_on)
-				{
-					world_camera_lerp = 0;
-				}
-				else
-				{
-					world_camera_lerp += delta;
-				}
-				GameState* current_gamestate = world_scene_state->world_state.level_state[current_num_player_standing_on];
-				IntPair gamestate_pos = world_scene_state->world_state.level_position[current_num_player_standing_on];
-
-				//commented out so we only do this exactly once, rather than each frame.
-				//world_camera_goal = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport, 0.3f, 0.3f);
-				//world_camera_start = world_camera;
-			}
-			world_camera = math_camera_move_towards_lerp(world_camera_start, world_camera_goal, world_camera_lerp, CAMERA_LERP_TIME);
-			//camera = camera_make_matrix(world_camera);
 			//handle win update.
 			if (gamestate_is_in_win_condition(&world_play_scene_state->time_machine->state_array[world_play_scene_state->time_machine->num_gamestates_stored - 1]))
 			{
@@ -1226,6 +1209,27 @@ void mainloopfunction()
 				world_scene_state->staircase_we_entered_level_from.level_index = -1;//we aren't in level, so there is no staircase to store.
 				world_play_scene_state->time_machine = NULL;
 			}
+			//handle camera
+			{
+				int current_num_player_standing_on = world_scene_state->current_level;
+				if (old_gamestate_num_player_standing_on != current_num_player_standing_on)
+				{
+					world_camera_lerp = 0;
+					GameState* current_gamestate = world_scene_state->world_state.level_state[current_num_player_standing_on];
+					IntPair gamestate_pos = world_scene_state->world_state.level_position[current_num_player_standing_on];
+					world_camera_goal = math_camera_build_for_gamestate(current_gamestate, gamestate_pos, camera_viewport);
+					world_camera_start = world_camera_goal;
+
+				}
+				else
+				{
+					world_camera_lerp += delta;
+				}
+
+			}
+			world_camera = math_camera_move_towards_lerp(world_camera_start, world_camera_goal, world_camera_lerp, CAMERA_LERP_TIME);
+
+
 			//handle returning to world map by request.
 			if (ui_state.backspace_key_down_this_frame)
 			{
@@ -2237,21 +2241,6 @@ AABB calculate_outline_position_from_drag_info(Memory* frame_memory,
 }
 
 
-IntPair calculate_floor_cell_clicked(GameState* currentState,IntPair position, glm::vec2 mouseGamePos)
-{
-
-	float left = (float) position.x;
-	float right = (float) (position.x + currentState->w);
-	float down = (float) position.y;
-	float up = (float) (position.y + currentState->h);
-	//calculate what floor cell we actually clicked.
-	float percentageX = percent_between_two_points(mouseGamePos.x, left, right);
-	float percentageY = percent_between_two_points(mouseGamePos.y, down, up);
-	int x_floor_cell_clicked = (int)(percentageX * currentState->w);
-	int y_floor_cell_clicked = (int)(percentageY * currentState->h);
-
-	return math_intpair_create(x_floor_cell_clicked, y_floor_cell_clicked);
-}
 bool MaybeApplyBrush(GamestateBrush* palete,int currentBrush, EditorUIState* ui_state, TimeMachineEditor* timeMachine,glm::vec2 mouseGamePos)
 {
 	for (int i = 0; i < timeMachine->world_state.num_level; i++)

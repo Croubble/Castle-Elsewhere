@@ -7,11 +7,13 @@ void world_try_reversing_staircase(WorldScene* scene)
 {
 	if (scene->staircase_we_entered_level_from.level_index >= 0)
 	{
+		scene->last_action_was_teleport = true;
 		WorldPosition current_pos = world_maybe_find_player(scene);
 		WorldPosition revert_pos = scene->staircase_we_entered_level_from;
 		if (current_pos.level_index == -1)
 			crash_err("uh ohhh, we tried to find a player but couldn't find one, that shouldn't have happened");
 		int player_val = scene->world_state.level_state[current_pos.level_index]->piece[current_pos.level_position_1d];
+		scene->world_state.level_state[revert_pos.level_index]->floor[revert_pos.level_position_1d] = F_STAIRCASE_SOLVED;
 		
 		//delete the player from the current position, and put them on our old position. TODO: do this when we backspace as well.
 		scene->world_state.level_state[current_pos.level_index]->piece[current_pos.level_position_1d] = P_NONE;
@@ -20,21 +22,9 @@ void world_try_reversing_staircase(WorldScene* scene)
 	}
 }
 
-WorldPosition world_make_world_position(int level_index, IntPair pos_2d, int pos_1d)
-{
-	WorldPosition result;
-	result.level_index = level_index;
-	result.level_position = pos_2d;
-	result.level_position_1d = pos_1d;
-	return result;
-}
-
-WorldPosition world_make_world_position_invalid()
-{
-	return world_make_world_position(-1, math_intpair_create(-1, -1), -1);
-}
 WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory* level_memory)
 {
+	scene->last_action_was_teleport = false;
 	//grab some useful information that we will reuse.
 	IntPair move = direction_to_intpair(action);
 	GameState* current_state = scene->world_state.level_state[scene->current_level];
@@ -149,9 +139,10 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 				}
 				//remove the player from their current position, teleport them to our new position, and update the new final position for the player.
 				{
+
+					scene->last_action_was_teleport = false;
 					next_state->piece[next_square_position_1d] = 0;
 					scene->world_state.level_state[link_location]->piece[link_square_1d] = Piece::P_PLAYER;
-
 					GameState* next = scene->world_state.level_state[next_square_level];
 					int level_pos_1d = f2D(next_player_square_position.x, next_player_square_position.y, next->w, next->h);
 					scene->staircase_we_entered_level_from = world_make_world_position(scene->current_level, next_player_square_position, level_pos_1d);
@@ -185,18 +176,22 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 			}
 		}
 	}
+
 	return NULL;
+
+
 }
 WorldScene* setup_world_scene_continue(WorldScene* scene, SCENE_TYPE go_to_on_backspace)
 {
 	scene->go_to_on_backspace = go_to_on_backspace;
+	scene->last_action_was_teleport = false;
 	return scene;
 }
 WorldScene* setup_world_scene(TimeMachineEditor* build_from, Memory* world_scene_memory, SCENE_TYPE go_to_on_backspace)
 {
 	WorldScene* result = (WorldScene*)memory_alloc(world_scene_memory, sizeof(WorldScene));
 	result->go_to_on_backspace = go_to_on_backspace;
-
+	result->last_action_was_teleport = false;
 	const int num_gamestates = build_from->world_state.num_level;
 	result->world_state.num_level = num_gamestates;
 	for (int i = 0; i < num_gamestates; i++)
@@ -347,58 +342,6 @@ WorldScene* world_deserialize(std::string world_string, Memory* scope, Memory* t
 	result->current_level = world_maybe_find_player(result).level_index;
 	result->staircase_we_entered_level_from = world_make_world_position_invalid();
 	result->go_to_on_backspace = SCENE_TYPE::ST_COUNT; //default value, this is determined elsewhere.
-	return result;
-}
-WorldScene* world_deserialize_old(std::string world_string, Memory* scope, Memory* temp_memory)
-{	
-	//strip all whitespace from the input.
-	{
-		// end_pos = std::remove(input_string.begin(), input_string.end(), ' ');
-		//input_string.erase(end_pos, input_string.end());
-		std::string::iterator end_pos = std::remove(world_string.begin(), world_string.end(), '\n');
-		world_string.erase(end_pos, world_string.end());
-	}
-
-	WorldScene* result = (WorldScene*)memory_alloc(scope, sizeof(WorldScene));
-	for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
-	{
-		result->world_state.level_state[i] = NULL;
-	}
-	for (int i = 0; i < MAX_NUMBER_GAMESTATES; i++)
-		for(int j = 0; j < GAME_LEVEL_NAME_MAX_SIZE;j++)
-	{
-		result->world_state.level_names[i].name[j] = '\0';
-	}
-	//get input
-	char* input = &(world_string[0]);
-	Tokenizer tokenizer;
-	tokenizer.at = input;
-
-	//parse number gamestates.
-	int* maybe_num_gamestates = try_parse_num_gamestates(&tokenizer, temp_memory);
-	if (!maybe_num_gamestates)
-		crash_err("failed to pass num gamestates");
-	result->world_state.num_level = *maybe_num_gamestates;
-	//parse current level.
-	int* current_level = try_parse_current_level(&tokenizer, temp_memory);
-	if (!current_level)
-		crash_err("failed to pass current level");
-	result->current_level = *current_level;
-	//parse positions:
-	{
-		bool success = try_parse_positions(&tokenizer, result->world_state.level_position, temp_memory);
-		if (!success)
-			crash_err("failed to parse positions when loading a saved game");
-	}
-	//parse gamestate elements.
-	{
-		for(int i = 0; i < LN_COUNT;i++)
-			bool success = try_parse_layer(&tokenizer, result->world_state.level_state, scope, temp_memory);
-	}
-	//parse gamestate names.
-bool parsed_names = try_parse_names(&tokenizer, result->world_state.level_names, scope, temp_memory);
-	//parse solved.
-bool parsed_solved = try_parse_bools(&tokenizer, result->world_state.level_solved, scope, temp_memory);
 	return result;
 }
 

@@ -15,7 +15,7 @@ void delete_gamestate_from_list_internal(TimeMachineEditor* editor, int index_to
 		for (int z = 0; z < editor->world_state.level_state[i]->w * editor->world_state.level_state[i]->h;z++)
 		{
 			//if we find a staircase on this floortile...
-			if (editor->world_state.level_state[i]->floor[z] == Floor::F_STAIRCASE || editor->world_state.level_state[i]->floor[z] == F_STAIRCASE_LEVELSTART)
+			if (is_staircase(editor->world_state.level_state[i]->floor[z]))
 			{
 				int tele_link = editor->world_state.level_state[i]->floor_data[z].teleporter_id;
 				//and the staircase is pointing to the level we are deleting...
@@ -163,6 +163,7 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 						std::cout << "last target square 1d" << last_target_square_1d << std::endl;
 						editor->world_state.level_state[target_level]->floor_data[target_square_1d].teleporter_id = last_target_level;
 						editor->world_state.level_state[target_level]->floor_data[target_square_1d].teleporter_target_square = last_target_square;
+						editor->world_state.level_modes[target_level] = LevelMode::Repeat;
 				}
 			}
 
@@ -298,8 +299,45 @@ void gamestate_timemachine_editor_take_action(TimeMachineEditor* editor, WorldSt
 
 }
 
+WorldPosition world_make_world_position(int level_index, IntPair pos_2d, int pos_1d)
+{
+	WorldPosition result;
+	result.level_index = level_index;
+	result.level_position = pos_2d;
+	result.level_position_1d = pos_1d;
+	return result;
+}
 
-int gamestate_timemachine_get_click_collision(TimeMachineEditor* timeMachine, float mouse_game_pos_x,float mouse_game_pos_y)
+WorldPosition world_make_world_position_invalid()
+{
+	return world_make_world_position(-1, math_intpair_create(-1, -1), -1);
+}
+
+WorldPosition gamestate_timemachine_get_click_collision_full(TimeMachineEditor* timeMachine, float mouse_game_pos_x, float mouse_game_pos_y)
+{
+	glm::vec2 mouseGamePos = glm::vec2(mouse_game_pos_x, mouse_game_pos_y);
+	int index_clicked = gamestate_timemachine_get_click_collision_gamestate(timeMachine, mouse_game_pos_x, mouse_game_pos_y);
+	GameState* state = timeMachine->world_state.level_state[index_clicked];
+	IntPair state_start = timeMachine->world_state.level_position[index_clicked];
+	IntPair grid_clicked;
+	{
+		float left = (float) state_start.x;
+		float right = (float) (state_start.x + state->w);
+		float down = (float) state_start.y;
+		float up = (float) (state_start.y + state->h);
+		//calculate what floor cell we actually clicked.
+		float percentageX = percent_between_two_points(mouseGamePos.x, left, right);
+		float percentageY = percent_between_two_points(mouseGamePos.y, down, up);
+		int x_floor_cell_clicked = (int)(percentageX * state->w);
+		int y_floor_cell_clicked = (int)(percentageY * state->h);
+
+		grid_clicked = math_intpair_create(x_floor_cell_clicked, y_floor_cell_clicked);
+	}
+	int grid_clicked_1d = f2D(grid_clicked.x, grid_clicked.y, state->w, state->h);
+	WorldPosition result = world_make_world_position(index_clicked, grid_clicked, grid_clicked_1d);
+	return result;
+}
+int gamestate_timemachine_get_click_collision_gamestate(TimeMachineEditor* timeMachine, float mouse_game_pos_x,float mouse_game_pos_y)
 {
 	for (int i = 0; i < timeMachine->world_state.num_level; i++)
 	{

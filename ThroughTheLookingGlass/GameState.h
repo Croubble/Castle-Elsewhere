@@ -37,6 +37,7 @@ enum Floor {
 	F_EXIT,
 	F_STAIRCASE,
 	F_STAIRCASE_LEVELSTART,
+	F_STAIRCASE_SOLVED,
 	F_COUNT
 };
 enum CratePower {

@@ -24,6 +24,13 @@ enum LevelMode
 	Overworld
 };
 
+struct WorldPosition
+{
+	int level_index;
+	IntPair level_position;
+	int level_position_1d;
+};
+
 struct SplitGamestate
 {
 	int target_gamestate_index;
@@ -124,13 +131,17 @@ struct TimeMachineEditor
 
 	WorldState world_state;
 };
-
-int gamestate_timemachine_get_click_collision(TimeMachineEditor* timeMachine, float mouse_game_pos_x, float mouse_game_pos_y);
+WorldPosition gamestate_timemachine_get_click_collision_full(TimeMachineEditor* timeMachine, float mouse_game_pos_x, float mouse_game_pos_y);
+int gamestate_timemachine_get_click_collision_gamestate(TimeMachineEditor* timeMachine, float mouse_game_pos_x, float mouse_game_pos_y);
 TimeMachineEditor* gamestate_timemachine_editor_create(Memory* memory, Memory* GamestateMemory);
 void gamestate_timemachine_editor_initialise_from_start(TimeMachineEditor* editor, WorldState* pos);
 void gamestate_timemachine_startstate_empty_init(WorldState* start_state);
 void gamestate_timemachine_editor_take_action(TimeMachineEditor* editor, WorldState* maybe_start_state, TimeMachineEditorAction action);
 
+
+//world pos stuff.
+WorldPosition world_make_world_position_invalid();
+WorldPosition world_make_world_position(int level_index, IntPair pos_2d, int pos_1d);
 
 /************************GAMESTATE TIME MACHINE**********************/
 

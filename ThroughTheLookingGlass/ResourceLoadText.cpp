@@ -36,6 +36,8 @@ textureAssets::FLOOR resource_floor_to_sprite(Floor floor)
 		return textureAssets::FLOOR::GrillHot;
 	if (floor == F_STAIRCASE || floor == F_STAIRCASE_LEVELSTART)
 		return textureAssets::FLOOR::Staircase;
+	if (floor == F_STAIRCASE_SOLVED)
+		return textureAssets::FLOOR::Tick;
 	return (textureAssets::FLOOR) floor;
 }
 textureAssets::PIECE resource_piece_to_sprite(Piece piece)
