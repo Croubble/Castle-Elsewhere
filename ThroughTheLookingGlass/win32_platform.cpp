@@ -963,33 +963,29 @@ void mainloopfunction()
 					ui_state.type = ECS_NEUTRAL;
 				}
 			}
-			if (ui_state.type == ECS_MOVE_GAMESTATE)
+			if (ui_state.type == ECS_MOVE_GAMESTATE && ui_state.click_left_up_this_frame)
 			{
-				if (ui_state.click_left_up_this_frame)
+				//calculate the space we are currently under
+				AABB next = calculate_outline_from_move_info(frame_memory, editor_scene_state->timeMachine, ui_state);
+				AABB* boxes = gamestate_create_colliders(frame_memory,
+					editor_scene_state->timeMachine->world_state.level_state,
+					editor_scene_state->timeMachine->world_state.level_position,
+					editor_scene_state->timeMachine->world_state.num_level,
+					ui_state.un.move.moving_gamestate_index);
+				bool changeValid = !math_AABB_is_colliding(next, boxes, editor_scene_state->timeMachine->world_state.num_level - 1);
+				if (changeValid)
 				{
-					//calculate the space we are currently under
-					AABB next = calculate_outline_from_move_info(frame_memory, editor_scene_state->timeMachine, ui_state);
-					AABB* boxes = gamestate_create_colliders(frame_memory,
-						editor_scene_state->timeMachine->world_state.level_state,
-						editor_scene_state->timeMachine->world_state.level_position,
-						editor_scene_state->timeMachine->world_state.num_level,
-						ui_state.un.move.moving_gamestate_index);
-					bool changeValid = !math_AABB_is_colliding(next, boxes, editor_scene_state->timeMachine->world_state.num_level - 1);
-					if (changeValid)
-					{
-						//calculate the distance between that space and the starting space.
-						glm::vec2 distance = ui_state.mouseGamePos - ui_state.un.move.move_start_position;
-						//transfer that into an int offset to apply to the moved gamestate.
-						IntPair offset = math_intpair_create((int)distance.x, (int)distance.y);
-						//create a move action, and apply it to the timeMachine.
-						TimeMachineEditorAction action = gamestate_timemachineaction_create_move_gamestate(ui_state.un.move.moving_gamestate_index, offset);
-						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
-					}
-
-
-					//revert the ui_state to neutral.
-					ui_state.type = ECS_NEUTRAL;
+					//calculate the distance between that space and the starting space.
+					glm::vec2 distance = ui_state.mouseGamePos - ui_state.un.move.move_start_position;
+					//transfer that into an int offset to apply to the moved gamestate.
+					IntPair offset = math_intpair_create((int)distance.x, (int)distance.y);
+					//create a move action, and apply it to the timeMachine.
+					TimeMachineEditorAction action = gamestate_timemachineaction_create_move_gamestate(ui_state.un.move.moving_gamestate_index, offset);
+					gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 				}
+
+				//revert the ui_state to neutral.
+				ui_state.type = ECS_NEUTRAL;
 			}
 			if (ui_state.type == ECS_CREATE_GAMESTATE && !ui_state.click_left_down_this_frame)
 			{

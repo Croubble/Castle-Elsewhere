@@ -1,5 +1,41 @@
 #include "Click.h"
 
+
+
+MappingState click_make_default_mapping_state()
+{
+	MappingState result;
+	for (int i = 0; i < G_LENGTH; i++)
+	{
+		result.primary_mapping[i] = SDLK_UNKNOWN;
+		result.secondary_mapping[i] = SDLK_UNKNOWN;
+	}
+	result.primary_mapping[G_UP] = SDLK_UP;
+	result.primary_mapping[G_DOWN] = SDLK_DOWN;
+	result.primary_mapping[G_LEFT] = SDLK_LEFT;
+	result.primary_mapping[G_RIGHT] = SDLK_RIGHT;
+	result.primary_mapping[G_UNDO] = SDLK_z;
+	result.primary_mapping[G_RESET] = SDLK_r;
+	result.primary_mapping[G_EXIT_LEVEL] = SDLK_q;
+	result.primary_mapping[G_BACK_MENU] = SDLK_BACKSPACE;
+	result.primary_mapping[G_MENU_UP] = SDLK_w;
+	result.primary_mapping[G_MENU_DOWN] = SDLK_s;
+	result.primary_mapping[G_MENU_ENTER] = SDLK_KP_ENTER;
+
+	result.secondary_mapping[G_UP] = SDLK_w;
+	result.secondary_mapping[G_DOWN] = SDLK_s;
+	result.secondary_mapping[G_LEFT] = SDLK_a;
+	result.secondary_mapping[G_RIGHT] = SDLK_d;
+	result.secondary_mapping[G_UNDO] = SDLK_UNKNOWN;
+	result.secondary_mapping[G_RESET] = SDLK_UNKNOWN;
+	result.secondary_mapping[G_EXIT_LEVEL] = SDLK_UNKNOWN;
+	result.secondary_mapping[G_BACK_MENU] = SDLK_UNKNOWN;
+	result.secondary_mapping[G_MENU_UP] = SDLK_UP;
+	result.secondary_mapping[G_MENU_DOWN] = SDLK_DOWN;
+	result.secondary_mapping[G_MENU_ENTER] = SDLK_UNKNOWN;
+
+	return result;
+}
 void button_click_state_set_all_false(button_click_state* state)
 {
 	state->pressed = false;
@@ -52,3 +88,5 @@ EditorUIState click_ui_init(Memory* permanent_memory)
 
 	return result;
 }
+
+

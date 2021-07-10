@@ -15,6 +15,22 @@ enum EditorClickStateType
 	ECS_COUNT
 };
 
+enum GAME_ACTION
+{
+	G_UP,
+	G_DOWN,
+	G_LEFT,
+	G_RIGHT,
+	G_UNDO,
+	G_RESET,
+	G_EXIT_LEVEL,
+	G_BACK_MENU,
+	G_MENU_UP,
+	G_MENU_DOWN,
+	G_MENU_ENTER,
+	G_LENGTH,
+	G_ERROR
+};
 struct NeutralClickState
 {
 	int x;
@@ -51,6 +67,12 @@ struct button_click_state
 	float time_pressed;
 };
 
+struct MappingState
+{
+	SDL_KeyCode primary_mapping[G_LENGTH];
+	SDL_KeyCode secondary_mapping[G_LENGTH];
+	//SDLK_LENGTH;
+};
 struct EditorUIState
 {
 	bool update_actual_screen_size;
@@ -100,6 +122,7 @@ struct EditorUIState
 	} un;
 };
 
+
+MappingState click_make_default_mapping_state();
 void button_click_state_set_all_false(button_click_state* state);
 EditorUIState click_ui_init(Memory* permanent_memory);
-

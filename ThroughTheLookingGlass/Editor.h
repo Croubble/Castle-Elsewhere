@@ -15,6 +15,7 @@ enum TimeMachineEditorActionName
 	TM_UPDATE_GAMESTATE,
 	TM_UNDO,
 	TM_CHANGE_LEVEL_MODE,
+	TM_LEVEL_LINKS,
 	TM_COUNT
 };
 enum LevelMode
@@ -92,6 +93,13 @@ struct UpdateGamestate
 {
 	GameState* replace_state;
 	int index_to_replace;
+};
+struct LevelLinks
+{
+	WorldPosition link_a;
+	WorldPosition link_b;
+	//so I want to:
+	//1: link a requirement of having finished level A to open levelB/doorB;
 };
 struct TimeMachineEditorAction
 {
