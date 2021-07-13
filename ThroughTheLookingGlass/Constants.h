@@ -2,7 +2,6 @@
 #include<iostream>
 
 
-
 const int GAME_LEVEL_NAME_MAX_SIZE = 64;
 
 const int MAX_EDITOR_ACTIONS = 100000;

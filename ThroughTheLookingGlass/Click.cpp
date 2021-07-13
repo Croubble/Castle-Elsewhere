@@ -1,6 +1,14 @@
 #include "Click.h"
+#include "Constants.h"
 
-
+void button_click_state_set_all_false(button_click_state* state)
+{
+	state->pressed = false;
+	state->pressed_this_frame = false;
+	state->released_this_frame = false;
+	state->released_since_pressed_last = true;
+	state->time_pressed = 0;
+}
 
 MappingState click_make_default_mapping_state()
 {
@@ -36,14 +44,6 @@ MappingState click_make_default_mapping_state()
 
 	return result;
 }
-void button_click_state_set_all_false(button_click_state* state)
-{
-	state->pressed = false;
-	state->pressed_this_frame = false;
-	state->released_this_frame = false;
-	state->released_since_pressed_last = true;
-	state->time_pressed = 0;
-}
 
 EditorUIState click_ui_init(Memory* permanent_memory)
 {
@@ -55,6 +55,14 @@ EditorUIState click_ui_init(Memory* permanent_memory)
 
 	result.most_recently_pressed_direction = ' ';
 	result.letters = (button_click_state*)memory_alloc(permanent_memory, sizeof(button_click_state) * NUM_LETTERS_ON_KEYBOARD);
+	for (int i = 0; i < NUM_SDLK_KEYCODES; i++)
+	{
+		result.key_values[i].pressed = false;
+		result.key_values[i].pressed_this_frame = false;
+		result.key_values[i].released_this_frame = false;
+		result.key_values[i].released_since_pressed_last = true;
+		result.key_values[i].time_pressed = 0;
+	}
 	for (int i = 0; i < NUM_LETTERS_ON_KEYBOARD; i++)
 	{
 		result.letters[i].pressed = false;
@@ -69,6 +77,8 @@ EditorUIState click_ui_init(Memory* permanent_memory)
 	button_click_state_set_all_false(&result.up);
 	button_click_state_set_all_false(&result.spacebar);
 	button_click_state_set_all_false(&result.enter);
+	int x = SDLK_UNDERSCORE;
+	int z = SDLK_RIGHTPAREN;
 	result.game_height_current = GAME_HEIGHT_START;
 	result.type = ECS_NEUTRAL;
 	result.mouseGamePos = glm::vec2(0, 0);
@@ -90,3 +100,15 @@ EditorUIState click_ui_init(Memory* permanent_memory)
 }
 
 
+int click_sdl_keycode_to_index_position(int sdlk_keycode)
+{
+	for (int i = 0; i < NUM_SDLK_KEYCODES; i++)
+	{
+		if (all_sdl_keycodes[i] == sdlk_keycode)
+		{
+			return i;
+		}
+	}
+	crash_err("we tried to lookup a sdlk keycode, but it didn't match any sdlkeycodes we know about. This should never happen. crash!");
+	return 0;
+}

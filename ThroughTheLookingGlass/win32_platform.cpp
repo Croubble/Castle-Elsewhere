@@ -340,6 +340,11 @@ void mainloopfunction()
 				ui_state.letters[i].pressed_this_frame = false;
 				ui_state.letters[i].released_this_frame = false;
 			}
+			for (int i = 0; i < NUM_SDLK_KEYCODES; i++)
+			{
+				ui_state.key_values[i].pressed_this_frame = false;
+				ui_state.key_values[i].released_this_frame = false;
+			}
 			ui_state.update_actual_screen_size = false;
 			ui_state.mouse_last_pos = ui_state.mousePos;
 			ui_state.shift_key_down_this_frame = false;
@@ -382,6 +387,18 @@ void mainloopfunction()
 						}
 						ui_state.letters[i].released_since_pressed_last = false;
 					}
+				}
+				for (int i = 0; i < NUM_SDLK_KEYCODES; i++)
+				{
+					int index = click_sdl_keycode_to_index_position(event.key.keysym.sym);
+
+					ui_state.key_values[index].pressed = true;
+					if (ui_state.key_values[index].released_since_pressed_last)
+					{
+						ui_state.key_values[index].pressed_this_frame = true;
+						ui_state.key_values[index].time_pressed = ui_state.total_time_passed;
+					}
+					ui_state.key_values[index].released_since_pressed_last = false;
 				}
 				if (event.key.keysym.sym == SDLK_LSHIFT)
 				{
@@ -445,6 +462,14 @@ void mainloopfunction()
 						ui_state.letters[i].released_this_frame = true;
 						ui_state.letters[i].released_since_pressed_last = true;
 					}
+				}
+				for (int i = 0; i < NUM_SDLK_KEYCODES; i++)
+				{
+					int index = click_sdl_keycode_to_index_position(event.key.keysym.sym);
+
+					ui_state.letters[index].pressed = false;
+					ui_state.letters[index].released_this_frame = true;
+					ui_state.letters[index].released_since_pressed_last = true;
 				}
 				if (event.key.keysym.sym == SDLK_LSHIFT)
 				{
