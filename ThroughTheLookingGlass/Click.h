@@ -87,7 +87,7 @@ struct EditorUIState
 
 	char most_recently_pressed_direction;
 	MappingState button_mapping;
-	button_click_state* letters;
+	//key_values[click_sdl_keycode_to_index_position()]
 	button_click_state key_values[NUM_SDLK_KEYCODES];
 	button_click_state left;
 	button_click_state right;

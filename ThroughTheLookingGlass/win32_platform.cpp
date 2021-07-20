@@ -309,14 +309,14 @@ Action calculate_what_action_to_take_next_stateful()
 			}
 		}
 	}
-	if (ui_state.letters['z' - 'a'].pressed_this_frame ||
-		(ui_state.letters['z' - 'a'].pressed && ui_state.time_till_player_can_move <= 0))
+	if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_z)].pressed_this_frame ||
+		(ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_z)].pressed && ui_state.time_till_player_can_move <= 0))
 	{
 		last_move_taken = Direction::NO_DIRECTION;
 		return (Action) A_UNDO;
 
 	}
-	if (ui_state.letters['r' - 'a'].pressed_this_frame)
+	if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_r)].pressed_this_frame)
 	{
 		last_move_taken = Direction::NO_DIRECTION;
 		return (Action)A_RESET;
@@ -362,11 +362,6 @@ void mainloopfunction()
 #pragma region Loop Startup
 		//reset frame info
 		{
-			for (int i = 0; i < NUM_LETTERS_ON_KEYBOARD; i++)
-			{
-				ui_state.letters[i].pressed_this_frame = false;
-				ui_state.letters[i].released_this_frame = false;
-			}
 			for (int i = 0; i < NUM_SDLK_KEYCODES; i++)
 			{
 				ui_state.key_values[i].pressed_this_frame = false;
@@ -402,19 +397,6 @@ void mainloopfunction()
 			}
 			if (event.type == SDL_KEYDOWN)
 			{
-				for (int i = 0; i < NUM_LETTERS_ON_KEYBOARD; i++)
-				{
-					if (event.key.keysym.sym == (SDLK_a + i))	//first a, final z.
-					{
-						ui_state.letters[i].pressed = true;
-						if (ui_state.letters[i].released_since_pressed_last)
-						{
-							ui_state.letters[i].pressed_this_frame = true;
-							ui_state.letters[i].time_pressed = ui_state.total_time_passed;
-						}
-						ui_state.letters[i].released_since_pressed_last = false;
-					}
-				}
 				{
 					int index = click_sdl_keycode_to_index_position(event.key.keysym.sym);
 
@@ -482,12 +464,6 @@ void mainloopfunction()
 			{
 				for (int i = 0; i < NUM_LETTERS_ON_KEYBOARD; i++)
 				{
-					if (event.key.keysym.sym == (SDLK_a + i))	//first a, final z.
-					{
-						ui_state.letters[i].pressed = false;
-						ui_state.letters[i].released_this_frame = true;
-						ui_state.letters[i].released_since_pressed_last = true;
-					}
 				}
 				{
 					int index = click_sdl_keycode_to_index_position(event.key.keysym.sym);
@@ -652,7 +628,7 @@ void mainloopfunction()
 				//rebuild the editor camera. 
 				resize_screen_stateful(ui_state.next_camera_size.x, ui_state.next_camera_size.y);
 			}
-			if (ui_state.letters['k' - 'a'].pressed_this_frame)
+			if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_k)].pressed_this_frame)
 			{
 				SDL_SetWindowSize(window,1200, 900);
 				resize_screen_stateful(1200, 900);
@@ -668,7 +644,7 @@ void mainloopfunction()
 			if (ui_state.type == ECS_NEUTRAL)
 			{
 				//HANDLE changing a games mode.
-				if (ui_state.letters['y' - 'a'].pressed_this_frame)
+				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_y)].pressed_this_frame)
 				{
 					int index_clicked = gamestate_timemachine_get_click_collision_gamestate(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
@@ -678,7 +654,7 @@ void mainloopfunction()
 						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 				}
-				if (ui_state.letters['u' - 'a'].pressed_this_frame)
+				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_u)].pressed_this_frame)
 				{
 					int index_clicked = gamestate_timemachine_get_click_collision_gamestate(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
@@ -688,7 +664,7 @@ void mainloopfunction()
 						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 				}
-				if (ui_state.letters['i' - 'a'].pressed_this_frame)
+				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_i)].pressed_this_frame)
 				{
 					int index_clicked = gamestate_timemachine_get_click_collision_gamestate(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
@@ -699,12 +675,12 @@ void mainloopfunction()
 					}
 				}
 				//HANDLE entering game.
-				if (ui_state.letters['m' - 'a'].pressed_this_frame)
+				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_m)].pressed_this_frame)
 				{
 					setup_world_screen_stateful(SCENE_TYPE::ST_EDITOR);
 				}
 				//HANDLE opening game file.
-				if (ui_state.letters['o' - 'a'].pressed_this_frame)
+				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_o)].pressed_this_frame)
 				{
 					std::string to_load = load_puzzle_file();
 					if (to_load == "")
@@ -717,7 +693,7 @@ void mainloopfunction()
 					}
 				}
 				//HANDLE saving game file.
-				if (ui_state.letters['p' - 'a'].pressed_this_frame)
+				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_p)].pressed_this_frame)
 				{
 
 					std::string to_print = parse_serialize_timemachine(&(editor_scene_state->timeMachine->world_state), frame_memory, frame_memory);
@@ -730,7 +706,7 @@ void mainloopfunction()
 
 				}
 				//HANDLE expanding width.
-				if (ui_state.letters['w' - 'a'].pressed_this_frame)
+				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_w)].pressed_this_frame)
 				{
 					WorldPosition position_clicked = gamestate_timemachine_get_click_collision_full(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (position_clicked.level_index >= 0 && position_clicked.level_position_1d >= 0)
@@ -744,7 +720,7 @@ void mainloopfunction()
 
 				}
 				//HANDLE exapnding height.
-				if (ui_state.letters['h' - 'a'].pressed_this_frame)
+				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_h)].pressed_this_frame)
 				{
 
 					WorldPosition position_clicked = gamestate_timemachine_get_click_collision_full(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
@@ -760,7 +736,7 @@ void mainloopfunction()
 					}
 				}
 				//HANDLE surrounding level with crates.
-				if (ui_state.letters['c' - 'a'].pressed_this_frame)
+				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_c)].pressed_this_frame)
 				{
 					int index_clicked = gamestate_timemachine_get_click_collision_gamestate(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
@@ -1109,9 +1085,9 @@ void mainloopfunction()
 			{
 				if (play_scene_state.game_name_length < GAME_LEVEL_NAME_MAX_SIZE)
 				{
-					for (int i = 0; i < NUM_LETTERS_ON_KEYBOARD - 1; i++)
+					for (int i = SDLK_a; i < SDLK_z; i++)
 					{
-						if (ui_state.letters[i].pressed_this_frame)
+						if (ui_state.key_values[click_sdl_keycode_to_index_position(i)].pressed_this_frame)
 						{
 							//TODO: Slam down the text into our gamestate string!
 							int length = play_scene_state.game_name_length;
@@ -1167,7 +1143,7 @@ void mainloopfunction()
 				ui_state.time_since_scene_started = 0;
 				ui_state.time_since_last_player_action = 0;
 			}
-			if (ui_state.letters['p' - 'a'].pressed_this_frame)
+			if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_p)].pressed_this_frame)
 			{
 				//std::string parsed = world_serialize(world_scene_state, permanent_memory, frame_memory);
 				std::string parsed = parse_serialize_timemachine(&world_scene_state->world_state, permanent_memory, frame_memory);
@@ -1301,7 +1277,7 @@ void mainloopfunction()
 			}
 #pragma endregion
 #pragma region handle_events
-		if (ui_state.letters['x' - 'a'].pressed_this_frame)
+		if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_x)].pressed_this_frame)
 		{
 			text_scene_reset();
 		}
@@ -1311,19 +1287,19 @@ void mainloopfunction()
 		{
 #pragma region handle_events
 		//handle the player pressing up arrow // 'w', or down arrow // 's', which changes menu.
-		if (ui_state.letters['w' - 'a'].pressed_this_frame)
+		if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_w)].pressed_this_frame)
 		{
 			menu_scene_state->current_highlighted_button += 1;
 			menu_scene_state->current_highlighted_button = mini(menu_scene_state->current_highlighted_button, menu_scene_state->num_buttons - 1);
 		
 		}
 		//handle the player pressing enter, or the action key 'x', which routes the current buttons callback to 
-		if (ui_state.letters['s' - 'a'].pressed_this_frame)
+		if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_s)].pressed_this_frame)
 		{
 			menu_scene_state->current_highlighted_button -= 1;
 			menu_scene_state->current_highlighted_button = maxi(menu_scene_state->current_highlighted_button, 0);
 		}
-		if (ui_state.letters['x' - 'a'].pressed_this_frame)
+		if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_x)].pressed_this_frame)
 		{
 			int current_button = menu_scene_state->current_highlighted_button;
 			menu_scene_state->buttons[current_button].callback();

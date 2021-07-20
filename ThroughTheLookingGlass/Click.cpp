@@ -48,7 +48,7 @@ MappingState click_make_default_mapping_state()
 	result.secondary_mapping[G_LEFT] = SDLK_a;
 	result.secondary_mapping[G_RIGHT] = SDLK_d;
 	result.secondary_mapping[G_UNDO] = SDLK_z;
-	result.secondary_mapping[G_RESET] = SDLK_r;
+	result.secondary_mapping[G_RESET] = SDLK_UNKNOWN;
 	result.secondary_mapping[G_EXIT_LEVEL] = SDLK_UNKNOWN;
 	result.secondary_mapping[G_BACK_MENU] = SDLK_UNKNOWN;
 	result.secondary_mapping[G_MENU_UP] = SDLK_UP;
@@ -67,7 +67,6 @@ EditorUIState click_ui_init(Memory* permanent_memory)
 	result.time_since_last_player_action = 0;
 
 	result.most_recently_pressed_direction = ' ';
-	result.letters = (button_click_state*)memory_alloc(permanent_memory, sizeof(button_click_state) * NUM_LETTERS_ON_KEYBOARD);
 	result.button_mapping = click_make_default_mapping_state();
 	for (int i = 0; i < NUM_SDLK_KEYCODES; i++)
 	{
@@ -76,14 +75,6 @@ EditorUIState click_ui_init(Memory* permanent_memory)
 		result.key_values[i].released_this_frame = false;
 		result.key_values[i].released_since_pressed_last = true;
 		result.key_values[i].time_pressed = 0;
-	}
-	for (int i = 0; i < NUM_LETTERS_ON_KEYBOARD; i++)
-	{
-		result.letters[i].pressed = false;
-		result.letters[i].pressed_this_frame = false;
-		result.letters[i].released_this_frame = false;
-		result.letters[i].released_since_pressed_last = true;
-		result.letters[i].time_pressed = 0;
 	}
 	button_click_state_set_all_false(&result.left);
 	button_click_state_set_all_false(&result.right);
