@@ -86,6 +86,7 @@ struct EditorUIState
 	float game_height_current;
 
 	char most_recently_pressed_direction;
+	MappingState button_mapping;
 	button_click_state* letters;
 	button_click_state key_values[NUM_SDLK_KEYCODES];
 	button_click_state left;
@@ -124,7 +125,8 @@ struct EditorUIState
 	} un;
 };
 
-SDL_KeyCode* click_get_all_keycodes();
+
+button_click_state click_test_button(EditorUIState* ui_state, GAME_ACTION action);
 MappingState click_make_default_mapping_state();
 void button_click_state_set_all_false(button_click_state* state);
 EditorUIState click_ui_init(Memory* permanent_memory);

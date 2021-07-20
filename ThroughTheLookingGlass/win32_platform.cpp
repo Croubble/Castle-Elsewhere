@@ -258,11 +258,12 @@ Action calculate_what_action_to_take_next_stateful()
 
 	//calculate if we should perform a new move.
 	{
-		char button_names[4] = { 'w', 'a', 's', 'd' };
+		//char button_names[4] = { 'w', 'a', 's', 'd' };
 		Direction button_actions[4] = { U, L, D, R };
 		bool button_pressed = false;
 		int button_press_index = -1;
 		float time_button_pressed = -1;
+		/*
 		for (int i = 0; i < 4; i++)
 		{
 			if (ui_state.letters[button_names[i] - 'a'].pressed)
@@ -273,12 +274,38 @@ Action calculate_what_action_to_take_next_stateful()
 					time_button_pressed = ui_state.letters[button_names[i] - 'a'].time_pressed;
 				}
 		}
+		*/
+		int button_names[8];
+		button_names[0] = ui_state.button_mapping.primary_mapping[G_UP];
+		button_names[1] = ui_state.button_mapping.primary_mapping[G_LEFT];
+		button_names[2] = ui_state.button_mapping.primary_mapping[G_DOWN];
+		button_names[3] = ui_state.button_mapping.primary_mapping[G_RIGHT];
+		button_names[4] = ui_state.button_mapping.secondary_mapping[G_UP];
+		button_names[5] = ui_state.button_mapping.secondary_mapping[G_LEFT];
+		button_names[6] = ui_state.button_mapping.secondary_mapping[G_DOWN];
+		button_names[7] = ui_state.button_mapping.secondary_mapping[G_RIGHT];
+		for (int i = 0; i < 8; i++)
+		{
+			int button_index = click_sdl_keycode_to_index_position(button_names[i]);
+			if (button_index == 45)
+			{
+				std::cout << "HELLO!" << std::endl;
+			}
+			if(ui_state.key_values[button_index].pressed)
+				if (ui_state.key_values[button_index].time_pressed > time_button_pressed || !button_pressed)
+				{
+					button_pressed = true;
+					button_press_index = i;
+					time_button_pressed = ui_state.key_values[button_index].time_pressed;
+				}
+		}
 		if (button_pressed)
 		{
-			if (ui_state.time_till_player_can_move <= 0 || button_actions[button_press_index] != last_move_taken)
+			if (ui_state.time_till_player_can_move <= 0 || button_actions[button_press_index % 4] != last_move_taken)
 			{
-				last_move_taken = (Direction)button_actions[button_press_index];
-				return (Action) button_actions[button_press_index];
+				//very hacky mod we are doing here; it used to just be the four directions, but now we are looking at 8 total, so we just roll around again.
+				last_move_taken = (Direction) (button_actions[button_press_index % 4]);
+				return (Action) button_actions[button_press_index % 4];
 			}
 		}
 	}
@@ -388,7 +415,6 @@ void mainloopfunction()
 						ui_state.letters[i].released_since_pressed_last = false;
 					}
 				}
-				for (int i = 0; i < NUM_SDLK_KEYCODES; i++)
 				{
 					int index = click_sdl_keycode_to_index_position(event.key.keysym.sym);
 
@@ -463,13 +489,12 @@ void mainloopfunction()
 						ui_state.letters[i].released_since_pressed_last = true;
 					}
 				}
-				for (int i = 0; i < NUM_SDLK_KEYCODES; i++)
 				{
 					int index = click_sdl_keycode_to_index_position(event.key.keysym.sym);
 
-					ui_state.letters[index].pressed = false;
-					ui_state.letters[index].released_this_frame = true;
-					ui_state.letters[index].released_since_pressed_last = true;
+					ui_state.key_values[index].pressed = false;
+					ui_state.key_values[index].released_this_frame = true;
+					ui_state.key_values[index].released_since_pressed_last = true;
 				}
 				if (event.key.keysym.sym == SDLK_LSHIFT)
 				{

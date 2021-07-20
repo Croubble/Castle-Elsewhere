@@ -9,7 +9,20 @@ void button_click_state_set_all_false(button_click_state* state)
 	state->released_since_pressed_last = true;
 	state->time_pressed = 0;
 }
-
+button_click_state click_test_button(EditorUIState* ui_state, GAME_ACTION action)
+{
+	//int keycode_prime = ui_state->button_mapping.primary_mapping;
+	//int keycode_secondary = 
+	//int result = click_sdl_keycode_to_index_position(int sdlk_keycode);
+	//MappingState state;
+	crash_err("function unfinished, you shouldn't be calling this bad boy");
+	button_click_state result;
+	result.pressed = false;
+	result.pressed_this_frame = false;
+	result.released_since_pressed_last = false;
+	result.time_pressed = 0;
+	return result;
+}
 MappingState click_make_default_mapping_state()
 {
 	MappingState result;
@@ -34,8 +47,8 @@ MappingState click_make_default_mapping_state()
 	result.secondary_mapping[G_DOWN] = SDLK_s;
 	result.secondary_mapping[G_LEFT] = SDLK_a;
 	result.secondary_mapping[G_RIGHT] = SDLK_d;
-	result.secondary_mapping[G_UNDO] = SDLK_UNKNOWN;
-	result.secondary_mapping[G_RESET] = SDLK_UNKNOWN;
+	result.secondary_mapping[G_UNDO] = SDLK_z;
+	result.secondary_mapping[G_RESET] = SDLK_r;
 	result.secondary_mapping[G_EXIT_LEVEL] = SDLK_UNKNOWN;
 	result.secondary_mapping[G_BACK_MENU] = SDLK_UNKNOWN;
 	result.secondary_mapping[G_MENU_UP] = SDLK_UP;
@@ -55,6 +68,7 @@ EditorUIState click_ui_init(Memory* permanent_memory)
 
 	result.most_recently_pressed_direction = ' ';
 	result.letters = (button_click_state*)memory_alloc(permanent_memory, sizeof(button_click_state) * NUM_LETTERS_ON_KEYBOARD);
+	result.button_mapping = click_make_default_mapping_state();
 	for (int i = 0; i < NUM_SDLK_KEYCODES; i++)
 	{
 		result.key_values[i].pressed = false;
