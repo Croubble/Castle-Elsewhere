@@ -7,6 +7,8 @@
 #include "MenuScene.h"
 #include "EditorScene.h"
 #include "sprite.h"
+#define BENCHMARK_IMPLEMENTATION
+#include "Benchmark.h"
 
 void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, glm::mat4* camera, bool mouse_moved_this_frame, SCENE_TYPE scene)
 {
@@ -57,6 +59,7 @@ bool keep_running_infinite_loop = false;
 Memory* frame_memory;
 Memory* permanent_memory;
 Memory* menu_memory;
+Memory* keybinding_memory;
 Memory* editor_memory;
 Memory* play_memory;
 Memory* world_memory;
@@ -70,7 +73,8 @@ PlayScene play_scene_state;
 WorldScene* world_scene_state;
 WorldPlayScene* world_play_scene_state;
 TextScene* text_scene_state;
-MenuScene* menu_scene_state;
+Menu* menu_scene_state;
+Keybinding_Scene* keybinding_scene_state;
 Direction last_move_taken = NO_DIRECTION;
 int screen_width = 800;
 int screen_height = 600;
@@ -223,7 +227,28 @@ void text_scene_reset()
 			world_camera_start = world_camera;
 		}	
 }
-void menu_action_new_game()
+void update_keybinding(void* input)
+{
+	//extract the button index.
+	int action_index;
+	{
+		if (input == NULL)
+		{
+			crash_err("make sure function update_keybinding is only getting valid int* as input");
+		}
+		int* num = (int*) input;
+		GAME_ACTION game_action_changed = (GAME_ACTION) (*num);
+		if (game_action_changed < 0 || game_action_changed >= G_LENGTH)
+		{
+			crash_err("make sure function update_keybinding is only getting integers that are in the range of the enumerator G_ENUM");
+		}
+		action_index = *num;
+	}
+	//put the keybinding menu into "waiting for binding" state.
+	keybinding_scene_state->button_keybinding = action_index;
+	keybinding_scene_state->waiting_for_keybind = true;
+}
+void menu_action_new_game(void* input)
 {
 	//TODO:
 	//load using the default level name, the default world. into the world editor. (construct the world edit scene)
@@ -233,7 +258,7 @@ void menu_action_new_game()
 	setup_world_screen_stateful(SCENE_TYPE::ST_MENU);
 	std::cout << "TRIGGERING NEW GAME" << std::endl;
 }
-void menu_action_continue_game()
+void menu_action_continue_game(void* input)
 {
 	//TODO:
 	//for now, we are just going to be exactly the same as new game. 
@@ -241,13 +266,23 @@ void menu_action_continue_game()
 	setup_world_screen_continue_stateful(to_load);
 	std::cout << "TRIGGERING COUNTINUE GAME" << std::endl;
 }
-void menu_action_level_editor()
+void menu_action_level_editor(void* input)
+
 {
 	//TODO: we open the level editor scene with an empty scene. Real easy.
 	std::cout << "TRIGGERING LEVEL EDITOR" << std::endl;
 	scene = SCENE_TYPE::ST_EDITOR;
 	editor_scene_state = editorscene_setup(editor_memory, camera_viewport);
 }
+void menu_action_keybinding(void* input)
+{
+	scene = SCENE_TYPE::ST_MENU_KEYBIND;
+	printf("original name\n");
+	printf("%p\n", update_keybinding);
+	keybinding_scene_state = setup_keybinding_menu(keybinding_memory, update_keybinding,&ui_state.button_mapping);
+
+}
+
 /// we want to statefully calculate what action the player should take based upon two things.
 /// 1. the editor UI, i.e. what buttons have been pressed recently.
 /// 2. Action last_action_taken, i.e. what action did we last take?
@@ -287,10 +322,6 @@ Action calculate_what_action_to_take_next_stateful()
 		for (int i = 0; i < 8; i++)
 		{
 			int button_index = click_sdl_keycode_to_index_position(button_names[i]);
-			if (button_index == 45)
-			{
-				std::cout << "HELLO!" << std::endl;
-			}
 			if(ui_state.key_values[button_index].pressed)
 				if (ui_state.key_values[button_index].time_pressed > time_button_pressed || !button_pressed)
 				{
@@ -309,14 +340,14 @@ Action calculate_what_action_to_take_next_stateful()
 			}
 		}
 	}
-	if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_z)].pressed_this_frame ||
-		(ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_z)].pressed && ui_state.time_till_player_can_move <= 0))
+	if (get_keycode_state(&ui_state,SDLK_z)->pressed_this_frame ||
+		(get_keycode_state(&ui_state,SDLK_z)->pressed && ui_state.time_till_player_can_move <= 0))
 	{
 		last_move_taken = Direction::NO_DIRECTION;
 		return (Action) A_UNDO;
 
 	}
-	if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_r)].pressed_this_frame)
+	if (get_keycode_state(&ui_state,SDLK_r)->pressed_this_frame)
 	{
 		last_move_taken = Direction::NO_DIRECTION;
 		return (Action)A_RESET;
@@ -357,6 +388,7 @@ void handle_editor_input()
 {
 
 }
+
 void mainloopfunction()
 {
 #pragma region Loop Startup
@@ -628,7 +660,7 @@ void mainloopfunction()
 				//rebuild the editor camera. 
 				resize_screen_stateful(ui_state.next_camera_size.x, ui_state.next_camera_size.y);
 			}
-			if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_k)].pressed_this_frame)
+			if (get_keycode_state(&ui_state,SDLK_k)->pressed_this_frame)
 			{
 				SDL_SetWindowSize(window,1200, 900);
 				resize_screen_stateful(1200, 900);
@@ -644,7 +676,7 @@ void mainloopfunction()
 			if (ui_state.type == ECS_NEUTRAL)
 			{
 				//HANDLE changing a games mode.
-				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_y)].pressed_this_frame)
+				if (get_keycode_state(&ui_state,SDLK_y)->pressed_this_frame)
 				{
 					int index_clicked = gamestate_timemachine_get_click_collision_gamestate(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
@@ -654,7 +686,7 @@ void mainloopfunction()
 						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 				}
-				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_u)].pressed_this_frame)
+				if (get_keycode_state(&ui_state,SDLK_u)->pressed_this_frame)
 				{
 					int index_clicked = gamestate_timemachine_get_click_collision_gamestate(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
@@ -664,7 +696,7 @@ void mainloopfunction()
 						gamestate_timemachine_editor_take_action(editor_scene_state->timeMachine, NULL, action);
 					}
 				}
-				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_i)].pressed_this_frame)
+				if (get_keycode_state(&ui_state,SDLK_i)->pressed_this_frame)
 				{
 					int index_clicked = gamestate_timemachine_get_click_collision_gamestate(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
@@ -675,12 +707,12 @@ void mainloopfunction()
 					}
 				}
 				//HANDLE entering game.
-				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_m)].pressed_this_frame)
+				if (get_keycode_state(&ui_state,SDLK_m)->pressed_this_frame)
 				{
 					setup_world_screen_stateful(SCENE_TYPE::ST_EDITOR);
 				}
 				//HANDLE opening game file.
-				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_o)].pressed_this_frame)
+				if (get_keycode_state(&ui_state,SDLK_o)->pressed_this_frame)
 				{
 					std::string to_load = load_puzzle_file();
 					if (to_load == "")
@@ -693,7 +725,7 @@ void mainloopfunction()
 					}
 				}
 				//HANDLE saving game file.
-				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_p)].pressed_this_frame)
+				if (get_keycode_state(&ui_state,SDLK_p)->pressed_this_frame)
 				{
 
 					std::string to_print = parse_serialize_timemachine(&(editor_scene_state->timeMachine->world_state), frame_memory, frame_memory);
@@ -706,7 +738,7 @@ void mainloopfunction()
 
 				}
 				//HANDLE expanding width.
-				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_w)].pressed_this_frame)
+				if (get_keycode_state(&ui_state,SDLK_w)->pressed_this_frame)
 				{
 					WorldPosition position_clicked = gamestate_timemachine_get_click_collision_full(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (position_clicked.level_index >= 0 && position_clicked.level_position_1d >= 0)
@@ -720,7 +752,7 @@ void mainloopfunction()
 
 				}
 				//HANDLE exapnding height.
-				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_h)].pressed_this_frame)
+				if (get_keycode_state(&ui_state,SDLK_h)->pressed_this_frame)
 				{
 
 					WorldPosition position_clicked = gamestate_timemachine_get_click_collision_full(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
@@ -736,7 +768,7 @@ void mainloopfunction()
 					}
 				}
 				//HANDLE surrounding level with crates.
-				if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_c)].pressed_this_frame)
+				if (get_keycode_state(&ui_state,SDLK_c)->pressed_this_frame)
 				{
 					int index_clicked = gamestate_timemachine_get_click_collision_gamestate(editor_scene_state->timeMachine, ui_state.mouseGamePos.x, ui_state.mouseGamePos.y);
 					if (index_clicked >= 0)
@@ -1087,7 +1119,7 @@ void mainloopfunction()
 				{
 					for (int i = SDLK_a; i < SDLK_z; i++)
 					{
-						if (ui_state.key_values[click_sdl_keycode_to_index_position(i)].pressed_this_frame)
+						if (get_keycode_state(&ui_state,(SDL_KeyCode) i)->pressed_this_frame)
 						{
 							//TODO: Slam down the text into our gamestate string!
 							int length = play_scene_state.game_name_length;
@@ -1143,7 +1175,7 @@ void mainloopfunction()
 				ui_state.time_since_scene_started = 0;
 				ui_state.time_since_last_player_action = 0;
 			}
-			if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_p)].pressed_this_frame)
+			if (get_keycode_state(&ui_state,SDLK_p)->pressed_this_frame)
 			{
 				//std::string parsed = world_serialize(world_scene_state, permanent_memory, frame_memory);
 				std::string parsed = parse_serialize_timemachine(&world_scene_state->world_state, permanent_memory, frame_memory);
@@ -1277,7 +1309,7 @@ void mainloopfunction()
 			}
 #pragma endregion
 #pragma region handle_events
-		if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_x)].pressed_this_frame)
+		if (get_keycode_state(&ui_state,SDLK_x)->pressed_this_frame)
 		{
 			text_scene_reset();
 		}
@@ -1287,26 +1319,92 @@ void mainloopfunction()
 		{
 #pragma region handle_events
 		//handle the player pressing up arrow // 'w', or down arrow // 's', which changes menu.
-		if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_w)].pressed_this_frame)
 		{
-			menu_scene_state->current_highlighted_button += 1;
-			menu_scene_state->current_highlighted_button = mini(menu_scene_state->current_highlighted_button, menu_scene_state->num_buttons - 1);
-		
-		}
-		//handle the player pressing enter, or the action key 'x', which routes the current buttons callback to 
-		if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_s)].pressed_this_frame)
-		{
-			menu_scene_state->current_highlighted_button -= 1;
-			menu_scene_state->current_highlighted_button = maxi(menu_scene_state->current_highlighted_button, 0);
-		}
-		if (ui_state.key_values[click_sdl_keycode_to_index_position(SDLK_x)].pressed_this_frame)
-		{
-			int current_button = menu_scene_state->current_highlighted_button;
-			menu_scene_state->buttons[current_button].callback();
+			bool click_up = get_keycode_state(&ui_state, SDLK_w)->pressed_this_frame;
+			bool click_down = get_keycode_state(&ui_state, SDLK_s)->pressed_this_frame;
+			bool click_right = get_keycode_state(&ui_state, SDLK_d)->pressed_this_frame;
+			bool click_left = get_keycode_state(&ui_state, SDLK_a)->pressed_this_frame;
+			if (click_up)
+				menu_up_action(menu_scene_state);
+			if (click_down)
+				menu_down_action(menu_scene_state);
+			if (click_right)
+				menu_right_action(menu_scene_state);
+			if (click_left)
+				menu_left_action(menu_scene_state);
+			if (get_keycode_state(&ui_state,SDLK_x)->pressed_this_frame)
+			{
+				int current_button = menu_scene_state->current_highlighted_button;
+				menu_scene_state->buttons[current_button].callback(NULL);
+			}
 		}
 #pragma endregion
 		}
-
+		else if (scene == ST_MENU_KEYBIND)
+		{
+			if (keybinding_scene_state->waiting_for_keybind)
+			{
+				for (int i = 0; i < NUM_SDLK_KEYCODES; i++)
+				{
+					if (ui_state.key_values[i].pressed_this_frame)
+					{
+						int game_action_key;
+						SDL_KeyCode sdl_keycode_pressed = (SDL_KeyCode) all_sdl_keycodes[i];
+						SDL_KeyCode* game_action_to_keycode_map;
+						if (keybinding_scene_state->button_keybinding > G_LENGTH)
+						{
+							game_action_key = keybinding_scene_state->button_keybinding % G_LENGTH;
+							game_action_to_keycode_map = ui_state.button_mapping.secondary_mapping;
+						}
+						else
+						{
+							game_action_key = keybinding_scene_state->button_keybinding;
+							game_action_to_keycode_map = ui_state.button_mapping.primary_mapping;
+						}
+						
+						game_action_to_keycode_map[i] = sdl_keycode_pressed;
+						//set the new text for our string.
+						{
+							const char* new_text = SDL_GetKeyName((SDL_KeyCode) game_action_to_keycode_map[i]);
+							keybinding_scene_state->menu.buttons[keybinding_scene_state->menu.current_highlighted_button].text = (char*) memory_alloc(keybinding_memory, strlen(new_text) + 1);
+							int i;
+							for (i = 0; i < 99999 && new_text[i] != '\0'; i++)
+								keybinding_scene_state->menu.buttons[keybinding_scene_state->menu.current_highlighted_button].text[i] = new_text[i];
+							keybinding_scene_state->menu.buttons[keybinding_scene_state->menu.current_highlighted_button].text[i] = '\0';
+							if (i >= 99999)
+								crash_err("oof, one of those horrible no null at the end of a big stomper string errors");
+						}
+						keybinding_scene_state->waiting_for_keybind = false;
+					}
+				}
+			}
+			else //i.e. if we are just in regular default mode, not waiting for keybind.
+			{
+				bool click_up = get_keycode_state(&ui_state, SDLK_w)->pressed_this_frame;
+				bool click_down = get_keycode_state(&ui_state, SDLK_s)->pressed_this_frame;
+				bool click_right = get_keycode_state(&ui_state, SDLK_d)->pressed_this_frame;
+				bool click_left = get_keycode_state(&ui_state, SDLK_a)->pressed_this_frame;
+				if (click_up)
+					menu_up_action(&keybinding_scene_state->menu);
+				if (click_down)
+					menu_down_action(&keybinding_scene_state->menu);
+				if (click_right)
+					menu_right_action(&keybinding_scene_state->menu);
+				if (click_left)
+					menu_left_action(&keybinding_scene_state->menu);
+				if (get_keycode_state(&ui_state,SDLK_x)->pressed_this_frame)
+				{
+					int current_button = keybinding_scene_state->menu.current_highlighted_button;
+					keybinding_log_menu(keybinding_scene_state);
+					ButtonCallback callback = keybinding_scene_state->menu.buttons[current_button].callback;
+					printf("%p", *callback);
+					callback(&current_button);
+					//menu_scene_state->buttons[current_button].callback(NULL);
+				}
+			}
+		}
+	
+		//TIME TO DRAW! 
 		if (scene == ST_EDITOR)
 		{
 #pragma region send draw data to gpu
@@ -1465,14 +1563,16 @@ void mainloopfunction()
 		if (scene == ST_MENU)
 		{
 #pragma region send draw data to gpu
-			//get the camera, and break it into i + 2 chunks.
-			GameSpaceCamera camera_fifth;
+			//get a piece of the camera to serve as our button zone.
+			GameSpaceCamera button_area;
 			float fifth_w = (camera_game.left + camera_game.right) / 5.0f;
-			camera_fifth.left = camera_game.left + fifth_w;
-			camera_fifth.right = camera_game.right - fifth_w;
 			float fifth_h = (camera_game.up - camera_game.down) / 5.0f;
-			camera_fifth.down = camera_game.down + fifth_h;
-			camera_fifth.up = camera_fifth.down + fifth_h;
+			{
+				button_area.left = camera_game.left + fifth_w;
+				button_area.right = camera_game.right - fifth_w;
+				button_area.down = camera_game.down + fifth_h;
+				button_area.up = button_area.down + fifth_h;
+			}
 
 			//draw wasd with arrows helper.
 			{
@@ -1534,7 +1634,7 @@ void mainloopfunction()
 			//draw buttons and their text.
 			for (int i = 0; i < menu_scene_state->num_buttons; i++)
 			{
-				GameSpaceCamera camera_fifth_smaller = camera_fifth;
+				GameSpaceCamera camera_fifth_smaller = button_area;
 				float width = camera_fifth_smaller.right - camera_fifth_smaller.left;
 				float height = camera_fifth_smaller.up - camera_fifth_smaller.down;
 				camera_fifth_smaller.left += (width / 5.0f);
@@ -1542,13 +1642,65 @@ void mainloopfunction()
 				camera_fifth_smaller.up -= (height / 10.0f);
 				camera_fifth_smaller.down += (height / 10.0f);
 				if (i == menu_scene_state->current_highlighted_button)
-					draw_button_to_gamespace(camera_fifth, ui_write, glm::vec4(0.7, 0.7, 1, 1));
+					draw_button_to_gamespace(button_area, ui_write, glm::vec4(0.7, 0.7, 1, 1));
 				else
-					draw_button_to_gamespace(camera_fifth, ui_write);
-				draw_text_maximized_centered_to_screen(camera_fifth_smaller, menu_scene_state->buttons[i].button_text, &text_draw_info);
-				camera_fifth.down += fifth_h;
-				camera_fifth.up += fifth_h;
+					draw_button_to_gamespace(button_area, ui_write);
+				draw_text_maximized_centered_to_screen(camera_fifth_smaller, menu_scene_state->buttons[i].text, &text_draw_info);
+				button_area.down += fifth_h;
+				button_area.up += fifth_h;
 			}
+#pragma endregion
+		}
+		if (scene == ST_MENU_KEYBIND)
+		{
+#pragma region send draw data to gpu
+			GameSpaceCamera button_area = camera_game;
+			button_area = math_camera_trim_left(button_area, 0.2);
+			button_area = math_camera_trim_right(button_area, 0.2);
+			button_area = math_camera_trim_top(button_area, 0.35);
+			button_area = math_camera_trim_bottom(button_area, 0.05);
+			GameSpaceCamera* grid = math_camera_break_into_grid(frame_memory, button_area, 3, G_LENGTH);
+			for (int i = 0; i < 3 * G_LENGTH; i++)
+			{
+				float h = math_camera_height(grid[i]);
+				float w = math_camera_width(grid[i]);
+				if (h > w)
+				{
+					float trim = (h - w) / 2.0f;
+					grid[i].up -= (trim / 2.0f);
+					grid[i].down += (trim / 2.0f);
+				}
+				grid[i] = math_camera_trim_all(grid[i], 0.05f);
+			}
+			//draw the labels.
+			draw_text_lines_at_same_size(
+				grid, 
+				menu_get_all_labels_text(&keybinding_scene_state->menu, frame_memory),
+				keybinding_scene_state->menu.num_labels,
+				all_write->text);
+			//draw the button buttons.
+			{
+				for (int i = 0; i < G_LENGTH * 2; i++)
+				{
+					int grid_ref = i + G_LENGTH;
+					//printf("button_grid %d %f %f %f %f\n",i,grid[grid_ref].left,grid[grid_ref].right,grid[grid_ref].down,grid[grid_ref].up);
+					if (i == keybinding_scene_state->menu.current_highlighted_button)
+						draw_button_to_gamespace(grid[grid_ref],all_write->ui,glm::vec4(0.7, 0.7, 1, 1));
+					else
+						draw_button_to_gamespace(grid[grid_ref],all_write->ui);
+				}
+				//draw the button text.
+				for (int i = 0; i < G_LENGTH * 2; i++)
+					grid[G_LENGTH + i] = math_camera_trim_all(grid[G_LENGTH + i], 0.25f);
+				draw_text_lines_at_same_size(
+					&grid[G_LENGTH],
+					menu_get_all_buttons_text(&keybinding_scene_state->menu, frame_memory),
+					keybinding_scene_state->menu.num_buttons,
+					all_write->text);
+			}
+
+
+		
 #pragma endregion
 		}
 #pragma region draw gpu data
@@ -1622,7 +1774,6 @@ void mainloopfunction()
 		//return running;
 		keep_running_infinite_loop = running;
 }
-
 int main(int argc, char *argv[])
 {
 #pragma region SDL_Setup
@@ -1667,6 +1818,7 @@ int main(int argc, char *argv[])
 	frame_memory = memory_create(3000000);
 	permanent_memory = memory_create(30000000);
 	menu_memory = memory_create(3000000);
+	keybinding_memory = memory_create(3000000);
 	editor_memory = memory_create(30000000);
 	play_memory = memory_create(3000000);
 	world_memory = memory_create(30000000);
@@ -1938,17 +2090,12 @@ int main(int argc, char *argv[])
 		//shader_set_uniform_mat4(spriteShader, "viewProjectionMatrix", camera);
 	#pragma endregion
 	#pragma region TTF font setup
-
 		FT_Library ft;
 		if(FT_Init_FreeType(&ft))
 			std::cout << "ERROR - freetype library load failed. alas." << std::endl;
-		else
-			std::cout << "successfully loaded freetype library" << std::endl;
 		FT_Face face;
 		if (FT_New_Face(ft, "assets/arial.ttf", 0, &face))
 			std::cout << "ERROR - freetype failed to load font." << std::endl;
-		else
-			std::cout << "successfully loaded freetype font." << std::endl;
 		FT_Set_Pixel_Sizes(face, 0, FONT_CHARACTER_HEIGHT);
 		//setup the gpu work.
 		GLuint text_VAO;
@@ -2008,10 +2155,10 @@ int main(int argc, char *argv[])
 					std::cout << "ERROR - uh oh, failed to load character glyph" << std::endl;
 					continue;
 				}
-
-				//generate a texture for this particular character.
 				int face_width = face->glyph->bitmap.width;
 				int face_height = face->glyph->bitmap.rows;
+
+				//generate a gl texture to draw this particular character from the glyph data.
 				{
 					unsigned int textureID = char_texture[c];
 					glBindTexture(GL_TEXTURE_2D, char_texture[c]);
@@ -2025,7 +2172,6 @@ int main(int argc, char *argv[])
 						GL_RED,
 						GL_UNSIGNED_BYTE, 
 						face->glyph->bitmap.buffer);
-					std::cout << glGetError() << std::endl;
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -2033,7 +2179,7 @@ int main(int argc, char *argv[])
 				}
 				//write the generated texture to the atlas.
 				{
-					//check if their is room to write. If yes, success. If nay, don't belay
+					//check if their is room to write. If yes, success. If not, move to the next line. 
 					int write_width = face_width + 2;
 					bool room_to_write = write_width + current_width_written < FONT_ATLAS_WIDTH;
 					if (!room_to_write)
@@ -2043,24 +2189,28 @@ int main(int argc, char *argv[])
 					}
 
 					//2: write to our atlas info about where the character will be written too.
-					AABB temp = math_AABB_create((float) (current_width_written + 1), (float) (current_height_written + 1), (float) face_width, (float) face_height);
-					text_draw_info.text_positions[c] = temp;
-					text_draw_info.text_positions_normalized[c] = text_draw_info.text_positions[c];
-					text_draw_info.text_positions_normalized[c].x = text_draw_info.text_positions[c].x / FONT_ATLAS_WIDTH;
-					text_draw_info.text_positions_normalized[c].y = text_draw_info.text_positions[c].y / FONT_ATLAS_HEIGHT;
-					text_draw_info.text_positions_normalized[c].w = text_draw_info.text_positions[c].w / FONT_ATLAS_WIDTH;
-					text_draw_info.text_positions_normalized[c].h = text_draw_info.text_positions[c].h / FONT_ATLAS_HEIGHT;
+					{
+						AABB temp = math_AABB_create((float) (current_width_written + 1), (float) (current_height_written + 1), (float) face_width, (float) face_height);
+						text_draw_info.text_positions[c] = temp;
+						text_draw_info.text_positions_normalized[c] = text_draw_info.text_positions[c];
+						text_draw_info.text_positions_normalized[c].x = text_draw_info.text_positions[c].x / FONT_ATLAS_WIDTH;
+						text_draw_info.text_positions_normalized[c].y = text_draw_info.text_positions[c].y / FONT_ATLAS_HEIGHT;
+						text_draw_info.text_positions_normalized[c].w = text_draw_info.text_positions[c].w / FONT_ATLAS_WIDTH;
+						text_draw_info.text_positions_normalized[c].h = text_draw_info.text_positions[c].h / FONT_ATLAS_HEIGHT;
+					}
 
 					//3: actually write the character.
-					AABB temp2 = text_draw_info.text_positions_normalized[c];
-					glm::vec4 temp3 = *(glm::vec4*) & temp2;
-					shader_set_uniform_vec4(textShader, "offset", temp3);
-					current_width_written += write_width;
-					glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+					{
+						AABB temp2 = text_draw_info.text_positions_normalized[c];
+						glm::vec4 temp3 = *(glm::vec4*) & temp2;
+						shader_set_uniform_vec4(textShader, "offset", temp3);
+						current_width_written += write_width;
+						glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-					text_draw_info.true_font_reference[c].Size = glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows);
-					text_draw_info.true_font_reference[c].Bearing = glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top);
-					text_draw_info.true_font_reference[c].advance = (face->glyph->advance.x);
+						text_draw_info.true_font_reference[c].Size = glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows);
+						text_draw_info.true_font_reference[c].Bearing = glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top);
+						text_draw_info.true_font_reference[c].advance = (face->glyph->advance.x);
+					}
 				}
 				glBindTexture(GL_TEXTURE_2D, 0);
 			}
@@ -2069,13 +2219,14 @@ int main(int argc, char *argv[])
 			glDeleteFramebuffers(1,&text_FBO);
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glViewport(0, 0, screen_width, screen_height);
+			int zzzzzz = 5;
 		}
 	#pragma endregion
 
 	#pragma endregion
 #pragma region MAIN_LOOP_INIT
 		scene = ST_MENU;
-		menu_scene_state = setup_main_menu(menu_memory, menu_action_new_game, menu_action_continue_game, menu_action_level_editor);
+		menu_scene_state = setup_main_menu(menu_memory, menu_action_new_game, menu_action_continue_game, menu_action_level_editor, menu_action_keybinding);
 		//setup ui
 		ui_state = click_ui_init(permanent_memory);
 	#pragma endregion

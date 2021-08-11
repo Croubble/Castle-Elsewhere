@@ -1,9 +1,7 @@
 #pragma once
 #include<iostream>
 
-
 const int GAME_LEVEL_NAME_MAX_SIZE = 64;
-
 const int MAX_EDITOR_ACTIONS = 100000;
 const int MAX_NUMBER_GAMESTATES = 1000;
 const float TIME_TO_DISPLAY_LEVEL_NAME = 1.5f;
@@ -16,6 +14,7 @@ enum SCENE_TYPE
 	ST_PLAY_LEVEL,
 	ST_SHOW_TEXT,
 	ST_MENU,
+	ST_MENU_KEYBIND,
 	ST_COUNT
 };
 
@@ -59,4 +58,3 @@ const float DRAW_TITLE_TIME = 2.0f;
 
 #define crash_err(...) do {full_crash_err(__VA_ARGS__, __FILE__, __LINE__);} while(0)
 void full_crash_err(const char* text, const char* file, int line);
-

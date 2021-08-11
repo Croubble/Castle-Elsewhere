@@ -223,6 +223,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
+    <ClInclude Include="Benchmark.h" />
     <ClInclude Include="Click.h" />
     <ClInclude Include="Clock.h" />
     <ClInclude Include="Constants.h" />

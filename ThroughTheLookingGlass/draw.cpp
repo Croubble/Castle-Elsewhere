@@ -74,7 +74,7 @@ void draw_button_to_gamespace(GameSpaceCamera draw_area, SpriteWrite * ui_draw, 
 	float height = draw_area.up - draw_area.down;
 	if (height >= width)
 	{
-		crash_err("we can't draw a button if it isn't at least 1x1, the draw won't work");
+		crash_err("we can't draw a button if the height is greater than the width.");
 
 	}
 	//draw left.
@@ -90,13 +90,13 @@ void draw_button_to_gamespace(GameSpaceCamera draw_area, SpriteWrite * ui_draw, 
 		middle_draw.right -= 0.5f * height;
 		draw_ui_to_gamespace(middle_draw, textureAssets::UI::ButtonCenter, ui_draw, color);
 	}
+	//draw the right half.
 	if (height != width)
 	{
 		GameSpaceCamera right_draw = draw_area;
 		right_draw.left = right_draw.right - 0.5f * height;
 		draw_ui_to_gamespace(right_draw,textureAssets::UI::ButtonRightHalf ,ui_draw, color);
 	}
-	//draw the right half.
 }
 
 void mask_sprite_using_window(glm::vec4* draw_square, glm::vec4* tex_coord, glm::vec4 window, glm::vec2 tex_movement)

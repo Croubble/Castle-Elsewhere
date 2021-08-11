@@ -95,6 +95,7 @@ GameSpaceCamera math_camera_zoom_towards_internal(GameSpaceCamera moving, GameSp
 }
 
 
+
 float smooth_start3(float t)
 {
 	return t * t * t;
@@ -195,6 +196,68 @@ glm::vec2 math_screenspace_to_gamespace(IntPair screenSpacePosition, GameSpaceCa
 	return result;
 }
 
+float math_camera_height(GameSpaceCamera c)
+{
+	return c.up - c.down;
+}
+float math_camera_width(GameSpaceCamera c)
+{
+	return c.right - c.left;
+}
+GameSpaceCamera* math_camera_break_into_grid(Memory* memory, GameSpaceCamera old, int w, int h)
+{
+	float old_w = old.right - old.left;
+	float old_h = old.up - old.down;
+	float next_w = old_w / ((float) w);
+	float next_h = old_h / ((float)h);
+
+	GameSpaceCamera* result = (GameSpaceCamera*)memory_alloc(memory, sizeof(*result) * w * h);
+	int z = 0;
+	for(int i = 0; i < w;i++)
+		for (int j = 0; j < h; j++,z++)
+		{
+			result[z].left = old.left + next_w * i;
+			result[z].right = result[z].left + next_w;
+			result[z].down = old.down + next_h * j;
+			result[z].up = result[z].down + next_h;
+		}
+	return result;
+}
+GameSpaceCamera math_camera_trim_all(GameSpaceCamera old, float trim_percent)
+{
+	trim_percent /= 2.0f;
+	float h = old.up - old.down;
+	float w = old.right - old.left;
+	old.down = old.down + h * trim_percent;
+	old.up = old.up - h * trim_percent;
+	old.left = old.left + w * trim_percent;
+	old.right = old.right - w * trim_percent;
+	return old;
+}
+GameSpaceCamera math_camera_trim_bottom(GameSpaceCamera old, float trim_percent)
+{
+	float height = old.up - old.down;
+	old.down = old.down + height * trim_percent;
+	return old;
+}
+GameSpaceCamera math_camera_trim_top(GameSpaceCamera old, float trim_percent)
+{
+	float height = old.up - old.down;
+	old.up = old.up - height * trim_percent;
+	return old;
+}
+GameSpaceCamera math_camera_trim_left(GameSpaceCamera old, float trim_percent)
+{
+	float width = old.right - old.left;
+	old.left = old.left + width * trim_percent;
+	return old;
+}
+GameSpaceCamera math_camera_trim_right(GameSpaceCamera old, float trim_percent)
+{
+	float width = old.right - old.left;
+	old.right = old.right - width * trim_percent;
+	return old;
+}
 /*******************************************************************************/
 glm::mat4 math_translated_matrix(glm::vec3 translate)
 {

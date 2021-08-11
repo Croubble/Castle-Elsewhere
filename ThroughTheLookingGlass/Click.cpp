@@ -9,6 +9,54 @@ void button_click_state_set_all_false(button_click_state* state)
 	state->released_since_pressed_last = true;
 	state->time_pressed = 0;
 }
+
+GAME_ACTION_NAME internal_string_to_name(const char* name)
+{
+	GAME_ACTION_NAME result;
+	int i;
+	for (i = 0; name[i] != '\0' && i < 32; i++)
+	{
+		result.name[i] = name[i];
+	}
+	result.name[i] = '\0';
+	if (i > 32)
+	{
+		crash_err("one of our GAME_ACTIONS is greater than the total length of a game-action-name, just increase that const char value. Its fine.");
+	}
+	return result;
+}
+GAME_ACTION_NAME click_gameaction_to_name(GAME_ACTION action)
+{
+	int length = 11;
+	if (length != G_LENGTH)
+	{
+		crash_err("you need to update the GAME_ACTION to string binding. Yeah. I know. Sucks that you just can't auto convert. The price of C. \0");
+	}
+	if (action == G_UP)
+		return internal_string_to_name("G_UP");
+	if (action == G_DOWN)
+		return internal_string_to_name("DOWN");
+	if (action == G_LEFT)
+		return internal_string_to_name("LEFT");
+	if (action == G_RIGHT)
+		return internal_string_to_name("RIGHT");
+	if(action == G_UNDO)
+		return internal_string_to_name("UNDO");
+	if(action == G_RESET)
+		return internal_string_to_name("RESET");
+	if(action == G_EXIT_LEVEL)
+		return internal_string_to_name("EXIT LEVEL");
+	if(action == G_BACK_MENU)
+		return internal_string_to_name("BACK MENU");
+	if(action == G_MENU_UP)
+		return internal_string_to_name("MENU UP");
+	if(action == G_MENU_DOWN)
+		return internal_string_to_name("MENU DOWN");
+	if(action == G_MENU_ENTER)
+		return internal_string_to_name("MENU ENTER");
+	crash_err("???? you might have passed in a wrong value to the function, or the function doesn't properly catch one of the cases.");
+	return internal_string_to_name("BUGS!");
+}
 button_click_state click_test_button(EditorUIState* ui_state, GAME_ACTION action)
 {
 	//int keycode_prime = ui_state->button_mapping.primary_mapping;
@@ -116,4 +164,10 @@ int click_sdl_keycode_to_index_position(int sdlk_keycode)
 	}
 	crash_err("we tried to lookup a sdlk keycode, but it didn't match any sdlkeycodes we know about. This should never happen. crash!");
 	return 0;
+};
+
+
+button_click_state* get_keycode_state(EditorUIState* state, SDL_KeyCode keycode)
+{
+	return &state->key_values[click_sdl_keycode_to_index_position(keycode)];
 }

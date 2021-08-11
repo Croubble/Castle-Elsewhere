@@ -16,7 +16,6 @@ enum EditorClickStateType
 	ECS_EDIT_NAME,
 	ECS_COUNT
 };
-
 enum GAME_ACTION
 {
 	G_UP,
@@ -32,6 +31,10 @@ enum GAME_ACTION
 	G_MENU_ENTER,
 	G_LENGTH,
 	G_ERROR
+};
+struct GAME_ACTION_NAME
+{
+	char name[32];
 };
 struct NeutralClickState
 {
@@ -126,11 +129,13 @@ struct EditorUIState
 };
 
 
+GAME_ACTION_NAME click_gameaction_to_name(GAME_ACTION action);
 button_click_state click_test_button(EditorUIState* ui_state, GAME_ACTION action);
 MappingState click_make_default_mapping_state();
 void button_click_state_set_all_false(button_click_state* state);
 EditorUIState click_ui_init(Memory* permanent_memory);
 int click_sdl_keycode_to_index_position(int sdlk_keycode);
+button_click_state* get_keycode_state(EditorUIState* state, SDL_KeyCode keycode);
 const int all_sdl_keycodes[] = {
 	SDLK_0,
 	SDLK_1,

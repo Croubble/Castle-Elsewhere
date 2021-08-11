@@ -58,6 +58,9 @@
     <Filter Include="Source Files\ButtonFilter">
       <UniqueIdentifier>{f49365e6-462c-451c-9b0e-a7d506c30daa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ForgeFilter">
+      <UniqueIdentifier>{66665e5c-1f5f-499b-bbc3-7985bd2f114a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Downloads\glad (4)\src\glad.c">
@@ -306,6 +309,9 @@
     </ClInclude>
     <ClInclude Include="EditorThree.h">
       <Filter>Source Files\GamestateFilter</Filter>
+    </ClInclude>
+    <ClInclude Include="Benchmark.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

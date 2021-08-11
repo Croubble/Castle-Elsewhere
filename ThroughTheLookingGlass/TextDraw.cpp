@@ -5,7 +5,6 @@ float get_horizontal_space_consumed_by_text(glm::vec3 start_position, glm::vec2 
 {
 	//TODO: get info.current_number_drawn to replace the other number we were using.
 	glm::vec3 next_position = start_position;
-	int draw = *info->current_number_drawn;
 	for (; c_string[0]; c_string++)
 	{
 		char c = c_string[0];
@@ -23,7 +22,6 @@ float get_horizontal_space_consumed_by_text(glm::vec3 start_position, glm::vec2 
 		next_position.x += (x_pixels_in_gamespace * scale.x);
 
 	}
-	*info->current_number_drawn = draw;
 	return next_position.x - start_position.x;
 }
 
@@ -35,7 +33,6 @@ LineBounds get_linebounds_space_consumed_by_text(glm::vec3 start_position, glm::
 	result.y_bot = 0;
 	result.y_top = 0;
 	result.y_dist = 0;
-	int draw = *info->current_number_drawn;
 	for (; c_string[0]; c_string++)
 	{
 		char c = c_string[0];
@@ -56,7 +53,6 @@ LineBounds get_linebounds_space_consumed_by_text(glm::vec3 start_position, glm::
 		result.y_top = maxf(result.y_top, y_start + h);
 		result.y_dist = maxf(result.y_dist, h);
 	}
-	*info->current_number_drawn = draw;
 	result.line_length = next_position.x - start_position.x;
 	return result;
 }
@@ -112,22 +108,49 @@ float lerp(float start, float end, float percentage)
 	return percentage * end + (1.0f - percentage) * start;
 }
 
-void draw_text_maximized_centered_to_screen(GameSpaceCamera camera, const char* string_to_draw, TextWrite* text_draw_info)
+
+void draw_text_lines_at_same_size(GameSpaceCamera* draw_areas, const char** strings_to_draw, int num_to_draw, TextWrite* text_draw_info)
+{
+	//step 1: calculate the size necessary for each line of text.
+
+	float smallest_scale = 9999999999999999999999.0f; //arbitarily big number.
+	for (int i = 0; i < num_to_draw; i++)
+	{
+		glm::vec3 camera_center = glm::vec3((draw_areas[i].left + draw_areas[i].right) / 2.0f, (draw_areas[i].up + draw_areas[i].down) / 2.0f, 15);
+		//1: calculate the final_text_width we want, and the text scale this will produce.
+		LineBounds bounds = get_linebounds_space_consumed_by_text(camera_center, glm::vec2(1, 1), strings_to_draw[i], text_draw_info);
+		float text_width = bounds.line_length;
+		float text_height = bounds.y_top - bounds.y_bot;
+
+		float x_dist = draw_areas[i].right - draw_areas[i].left;
+		float y_dist = draw_areas[i].up - draw_areas[i].down;
+		float x_scale = x_dist / text_width;
+		float y_scale = y_dist / text_height;
+		float scale = minf(x_scale, y_scale);
+		if (scale < smallest_scale)
+			smallest_scale = scale;
+	}
+
+	for (int i = 0; i < num_to_draw; i++)
+	{
+		draw_text_maximized_centered_to_screen(draw_areas[i], strings_to_draw[i], text_draw_info, smallest_scale);
+	}
+}
+void draw_text_maximized_centered_to_screen(GameSpaceCamera camera, const char* string_to_draw, TextWrite* text_draw_info, float max_scale)
 {
 	//draw the text.
 	glm::vec3 screen_center = glm::vec3((camera.left + camera.right) / 2.0f, (camera.up + camera.down) / 2.0f, 15);
 
 	LineBounds bounds = get_linebounds_space_consumed_by_text(screen_center, glm::vec2(1, 1), string_to_draw, text_draw_info);
-	float text_width = get_horizontal_space_consumed_by_text(screen_center, glm::vec2(1, 1), string_to_draw, text_draw_info);
+	float text_width = bounds.line_length; 
 	float text_height = bounds.y_top - bounds.y_bot;
-
-
 
 	float x_dist = camera.right - camera.left;
 	float y_dist = camera.up - camera.down;
 	float x_scale = x_dist / text_width;
 	float y_scale = y_dist / text_height;
 	float scale = minf(x_scale, y_scale);
+	scale = minf(scale, max_scale);
 
 	float start_text_y_true_start;
 	{
@@ -152,7 +175,7 @@ void draw_text_maximized_centered_to_screen(GameSpaceCamera camera, const char* 
 		float x_space_left_half = x_space_left / 2.0f;
 		start_text_x_true_start = camera.left + x_space_left_half;
 	}
-	draw_text_to_screen(glm::vec3(start_text_x_true_start, start_text_y_true_start, screen_center.z), glm::vec2(x_scale, x_scale), string_to_draw, text_draw_info);
+	draw_text_to_screen(glm::vec3(start_text_x_true_start, start_text_y_true_start, screen_center.z), glm::vec2(scale,scale), string_to_draw, text_draw_info);
 }
 
 GameSpaceCamera area_get_grid_element(float x, float y, float width, float height, GameSpaceCamera area)

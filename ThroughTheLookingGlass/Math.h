@@ -43,8 +43,20 @@ bool math_intpair_eq(IntPair left, IntPair right);
 /*******************************SCREEN LOGIC************************************/
 float camera_ratio(ViewPortCamera viewport);
 glm::mat4 camera_make_matrix(GameSpaceCamera camera);
+
 GameSpaceCamera math_camera_move_towards_lerp(GameSpaceCamera moving, GameSpaceCamera goal, float current_time, float goal_time);
 GameSpaceCamera math_camera_build(float camera_height, float screen_center_x, float screen_center_y, ViewPortCamera viewport);
+
+float math_camera_height(GameSpaceCamera c);
+float math_camera_width(GameSpaceCamera c);
+GameSpaceCamera* math_camera_break_into_grid(Memory* memory, GameSpaceCamera old, int w, int h);
+GameSpaceCamera math_camera_trim_all(GameSpaceCamera old, float trim_percent);
+GameSpaceCamera math_camera_trim_bottom(GameSpaceCamera old, float trim_percent);
+GameSpaceCamera math_camera_trim_top(GameSpaceCamera old, float trim_percent);
+GameSpaceCamera math_camera_trim_left(GameSpaceCamera old, float trim_percent);
+GameSpaceCamera math_camera_trim_right(GameSpaceCamera old, float trim_percent);
+
+
 float math_pixelspace_to_gamespace_multiplier(ViewPortCamera view, float gameHeight);
 float math_gamespace_to_pixelspace_multiplier(ViewPortCamera view, float gameHeight);
 glm::vec2 math_screenspace_to_pixelspace(IntPair screenSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight);
