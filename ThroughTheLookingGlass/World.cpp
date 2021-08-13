@@ -118,7 +118,6 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 				}
 				//remove the player from their current position, teleport them to our new position, and update the new final position for the player.
 				{
-
 					scene->last_action_was_teleport = false;
 					next_state->piece[next_square_position_1d] = 0;
 					scene->world_state.level_state[link.level_index]->piece[link.level_position_1d] = Piece::P_PLAYER;

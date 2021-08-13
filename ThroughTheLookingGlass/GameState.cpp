@@ -6,6 +6,16 @@
 /*INTERNAL FUNCTIONS HEADERS*/
 void gamestate_allocate_layers(GameState* result, Memory* memory, int w, int h);
 
+
+/**************************WORLD POSITION FUNCS***********************************/
+WorldPosition world_make_world_position(int level_index, IntPair pos_2d, int pos_1d)
+{
+	WorldPosition result;
+	result.level_index = level_index;
+	result.level_position = pos_2d;
+	result.level_position_1d = pos_1d;
+	return result;
+}
 /***************************MOVEMENT FUNCTIONS***********************************/
 static inline IntPair move_pos_wrapped_2d_up(IntPair pos, int w, int h)
 {
@@ -839,6 +849,46 @@ FloorData gamestate_floordata_make()
 
 /******************************GAMESTATE READ************************/
 /********************************************************************/
+int gamestate_calc_clicked_state(GameState** states, IntPair* states_positions, int num_states, float mouse_game_pos_x,float mouse_game_pos_y)
+{
+	for (int i = 0; i < num_states; i++)
+	{
+		GameState* currentState = states[i];
+		float left = (float) states_positions[i].x;
+		float right = (float) states_positions[i].x + currentState->w;
+		float down = (float) states_positions[i].y;
+		float up = (float) states_positions[i].y + currentState->h;
+		bool clickedFloor = math_click_is_inside_AABB(left, down, right, up, mouse_game_pos_x, mouse_game_pos_y);
+		if(clickedFloor)
+			return i;
+	}
+	return -1;
+}
+WorldPosition gamestate_calc_clicked_world_position(GameState** states, IntPair* states_positions, int num_states, float mouse_game_pos_x, float mouse_game_pos_y)
+{
+	glm::vec2 mouseGamePos = glm::vec2(mouse_game_pos_x, mouse_game_pos_y);
+	int index_clicked = gamestate_calc_clicked_state(states,states_positions,num_states, mouse_game_pos_x, mouse_game_pos_y);
+	GameState* state = states[index_clicked];
+	IntPair state_start = states_positions[index_clicked];
+	IntPair grid_clicked;
+	{
+		float left = (float) state_start.x;
+		float right = (float) (state_start.x + state->w);
+		float down = (float) state_start.y;
+		float up = (float) (state_start.y + state->h);
+		//calculate what floor cell we actually clicked.
+		float percentageX = percent_between_two_points(mouseGamePos.x, left, right);
+		float percentageY = percent_between_two_points(mouseGamePos.y, down, up);
+		int x_floor_cell_clicked = (int)(percentageX * state->w);
+		int y_floor_cell_clicked = (int)(percentageY * state->h);
+
+		grid_clicked = math_intpair_create(x_floor_cell_clicked, y_floor_cell_clicked);
+	}
+	int grid_clicked_1d = f2D(grid_clicked.x, grid_clicked.y, state->w, state->h);
+	WorldPosition result = world_make_world_position(index_clicked, grid_clicked, grid_clicked_1d);
+	return result;
+}
+
 WorldPosition gamestate_get_position_linked_by_teleporter(GameState** gamestates, int len, WorldPosition first_staircase)
 {
 	//1: get the staircase linked by the first staircase.

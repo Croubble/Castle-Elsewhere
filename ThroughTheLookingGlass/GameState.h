@@ -174,6 +174,7 @@ Direction action_to_direction(Action action);
 IntPair direction_to_intpair(Direction dir);
 void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scope_memory);
 
+WorldPosition world_make_world_position(int level_index, IntPair pos_2d, int pos_1d);
 /*****************************GAMESTATE TIME MACHINE******************/
 /*********************************************************************/
 void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scope_memory);
@@ -211,6 +212,8 @@ GameState* gamestate_merge_with_allocate(GameState* first, GameState* second, In
 void gamestate_merge(GameState* left, GameState* right, GameState* output, IntPair left_merge_offset, IntPair right_merge_offset);
 /******************************GAMESTATE READ************************/
 /********************************************************************/
+int gamestate_calc_clicked_state(GameState** states, IntPair* states_positions, int num_states, float mouse_game_pos_x, float mouse_game_pos_y);
+WorldPosition gamestate_calc_clicked_world_position(GameState** states, IntPair* states_positions, int num_states, float mouse_game_pos_x, float mouse_game_pos_y);
 WorldPosition gamestate_get_position_linked_by_teleporter_and_check_backlink(GameState** gamestates, int len, WorldPosition first_staircase);
 void gamestate_print_staircase_tele_value(GameState** gamestate,int len);
 int** gamestate_get_layers(GameState* gamestate, int* num_layers_found, Memory* temp_memory);

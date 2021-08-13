@@ -299,14 +299,6 @@ void gamestate_timemachine_editor_take_action(TimeMachineEditor* editor, WorldSt
 
 }
 
-WorldPosition world_make_world_position(int level_index, IntPair pos_2d, int pos_1d)
-{
-	WorldPosition result;
-	result.level_index = level_index;
-	result.level_position = pos_2d;
-	result.level_position_1d = pos_1d;
-	return result;
-}
 
 WorldPosition world_make_world_position_invalid()
 {
@@ -315,6 +307,8 @@ WorldPosition world_make_world_position_invalid()
 
 WorldPosition gamestate_timemachine_get_click_collision_full(TimeMachineEditor* timeMachine, float mouse_game_pos_x, float mouse_game_pos_y)
 {
+	return gamestate_calc_clicked_world_position(timeMachine->world_state.level_state, timeMachine->world_state.level_position, timeMachine->world_state.num_level,mouse_game_pos_x,mouse_game_pos_y);
+	/*
 	glm::vec2 mouseGamePos = glm::vec2(mouse_game_pos_x, mouse_game_pos_y);
 	int index_clicked = gamestate_timemachine_get_click_collision_gamestate(timeMachine, mouse_game_pos_x, mouse_game_pos_y);
 	GameState* state = timeMachine->world_state.level_state[index_clicked];
@@ -336,9 +330,12 @@ WorldPosition gamestate_timemachine_get_click_collision_full(TimeMachineEditor* 
 	int grid_clicked_1d = f2D(grid_clicked.x, grid_clicked.y, state->w, state->h);
 	WorldPosition result = world_make_world_position(index_clicked, grid_clicked, grid_clicked_1d);
 	return result;
+	*/
 }
 int gamestate_timemachine_get_click_collision_gamestate(TimeMachineEditor* timeMachine, float mouse_game_pos_x,float mouse_game_pos_y)
 {
+	return gamestate_calc_clicked_state(timeMachine->world_state.level_state, timeMachine->world_state.level_position, timeMachine->world_state.num_level,mouse_game_pos_x,mouse_game_pos_y);
+	/*
 	for (int i = 0; i < timeMachine->world_state.num_level; i++)
 	{
 		GameState* currentState = timeMachine->world_state.level_state[i];
@@ -351,6 +348,7 @@ int gamestate_timemachine_get_click_collision_gamestate(TimeMachineEditor* timeM
 			return i;
 	}
 	return -1;
+	*/
 }
 /*****************************************************action creation*******************************************************/
 TimeMachineEditorAction gamestate_timemachineaction_create_undo_action()

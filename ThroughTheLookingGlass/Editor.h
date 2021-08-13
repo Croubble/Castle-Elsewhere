@@ -143,7 +143,6 @@ void gamestate_timemachine_editor_take_action(TimeMachineEditor* editor, WorldSt
 
 //world pos stuff.
 WorldPosition world_make_world_position_invalid();
-WorldPosition world_make_world_position(int level_index, IntPair pos_2d, int pos_1d);
 
 /************************GAMESTATE TIME MACHINE**********************/
 
