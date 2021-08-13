@@ -162,6 +162,14 @@ struct RigidData
 	IntPair* links;
 	int num_links;
 };
+
+struct WorldPosition
+{
+	int level_index;
+	IntPair level_position;
+	int level_position_1d;
+};
+
 Direction action_to_direction(Action action);
 IntPair direction_to_intpair(Direction dir);
 void gamestate_timemachine_reset(GamestateTimeMachine* timeMachine, Memory* scope_memory);
@@ -203,6 +211,7 @@ GameState* gamestate_merge_with_allocate(GameState* first, GameState* second, In
 void gamestate_merge(GameState* left, GameState* right, GameState* output, IntPair left_merge_offset, IntPair right_merge_offset);
 /******************************GAMESTATE READ************************/
 /********************************************************************/
+WorldPosition gamestate_get_position_linked_by_teleporter_and_check_backlink(GameState** gamestates, int len, WorldPosition first_staircase);
 void gamestate_print_staircase_tele_value(GameState** gamestate,int len);
 int** gamestate_get_layers(GameState* gamestate, int* num_layers_found, Memory* temp_memory);
 int* gamestate_get_layer(GameState* gamestate, int layer_num);

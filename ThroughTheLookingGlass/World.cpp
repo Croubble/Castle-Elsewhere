@@ -33,28 +33,7 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 	//Find the player.
 	WorldPosition player_pos = world_maybe_find_player(scene);
 	int current_player_value = scene->world_state.level_state[player_pos.level_index]->piece[player_pos.level_position_1d];
-	/*
-	{
-		int len = current_state->w * current_state->h;
-		bool found_player = false;
-		for (int i = 0; i < len; i++)
-		{
-			if (is_player(current_state->piece[i]))
-			{
-				current_player_position = t2D(i, current_state->w, current_state->h);
-				current_player_value = current_state->piece[i];
-				found_player = true;
-				break;
-			}
-		}
-		if (!found_player)
-		{
-			std::cout << "failed to find player in the gamestate it was meant to be in. This is a fatal error, fix it." << std::endl;
-			abort();
-		}
-
-	}
-	*/	
+	
 	//calculate what square we are moving too.
 	IntPair next_player_square_position;
 	int next_square_level;
@@ -118,37 +97,37 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 
 		//if the player is standing on a staircase tile after a move, apply a teleport to them. Store the final position that our player ends up standing on.
 		//todo store the final position as what happens if no teleport.
-		int final_level_index = next_square_level;
-		int final_position_1d = next_square_position_1d;
+		WorldPosition final_position;
+		final_position.level_index = next_square_level;
+		final_position.level_position_1d = next_square_position_1d;
+		final_position.level_position = t2D(next_square_position_1d, next_state->w, next_state->h);
 		{
 			int f = next_state->floor[next_square_position_1d];
 			bool standing_on_teleporter = is_staircase(f);
 			if (standing_on_teleporter)
 			{
 				//find the position that our teleporter links to.
-				int link_location;
-				IntPair link_square_2d;
-				int link_square_1d;
+				WorldPosition link = gamestate_get_position_linked_by_teleporter_and_check_backlink(scene->world_state.level_state, scene->world_state.num_level, final_position);
 				{
 					FloorData next_floordata = next_state->floor_data[next_square_position_1d];
-					link_location = next_floordata.teleporter_id;
-					link_square_2d = next_floordata.teleporter_target_square;
-					int link_w = scene->world_state.level_state[link_location]->w;
-					int link_h = scene->world_state.level_state[link_location]->h;
-					link_square_1d = f2D(link_square_2d.x, link_square_2d.y, link_w,link_h);
+					link.level_index = next_floordata.teleporter_id;
+					link.level_position = next_floordata.teleporter_target_square;
+					int link_w = scene->world_state.level_state[link.level_index]->w;
+					int link_h = scene->world_state.level_state[link.level_index]->h;
+					link.level_position_1d = f2D(link.level_position.x, link.level_position.y, link_w,link_h);
 				}
 				//remove the player from their current position, teleport them to our new position, and update the new final position for the player.
 				{
 
 					scene->last_action_was_teleport = false;
 					next_state->piece[next_square_position_1d] = 0;
-					scene->world_state.level_state[link_location]->piece[link_square_1d] = Piece::P_PLAYER;
+					scene->world_state.level_state[link.level_index]->piece[link.level_position_1d] = Piece::P_PLAYER;
 					GameState* next = scene->world_state.level_state[next_square_level];
 					int level_pos_1d = f2D(next_player_square_position.x, next_player_square_position.y, next->w, next->h);
 					scene->staircase_we_entered_level_from = world_make_world_position(scene->current_level, next_player_square_position, level_pos_1d);
-					scene->current_level = link_location;
-					final_level_index = link_location;
-					final_position_1d = link_square_1d;
+					scene->current_level = link.level_index;
+					final_position.level_index = link.level_index;
+					final_position.level_position_1d = link.level_position_1d;
 				}
 			}
 
@@ -157,7 +136,7 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 		//if the player is standing on a "pos level" tile OR the player just entered into a level staircase, initiate a new time_machine.
 		{
 			//Floor tile_player_standing_on = next_state->floor[next_square_position_1d];
-			int tile_player_standing_on = scene->world_state.level_state[final_level_index]->floor[final_position_1d];
+			int tile_player_standing_on = scene->world_state.level_state[final_position.level_index]->floor[final_position.level_position_1d];
 			bool standing_on_start_tile = tile_player_standing_on == F_START || tile_player_standing_on == F_STAIRCASE_LEVELSTART;
 			if (standing_on_start_tile)
 			{
@@ -167,7 +146,7 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 				gamestate_startup(next_scene);
 				WorldPlayScene* result = (WorldPlayScene*) memory_alloc(level_memory, sizeof(WorldPlayScene));
 				result->time_machine = gamestate_timemachine_create(next_scene, level_memory, 1024);
-				result->draw_position = scene->world_state.level_position[final_level_index];
+				result->draw_position = scene->world_state.level_position[final_position.level_index];
 				return result;
 			}
 			else

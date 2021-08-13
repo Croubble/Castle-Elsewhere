@@ -25,12 +25,6 @@ enum LevelMode
 	Overworld
 };
 
-struct WorldPosition
-{
-	int level_index;
-	IntPair level_position;
-	int level_position_1d;
-};
 
 struct SplitGamestate
 {

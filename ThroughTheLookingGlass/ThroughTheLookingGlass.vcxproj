@@ -253,6 +253,7 @@
     <ClInclude Include="sprite.h" />
     <ClInclude Include="Sprites.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="Tests.h" />
     <ClInclude Include="TextDraw.h" />
     <ClInclude Include="TextScene.h" />
     <ClInclude Include="textureAssets.h" />

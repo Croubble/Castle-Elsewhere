@@ -2,8 +2,8 @@
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include <glm/gtc/type_ptr.hpp>
 #include "GameState.h"
-
 glm::mat4 camera_make_matrix(GameSpaceCamera camera)
 {
 	return glm::ortho(camera.left, camera.right, camera.down, camera.up, camera.closePoint, camera.farPoint);
@@ -259,6 +259,12 @@ GameSpaceCamera math_camera_trim_right(GameSpaceCamera old, float trim_percent)
 	return old;
 }
 /*******************************************************************************/
+glm::vec3 lerp(glm::vec3 start, glm::vec3 end, float l)
+{
+	float inv = l - 1;
+	return glm::vec3(start.x * inv + end.x * l, start.y * inv + end.y * l, start.z * inv + end.z * l);
+}
+/*******************************************************************************/
 glm::mat4 math_translated_matrix(glm::vec3 translate)
 {
 	glm::mat4 result = glm::mat4(1.0);
@@ -270,6 +276,18 @@ glm::mat4 math_translated_scaled_matrix(glm::vec3 translate, glm::vec3 scale)
 	result = glm::translate(result, translate);
 	result = glm::scale(result, scale);
 	return result;
+}
+glm::mat4 math_line_matrix(glm::vec3 start, glm::vec3 end)
+{
+	float dist = glm::distance(start, end);
+	glm::vec3 scale = glm::vec3(dist, 0.2f, 1.0f);
+	glm::vec3 center = lerp(start, end, 0.5f);
+
+	glm::mat4 id = glm::mat4(1.0f);
+	glm::mat4 translated = glm::translate(id, center);
+	glm::mat4 rotated = glm::rotate(translated,glm::sin((start.y - end.y) / (start.x / end.x)), glm::vec3(0, 0, 1));
+	glm::mat4 scaled = glm::scale(rotated,scale);
+	return scaled;
 }
 float math_gamespace_to_pixelspace_multiplier(ViewPortCamera view, float gameHeight)
 {

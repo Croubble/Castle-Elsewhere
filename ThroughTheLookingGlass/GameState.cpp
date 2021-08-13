@@ -839,12 +839,39 @@ FloorData gamestate_floordata_make()
 
 /******************************GAMESTATE READ************************/
 /********************************************************************/
-
+WorldPosition gamestate_get_position_linked_by_teleporter(GameState** gamestates, int len, WorldPosition first_staircase)
+{
+	//1: get the staircase linked by the first staircase.
+	WorldPosition second_staircase;
+	{
+		GameState* second_level = gamestates[first_staircase.level_index];
+		FloorData floor_data = second_level->floor_data[first_staircase.level_position_1d];
+		second_staircase.level_index = floor_data.teleporter_id;
+		second_staircase.level_position = floor_data.teleporter_target_square;
+		int link_w = gamestates[second_staircase.level_index]->w;
+		int link_h = gamestates[second_staircase.level_index]->h;
+		second_staircase.level_position_1d = f2D(second_staircase.level_position.x, second_staircase.level_position.y, link_w, link_h);
+	}
+	return second_staircase;
+}
+WorldPosition gamestate_get_position_linked_by_teleporter_and_check_backlink(GameState** gamestates, int len, WorldPosition first_staircase) /*returns the staircase link, if it exists.*/
+{
+	WorldPosition second_staircase = gamestate_get_position_linked_by_teleporter(gamestates, len, first_staircase);
+	WorldPosition first_staircase_check = gamestate_get_position_linked_by_teleporter(gamestates, len, second_staircase);
+	//3: error check. 
+	{
+		if (first_staircase_check.level_index != first_staircase.level_index ||
+			first_staircase_check.level_position.x != first_staircase.level_position.x ||
+			first_staircase_check.level_position.y != first_staircase.level_position.y ||
+			first_staircase_check.level_position_1d != first_staircase.level_position_1d)
+				crash_err("tried to get a staircase link, but its broken.");
+	}
+	return second_staircase;
+}
 void gamestate_print_staircase_tele_value(GameState** gamestate, int len)
 {
 	for (int z = 0; z < len; z++)
 	{
-
 		int w = gamestate[z]->w;
 		int h = gamestate[z]->h;
 		for (int i = 0; i < w * h; i++)
@@ -855,7 +882,6 @@ void gamestate_print_staircase_tele_value(GameState** gamestate, int len)
 			}
 		}
 	}
-		
 }
 int** gamestate_get_layers(GameState* gamestate, int* num_layers_found, Memory* temp_memory)
 {

@@ -66,8 +66,11 @@ glm::vec2 math_screenspace_to_gamespace(IntPair screenSpacePosition, GameSpaceCa
 
 
 /*******************************************************************************/
+glm::vec3 lerp(glm::vec3 start, glm::vec3 end, float l);
+/*******************************************************************************/
 glm::mat4 math_translated_matrix(glm::vec3 translate);
 glm::mat4 math_translated_scaled_matrix(glm::vec3 translate, glm::vec3 scale);
+glm::mat4 math_line_matrix(glm::vec3 start, glm::vec3 end);
 /*******************************************************************************/
 /***************************** SIDE ********************************************/
 /*******************************************************************************/
