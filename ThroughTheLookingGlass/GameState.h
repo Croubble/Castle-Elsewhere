@@ -214,6 +214,7 @@ void gamestate_merge(GameState* left, GameState* right, GameState* output, IntPa
 /********************************************************************/
 int gamestate_calc_clicked_state(GameState** states, IntPair* states_positions, int num_states, float mouse_game_pos_x, float mouse_game_pos_y);
 WorldPosition gamestate_calc_clicked_world_position(GameState** states, IntPair* states_positions, int num_states, float mouse_game_pos_x, float mouse_game_pos_y);
+WorldPosition gamestate_get_position_linked_by_teleporter(GameState** gamestates, int len, WorldPosition first_staircase);
 WorldPosition gamestate_get_position_linked_by_teleporter_and_check_backlink(GameState** gamestates, int len, WorldPosition first_staircase);
 void gamestate_print_staircase_tele_value(GameState** gamestate,int len);
 int** gamestate_get_layers(GameState* gamestate, int* num_layers_found, Memory* temp_memory);

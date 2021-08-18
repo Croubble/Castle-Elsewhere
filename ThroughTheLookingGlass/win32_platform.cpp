@@ -1459,6 +1459,49 @@ void mainloopfunction()
 					editor_scene_state->timeMachine->world_state.num_level,
 					all_write);
 			}
+			//draw staircase link, maybe.
+			if(ui_state.type == EditorClickStateType::ECS_NEUTRAL)
+			{
+				//try to find the world position that we are mousing over.
+				WorldPosition moused_over_pos = gamestate_calc_clicked_world_position(
+					editor_scene_state->timeMachine->world_state.level_state, 
+					editor_scene_state->timeMachine->world_state.level_position,
+					editor_scene_state->timeMachine->world_state.num_level,
+					ui_state.mouseGamePos.x, 
+					ui_state.mouseGamePos.y);
+				//if we successfully found a position, check if its a staircase and if it is, draw a line from this position to where we are linking too.
+				if (moused_over_pos.level_index >= 0 && moused_over_pos.level_index < editor_scene_state->timeMachine->world_state.num_level)
+				{
+					WorldState* world = &editor_scene_state->timeMachine->world_state;
+					GameState* examined_state = editor_scene_state->timeMachine->world_state.level_state[moused_over_pos.level_index];
+					Floor floor = (Floor) examined_state->floor[moused_over_pos.level_position_1d];
+					FloorData floor_data = examined_state->floor_data[moused_over_pos.level_position_1d];
+					if (is_staircase(floor) && floor_data.teleporter_id >= 0 && floor_data.teleporter_id < world->num_level)
+					{
+						WorldPosition staircase_link = gamestate_get_position_linked_by_teleporter(world->level_state, world->num_level, moused_over_pos);
+						GameState* linked_state = world->level_state[staircase_link.level_index];
+						Floor linked_floor = (Floor) linked_state->floor[staircase_link.level_position_1d];
+						if (is_staircase(linked_floor))
+						{
+							//calc the positions from which we are going to be drawing!
+							glm::vec3 staircase_start;
+							glm::vec3 staircase_end;
+							{
+								IntPair start = world->level_position[moused_over_pos.level_index];
+								staircase_start.x =  (float) start.x + moused_over_pos.level_position.x;
+								staircase_start.y =  (float) start.y + moused_over_pos.level_position.y;
+								staircase_start.z = 20;
+								IntPair end = world->level_position[staircase_link.level_index];
+								staircase_end.x = (float) (end.x + staircase_link.level_position.x);
+								staircase_end.y = (float) (end.y + staircase_link.level_position.y);
+								staircase_end.z = 20;
+							}
+							draw_line(staircase_start, staircase_end, all_write->floor);
+						}
+					}
+					//TODO: Finish this.
+				}
+			}
 			//parse palette piece_data to gpu form
 			draw_palette(editor_scene_state->palete_screen_start, camera_game, camera_viewport, &ui_state, palete_length, editor_scene_state->palete, all_write);
 			//parse dotted piece_data to gpu form.

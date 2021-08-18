@@ -9,6 +9,16 @@
 
 const int MAX_NUM_FULL_SPRITES = 100;
 
+void draw_line(glm::vec3 staircase_start, glm::vec3 staircase_end, SpriteWrite* info)
+{
+	//calculate how we want to draw.
+	glm::mat4 pos = math_line_matrix(staircase_start, staircase_end);
+	int d = info->num_draw;
+	info->atlas_cpu[d] = info->atlas_mapper[Floor::F_ZBLACK];
+	info->matrix_cpu[d] = pos;
+	info->color_cpu[d] = glm::vec4(1, 1, 1, 1);
+	info->num_draw++;
+}
 void draw_black_box_over_screen(GameSpaceCamera screen, SpriteWrite* info)
 {
 	info->matrix_cpu[info->num_draw] = glm::mat4(1.0f);

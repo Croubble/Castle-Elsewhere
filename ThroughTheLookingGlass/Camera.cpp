@@ -261,7 +261,7 @@ GameSpaceCamera math_camera_trim_right(GameSpaceCamera old, float trim_percent)
 /*******************************************************************************/
 glm::vec3 lerp(glm::vec3 start, glm::vec3 end, float l)
 {
-	float inv = l - 1;
+	float inv = 1.0f - l;
 	return glm::vec3(start.x * inv + end.x * l, start.y * inv + end.y * l, start.z * inv + end.z * l);
 }
 /*******************************************************************************/
@@ -279,15 +279,30 @@ glm::mat4 math_translated_scaled_matrix(glm::vec3 translate, glm::vec3 scale)
 }
 glm::mat4 math_line_matrix(glm::vec3 start, glm::vec3 end)
 {
-	float dist = glm::distance(start, end);
-	glm::vec3 scale = glm::vec3(dist, 0.2f, 1.0f);
-	glm::vec3 center = lerp(start, end, 0.5f);
+	{
+		glm::vec3 adj_start = start + glm::vec3(0.5f,0.5f,0.0f);
+		glm::vec3 adj_end = end + glm::vec3(0.5f,0.5f,0.0f);
+		const float height = 0.2f; //how wide we want our line to be drawn, set to a constant 0.2f for now.
 
-	glm::mat4 id = glm::mat4(1.0f);
-	glm::mat4 translated = glm::translate(id, center);
-	glm::mat4 rotated = glm::rotate(translated,glm::sin((start.y - end.y) / (start.x / end.x)), glm::vec3(0, 0, 1));
-	glm::mat4 scaled = glm::scale(rotated,scale);
-	return scaled;
+		glm::vec2 normalized = glm::normalize(glm::vec2(adj_end.x - adj_start.x, adj_end.y - adj_start.y));
+		//a normalized vectors (x,y) values are (cos(theta),sin(theta), so we can just plug these numbers into the rotation matrix formula!
+		glm::mat4 result;
+		{
+			//a scaled, rotated, and translated matrix, where we don't need to do a bunch of matrix multiplication every single time. Faster! Hopefully.
+			//matrix layout is column constructed, started from the top left, so like:
+			//0,4,8 ,12
+			//1,5,9 ,13
+			//2,6,10,14
+			//3,7,11,14
+			result = glm::mat4(
+				glm::vec4((adj_end - adj_start), 0),
+				glm::vec4(-height * normalized.y, height * normalized.x, 0, 0),
+				glm::vec4(0, 0, 1, 0),
+				glm::vec4(adj_start.x, adj_start.y, adj_start.z, 1)
+			);
+		}
+		return result;
+	}
 }
 float math_gamespace_to_pixelspace_multiplier(ViewPortCamera view, float gameHeight)
 {

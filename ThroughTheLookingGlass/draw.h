@@ -22,6 +22,7 @@ void draw_palette(IntPair palete_screen_start,
 	int palete_length,
 	GamestateBrush* palete,
 	AllWrite* layer_draw);
+void draw_line(glm::vec3 staircase_start, glm::vec3 staircase_end, SpriteWrite* info);
 void draw_black_box_over_screen(GameSpaceCamera screen, SpriteWrite* info);
 void draw_outline_to_gamespace(AABB outline, SpriteWrite* info);
 void draw_button_to_gamespace(GameSpaceCamera draw_area, SpriteWrite* ui_draw, glm::vec4 color = glm::vec4(1,1,1,1));

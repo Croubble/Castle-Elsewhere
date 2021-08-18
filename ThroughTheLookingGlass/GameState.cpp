@@ -868,6 +868,8 @@ WorldPosition gamestate_calc_clicked_world_position(GameState** states, IntPair*
 {
 	glm::vec2 mouseGamePos = glm::vec2(mouse_game_pos_x, mouse_game_pos_y);
 	int index_clicked = gamestate_calc_clicked_state(states,states_positions,num_states, mouse_game_pos_x, mouse_game_pos_y);
+	if (index_clicked == -1)
+		return world_make_world_position(-1, math_intpair_create(-1, -1), -1);
 	GameState* state = states[index_clicked];
 	IntPair state_start = states_positions[index_clicked];
 	IntPair grid_clicked;
