@@ -603,6 +603,7 @@ void mainloopfunction()
 			if (ui_state.click_left_down_this_frame && !ui_state.shift_key_down && !left_click_action_resolved && scene == SCENE_TYPE::ST_EDITOR)
 			{
 				glm::vec2 palete_gamespace_start = math_screenspace_to_gamespace(editor_scene_state->palete_screen_start, camera_game, camera_viewport, ui_state.game_height_current);
+				palete_gamespace_start.y -= 1.0f;
 				bool clickedPalete = math_click_is_inside_AABB(
 					palete_gamespace_start.x,
 					palete_gamespace_start.y,
@@ -1451,7 +1452,6 @@ void mainloopfunction()
 			}
 			//parse gamestates
 			{
-
 				gamestate_print_staircase_tele_value(editor_scene_state->timeMachine->world_state.level_state,editor_scene_state->timeMachine->world_state.num_level);
 				draw_gamespace(
 					editor_scene_state->timeMachine->world_state.level_state,
@@ -1476,7 +1476,7 @@ void mainloopfunction()
 					GameState* examined_state = editor_scene_state->timeMachine->world_state.level_state[moused_over_pos.level_index];
 					Floor floor = (Floor) examined_state->floor[moused_over_pos.level_position_1d];
 					FloorData floor_data = examined_state->floor_data[moused_over_pos.level_position_1d];
-					if (is_staircase(floor) && floor_data.teleporter_id >= 0 && floor_data.teleporter_id < world->num_level)
+					if (is_staircase(floor) && floor_data.level_index >= 0 && floor_data.level_index < world->num_level)
 					{
 						WorldPosition staircase_link = gamestate_get_position_linked_by_teleporter(world->level_state, world->num_level, moused_over_pos);
 						GameState* linked_state = world->level_state[staircase_link.level_index];

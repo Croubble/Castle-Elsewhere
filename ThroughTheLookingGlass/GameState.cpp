@@ -843,7 +843,11 @@ PieceData gamestate_piecedata_make(CratePower power,CratePower power2, CratePowe
 FloorData gamestate_floordata_make()
 {
 	FloorData result;
-	result.teleporter_id = -1;
+	result.level_index = -1;
+	for (int i = 0; i < MAX_REQUIREMENTS; i++)
+		result.requirements[i] = -1;
+	result.teleporter_target_square = math_intpair_create(-1, -1);
+	result.require_all_requirements_met_not_just_one = true;
 	return result;
 }
 
@@ -898,7 +902,7 @@ WorldPosition gamestate_get_position_linked_by_teleporter(GameState** gamestates
 	{
 		GameState* second_level = gamestates[first_staircase.level_index];
 		FloorData floor_data = second_level->floor_data[first_staircase.level_position_1d];
-		second_staircase.level_index = floor_data.teleporter_id;
+		second_staircase.level_index = floor_data.level_index;
 		second_staircase.level_position = floor_data.teleporter_target_square;
 		int link_w = gamestates[second_staircase.level_index]->w;
 		int link_h = gamestates[second_staircase.level_index]->h;
@@ -930,7 +934,7 @@ void gamestate_print_staircase_tele_value(GameState** gamestate, int len)
 		{
 			if (is_staircase(gamestate[z]->floor[i]))
 			{
-				std::cout << "i" << i << ",tele_link" << gamestate[z]->floor_data[i].teleporter_id << std::endl;
+				std::cout << "i" << i << ",tele_link" << gamestate[z]->floor_data[i].level_index << std::endl;
 			}
 		}
 	}

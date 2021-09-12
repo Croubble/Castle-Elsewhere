@@ -179,7 +179,7 @@ FloorData* try_parse_floor_data(Tokenizer* t, Memory* temp_memory)
 		t->at = on_fail;
 		return NULL;
 	}
-	result->teleporter_id = *first;
+	result->level_index = *first;
 	result->teleporter_target_square.x = *second;
 	result->teleporter_target_square.y = *third;
 
@@ -673,7 +673,7 @@ void parse_serialize_gamestate_layers(char* output, int* output_consumed, int ma
 		for (int j = 0; j < w * h; j++)
 		{
 			*output_consumed += sprintf_s(output + *output_consumed, max_output_length, "%d-%d-%d,",
-				state->floor_data[j].teleporter_id,
+				state->floor_data[j].level_index,
 				state->floor_data[j].teleporter_target_square.x,
 				state->floor_data[j].teleporter_target_square.y
 			);

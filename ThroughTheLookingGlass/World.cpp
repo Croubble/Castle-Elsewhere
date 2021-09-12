@@ -110,7 +110,7 @@ WorldPlayScene* world_player_action(WorldScene* scene, Direction action, Memory*
 				WorldPosition link = gamestate_get_position_linked_by_teleporter_and_check_backlink(scene->world_state.level_state, scene->world_state.num_level, final_position);
 				{
 					FloorData next_floordata = next_state->floor_data[next_square_position_1d];
-					link.level_index = next_floordata.teleporter_id;
+					link.level_index = next_floordata.level_index;
 					link.level_position = next_floordata.teleporter_target_square;
 					int link_w = scene->world_state.level_state[link.level_index]->w;
 					int link_h = scene->world_state.level_state[link.level_index]->h;

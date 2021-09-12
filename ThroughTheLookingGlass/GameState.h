@@ -14,7 +14,7 @@ enum LAYER_NAME
 
 const int GAME_NUM_LAYERS = LN_COUNT; 
 const int PLAYER_LAYER = LN_PIECE; 
-
+const int MAX_REQUIREMENTS = 8;
 enum Piece {
 	P_NONE,
 	P_PLAYER,
@@ -54,12 +54,17 @@ struct PieceData
 	bool powers[CP_COUNT];
 };
 
-struct Teleporter_Location;
+struct Teleporter_Location
+{
+
+};
 struct FloorData
 {
 	//target match rules.
-	int teleporter_id; //if we teleporting, which of our levels rules we want to refer to.
+	int level_index; //if we teleporting, which of our levels rules we want to refer to.
 	IntPair teleporter_target_square;
+	short requirements[8];
+	bool require_all_requirements_met_not_just_one;
 };
 
 struct GameState {

@@ -17,11 +17,11 @@ void delete_gamestate_from_list_internal(TimeMachineEditor* editor, int index_to
 			//if we find a staircase on this floortile...
 			if (is_staircase(editor->world_state.level_state[i]->floor[z]))
 			{
-				int tele_link = editor->world_state.level_state[i]->floor_data[z].teleporter_id;
+				int tele_link = editor->world_state.level_state[i]->floor_data[z].level_index;
 				//and the staircase is pointing to the level we are deleting...
 				if (tele_link == index_to_delete)
 				{
-					editor->world_state.level_state[i]->floor_data[z].teleporter_id = 0;
+					editor->world_state.level_state[i]->floor_data[z].level_index = 0;
 					editor->world_state.level_state[i]->floor_data[z].teleporter_target_square = math_intpair_create(0, 0);
 					editor->world_state.level_state[i]->floor[z] = Floor::F_NONE;
 				}
@@ -30,7 +30,20 @@ void delete_gamestate_from_list_internal(TimeMachineEditor* editor, int index_to
 				{
 					//explination: if the index of the gamestate is greater, then our link decrements by one. 
 					if(tele_link > index_to_delete)
-						editor->world_state.level_state[i]->floor_data[z].teleporter_id -= 1;
+						editor->world_state.level_state[i]->floor_data[z].level_index -= 1;
+				}
+				//for each staircase requirement link,
+				for (int i = 0; i < MAX_REQUIREMENTS; i++)
+				{
+					int current_link = editor->world_state.level_state[i]->floor_data[z].requirements[i];
+					//if the linke we are examining is to the deleted gamestate, remove it from the list.
+					if (current_link == index_to_delete)
+					{
+						editor->world_state.level_state[i]->floor_data[z].requirements[i] = -1;
+					}
+					//if the link we are examining is after the deleted gamestate, move its index down 1 to adjust.
+					else if (current_link > index_to_delete)
+						editor->world_state.level_state[i]->floor_data[z].requirements[i] -= 1;
 				}
 			}
 		}
@@ -144,9 +157,10 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 				int last_w = editor->world_state.level_state[last_target_level]->w;
 				int last_h = editor->world_state.level_state[last_target_level]->h;
 				int last_target_square_1d = f2D(last_target_square.x, last_target_square.y, last_w, last_h);
+				//if our last insertion was a staircase, and this insertion is a staircase, and the last staircase hasn't already been used for staircase planting.
 				if (is_staircase(editor->world_state.level_state[last_target_level]->floor[last_target_square_1d]) &&
 					is_staircase(editor->world_state.level_state[target_gamestate_index]->floor[target_brush_square_1d]) &&
-					editor->world_state.level_state[last_target_level]->floor_data[last_target_square_1d].teleporter_id == -1
+					editor->world_state.level_state[last_target_level]->floor_data[last_target_square_1d].level_index == -1
 					)
 				{
 						int target_level = action.u.brush.target_gamestate_index;
@@ -154,14 +168,14 @@ bool take_unlogged_action(TimeMachineEditor* editor, TimeMachineEditorAction act
 						int target_w = editor->world_state.level_state[target_level]->w;
 						int target_h = editor->world_state.level_state[target_level]->h;
 						int target_square_1d = f2D(target_square.x, target_square.y, target_w, target_h);
-						editor->world_state.level_state[last_target_level]->floor_data[last_target_square_1d].teleporter_id = target_level;
+						editor->world_state.level_state[last_target_level]->floor_data[last_target_square_1d].level_index = target_level;
 						
 						editor->world_state.level_state[last_target_level]->floor_data[last_target_square_1d].teleporter_target_square = target_square;
 						std::cout << "first teleporter id" << target_level << ", target_level" << target_level << std::endl;
 						std::cout << "second teleporter id" << last_target_level << ",last target level" << last_target_level << std::endl;
 						std::cout << "target square 1d" << target_square_1d << std::endl;
 						std::cout << "last target square 1d" << last_target_square_1d << std::endl;
-						editor->world_state.level_state[target_level]->floor_data[target_square_1d].teleporter_id = last_target_level;
+						editor->world_state.level_state[target_level]->floor_data[target_square_1d].level_index = last_target_level;
 						editor->world_state.level_state[target_level]->floor_data[target_square_1d].teleporter_target_square = last_target_square;
 						editor->world_state.level_modes[target_level] = LevelMode::Repeat;
 				}
