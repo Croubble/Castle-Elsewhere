@@ -33,17 +33,17 @@ void delete_gamestate_from_list_internal(TimeMachineEditor* editor, int index_to
 						editor->world_state.level_state[i]->floor_data[z].level_index -= 1;
 				}
 				//for each staircase requirement link,
-				for (int i = 0; i < MAX_REQUIREMENTS; i++)
+				for (int q = 0; q < MAX_REQUIREMENTS; q++)
 				{
-					int current_link = editor->world_state.level_state[i]->floor_data[z].requirements[i];
+					int current_link = editor->world_state.level_state[q]->floor_data[z].requirements[q];
 					//if the linke we are examining is to the deleted gamestate, remove it from the list.
 					if (current_link == index_to_delete)
 					{
-						editor->world_state.level_state[i]->floor_data[z].requirements[i] = -1;
+						editor->world_state.level_state[q]->floor_data[z].requirements[q] = -1;
 					}
 					//if the link we are examining is after the deleted gamestate, move its index down 1 to adjust.
 					else if (current_link > index_to_delete)
-						editor->world_state.level_state[i]->floor_data[z].requirements[i] -= 1;
+						editor->world_state.level_state[q]->floor_data[z].requirements[q] -= 1;
 				}
 			}
 		}

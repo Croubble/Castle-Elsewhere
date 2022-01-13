@@ -1,0 +1,2869 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [
+        {
+          "ruleId": "C6262",
+          "message": {
+            "text": "Function uses '50068' bytes of stack:  exceeds /analyze:stacksize '16384'.  Consider moving some data to heap."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                },
+                "region": {
+                  "startLine": 9,
+                  "startColumn": 13,
+                  "endLine": 9,
+                  "endColumn": 13
+                }
+              },
+              "logicalLocations": [
+                {
+                  "decoratedName": "?load_puzzle_from_assets@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "suppressions": []
+        },
+        {
+          "ruleId": "C6387",
+          "message": {
+            "text": "'lIn' could be '0':  this does not adhere to the specification for the function 'fgetc'. See line 28 for an earlier location where this can occur"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                },
+                "region": {
+                  "startLine": 30,
+                  "startColumn": 8,
+                  "endLine": 30,
+                  "endColumn": 24
+                }
+              },
+              "logicalLocations": [
+                {
+                  "decoratedName": "?load_puzzle_from_assets@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "index": 0,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 11,
+                            "startColumn": 65
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 1,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 12,
+                            "startColumn": 8
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 2,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 13,
+                            "startColumn": 6
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 3,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 14,
+                            "startColumn": 6
+                          }
+                        },
+                        "message": {
+                          "text": "'lIn' may be NULL (Enter this branch)"
+                        }
+                      },
+                      "kinds": [
+                        "branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "index": 4,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 16,
+                            "startColumn": 129
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 5,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 18,
+                            "startColumn": 12
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 6,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 19,
+                            "startColumn": 7
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 7,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 21,
+                            "startColumn": 6
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 8,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 23,
+                            "startColumn": 6
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 9,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 11
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 10,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 20
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 11,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 26,
+                            "startColumn": 13
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 12,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 36
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 13,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 20
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 14,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 26,
+                            "startColumn": 13
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 15,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 36
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 16,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 20
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 17,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 28,
+                            "startColumn": 20
+                          }
+                        },
+                        "message": {
+                          "text": "'lIn' is an Input to 'feof' (declared at c:\\program files (x86)\\windows kits\\10\\include\\10.0.18362.0\\ucrt\\stdio.h:161)"
+                        }
+                      },
+                      "kinds": [
+                        "usage"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "index": 18,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 28,
+                            "startColumn": 20
+                          }
+                        },
+                        "message": {
+                          "text": "Enter this loop, (assume '!feof(lIn)&&i<buffer_size')"
+                        }
+                      },
+                      "kinds": [
+                        "branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "index": 19,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 30,
+                            "startColumn": 8
+                          }
+                        },
+                        "message": {
+                          "text": "'lIn' is an Input to 'fgetc' (declared at c:\\program files (x86)\\windows kits\\10\\include\\10.0.18362.0\\ucrt\\stdio.h:177)"
+                        }
+                      },
+                      "kinds": [
+                        "usage"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "index": 20,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 30,
+                            "startColumn": 8
+                          }
+                        },
+                        "message": {
+                          "text": "'lIn' should not be NULL, because this is not consistent with the SAL annotation on 'fgetc'"
+                        }
+                      },
+                      "kinds": [
+                        "usage"
+                      ],
+                      "importance": "essential"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "suppressions": []
+        },
+        {
+          "ruleId": "C6387",
+          "message": {
+            "text": "'lIn' could be '0':  this does not adhere to the specification for the function 'feof'. "
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                },
+                "region": {
+                  "startLine": 28,
+                  "startColumn": 9,
+                  "endLine": 28,
+                  "endColumn": 27
+                }
+              },
+              "logicalLocations": [
+                {
+                  "decoratedName": "?load_puzzle_from_assets@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "index": 0,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 11,
+                            "startColumn": 65
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 1,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 12,
+                            "startColumn": 8
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 2,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 13,
+                            "startColumn": 6
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 3,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 14,
+                            "startColumn": 6
+                          }
+                        },
+                        "message": {
+                          "text": "'lIn' may be NULL (Enter this branch)"
+                        }
+                      },
+                      "kinds": [
+                        "branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "index": 4,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 16,
+                            "startColumn": 129
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 5,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 18,
+                            "startColumn": 12
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 6,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 19,
+                            "startColumn": 7
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 7,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 21,
+                            "startColumn": 6
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 8,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 23,
+                            "startColumn": 6
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 9,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 11
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 10,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 20
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 11,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 26,
+                            "startColumn": 13
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 12,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 36
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 13,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 20
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 14,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 26,
+                            "startColumn": 13
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 15,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 36
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 16,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 20
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 17,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 28,
+                            "startColumn": 20
+                          }
+                        },
+                        "message": {
+                          "text": "'lIn' is an Input to 'feof' (declared at c:\\program files (x86)\\windows kits\\10\\include\\10.0.18362.0\\ucrt\\stdio.h:161)"
+                        }
+                      },
+                      "kinds": [
+                        "usage"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "index": 18,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 28,
+                            "startColumn": 20
+                          }
+                        },
+                        "message": {
+                          "text": "Skip this loop, (assume '!feof(lIn)&&i<buffer_size' is false)"
+                        }
+                      },
+                      "kinds": [
+                        "branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "index": 19,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 28,
+                            "startColumn": 20
+                          }
+                        },
+                        "message": {
+                          "text": "'lIn' should not be NULL, because this is not consistent with the SAL annotation on 'feof'"
+                        }
+                      },
+                      "kinds": [
+                        "usage"
+                      ],
+                      "importance": "essential"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "suppressions": []
+        },
+        {
+          "ruleId": "C6387",
+          "message": {
+            "text": "'lIn' could be '0':  this does not adhere to the specification for the function 'fclose'. See line 28 for an earlier location where this can occur"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                },
+                "region": {
+                  "startLine": 40,
+                  "startColumn": 2,
+                  "endLine": 40,
+                  "endColumn": 9
+                }
+              },
+              "logicalLocations": [
+                {
+                  "decoratedName": "?load_puzzle_from_assets@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "index": 0,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 11,
+                            "startColumn": 65
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 1,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 12,
+                            "startColumn": 8
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 2,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 13,
+                            "startColumn": 6
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 3,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 14,
+                            "startColumn": 6
+                          }
+                        },
+                        "message": {
+                          "text": "'lIn' may be NULL (Enter this branch)"
+                        }
+                      },
+                      "kinds": [
+                        "branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "index": 4,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 16,
+                            "startColumn": 129
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 5,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 18,
+                            "startColumn": 12
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 6,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 19,
+                            "startColumn": 7
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 7,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 21,
+                            "startColumn": 6
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 8,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 23,
+                            "startColumn": 6
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 9,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 11
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 10,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 20
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 11,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 26,
+                            "startColumn": 13
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 12,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 36
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 13,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 20
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 14,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 26,
+                            "startColumn": 13
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 15,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 36
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 16,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 24,
+                            "startColumn": 20
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "index": 17,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 28,
+                            "startColumn": 20
+                          }
+                        },
+                        "message": {
+                          "text": "'lIn' is an Input to 'feof' (declared at c:\\program files (x86)\\windows kits\\10\\include\\10.0.18362.0\\ucrt\\stdio.h:161)"
+                        }
+                      },
+                      "kinds": [
+                        "usage"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "index": 18,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 28,
+                            "startColumn": 20
+                          }
+                        },
+                        "message": {
+                          "text": "Skip this loop, (assume '!feof(lIn)&&i<buffer_size' is false)"
+                        }
+                      },
+                      "kinds": [
+                        "branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "index": 19,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 34,
+                            "startColumn": 8
+                          }
+                        },
+                        "message": {
+                          "text": "Skip this branch, (assume 'i>=buffer_size' is false)"
+                        }
+                      },
+                      "kinds": [
+                        "branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "index": 20,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 38,
+                            "startColumn": 7
+                          }
+                        },
+                        "message": {
+                          "text": "Skip this branch, (assume 'i>0' is false)"
+                        }
+                      },
+                      "kinds": [
+                        "branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "index": 21,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 40,
+                            "startColumn": 8
+                          }
+                        },
+                        "message": {
+                          "text": "'lIn' is an Input to 'fclose' (declared at c:\\program files (x86)\\windows kits\\10\\include\\10.0.18362.0\\ucrt\\stdio.h:147)"
+                        }
+                      },
+                      "kinds": [
+                        "usage"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "index": 22,
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                          },
+                          "region": {
+                            "startLine": 40,
+                            "startColumn": 8
+                          }
+                        },
+                        "message": {
+                          "text": "'lIn' should not be NULL, because this is not consistent with the SAL annotation on 'fclose'"
+                        }
+                      },
+                      "kinds": [
+                        "usage"
+                      ],
+                      "importance": "essential"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "suppressions": []
+        },
+        {
+          "ruleId": "C26451",
+          "message": {
+            "text": "Arithmetic overflow: Using operator '+' on a 4 byte value and then casting the result to a 8 byte value. Cast the value to the wider type before calling operator '+' to avoid overflow (io.2)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+                },
+                "region": {
+                  "startLine": 138,
+                  "startColumn": 67,
+                  "endLine": 138,
+                  "endColumn": 74
+                }
+              },
+              "logicalLocations": [
+                {
+                  "decoratedName": "?get_continue_file@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PEAUMemory@@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "suppressions": []
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.28.29335.0"
+        }
+      },
+      "invocations": [
+        {
+          "commandLine": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.28.29333\\bin\\HostX86\\x64\\c1xx.dll\" -ACf{1F7B090C-16DB-4822-966A-A93D26ED4681} -ACpmspft140.dll -Alint -D_PREFAST_ -D_AST_FE_ -Analyze -zm0x00C0B1D0 -il C:\\Users\\User\\AppData\\Local\\Temp\\_CL_168e85c0ast -typedil -f SaveLoad.cpp -Ze -D_MSC_EXTENSIONS -Zp16 -pc \\:/ -D_MSC_VER=1928 -D_MSC_FULL_VER=192829335 -D_MSC_BUILD=0 -D_M_AMD64=100 -ZILP448 -D_M_X64=100 -D_WIN64 -D_WIN32 -GR -D_CPPRTTI -I D:\\SDL2\\include -nologo -W 3 -diagnostics:column -D_GUARDOVERFLOW_CRT_ALLOCATORS=1 -Ot -DCODE_ANALYSIS -D_DEBUG -D_CONSOLE -D_UNICODE -DUNICODE -EHs -D_CPPUNWIND -EHc -D__MSVC_RUNTIME_CHECKS -RTCs -RTCu -MDd -D_DEBUG -D_MT -D_DLL -GS -D_M_FP_PRECISE -permissive- -Zc:wchar_t -Zc:forScope -Fox64\\Debug\\SaveLoad.obj -Fdx64\\Debug\\vc142.pdb -Gd -wd 26812 -analyze:projectdirectory C:\\Users\\User\\source\\repos\\ThroughTheLookingGlass\\ThroughTheLookingGlass -analyze:rulesetdirectory ;C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Team Tools\\Static Analysis Tools\\\\Rule Sets; -analyze:ruleset C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Team Tools\\Static Analysis Tools\\Rule Sets\\NativeRecommendedRules.ruleset -analyze:quiet -analyze:plugin C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.28.29333\\bin\\HostX86\\x86\\EspXEngine.dll -FC -errorreport:prompt -we 4390 -we 4715 -we 4244 -we 6246 -we 6244 -I D:\\OpenGL\\Include -I C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.28.29333\\include -I C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.28.29333\\atlmfc\\include -I C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\VS\\include -I C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\ucrt -I C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\um -I C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\shared -I C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\winrt -I C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\cppwinrt -I C:\\Program Files (x86)\\Windows Kits\\NETFXSDK\\4.8\\Include\\um",
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/sprites.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/sprites.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/glm.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/_fixes.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/setup.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/simd/platform.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/fwd.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/qualifier.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/vec2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_bool2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_vec2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_vec2.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/compute_vector_relational.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_bool2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_float2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_float2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_double2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_double2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_int2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_int2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_uint2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_uint2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/vec3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_bool3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_vec3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_vec3.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_bool3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_float3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_float3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_double3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_double3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_int3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_int3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_uint3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_uint3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/vec4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_bool4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_vec4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_vec4.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_bool4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_float4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_float4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_double4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_double4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_int4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_int4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_uint4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_uint4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/mat2x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double2x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat2x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat2x2.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/matrix.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/mat2x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double2x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat2x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat2x3.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double2x3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float2x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float2x3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/mat2x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double2x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat2x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat2x4.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double2x4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float2x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float2x4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/mat3x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double3x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat3x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat3x2.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double3x2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float3x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float3x2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/mat3x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double3x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat3x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat3x3.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double3x3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float3x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float3x3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/mat3x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double3x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat3x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat3x4.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double3x4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float3x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float3x4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/mat4x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double4x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat4x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat4x2.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double4x2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float4x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float4x2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/mat4x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double4x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat4x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat4x3.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double4x3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float4x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float4x3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/mat4x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double4x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat4x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_mat4x4.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double4x4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float4x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float4x4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/func_matrix.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/geometric.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/func_geometric.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/exponential.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_vec1.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_vec1.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/func_exponential.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/vector_relational.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/func_vector_relational.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/_vectorize.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/common.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/func_common.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/compute_common.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_double2x2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float2x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_float2x2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/trigonometric.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/func_trigonometric.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/packing.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/func_packing.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_half.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_half.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/integer.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/func_integer.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/math.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/memory.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/gtc/matrix_transform.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_projection.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/gtc/constants.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/scalar_constants.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/scalar_constants.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/gtc/constants.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_projection.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_clip_space.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_clip_space.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_transform.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/matrix_transform.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/gtc/matrix_transform.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/sprite.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/sprite.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/shader.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/preludeincludes.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glad/glad.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/khr/khrplatform.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/clock.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/gtc/type_ptr.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/gtc/quaternion.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_relational.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_relational.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_float.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/quaternion_common.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/quaternion_geometric.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/quaternion_geometric.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/quaternion_common.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/quaternion_float.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_quat.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/quaternion_relational.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/quaternion_relational.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/detail/type_quat.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/quaternion_float_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/quaternion_double.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/quaternion_double_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/quaternion_trigonometric.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/quaternion_trigonometric.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/quaternion_transform.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/quaternion_transform.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/gtc/quaternion.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/gtc/epsilon.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/gtc/epsilon.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/gtc/vec1.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_bool1.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_bool1_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_float1.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_float1_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_double1.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_double1_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_int1.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_int1_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_uint1.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/ext/vector_uint1_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/glm/gtc/type_ptr.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/helpergl.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/constants.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/textdraw.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/truefontcharacter.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/source.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/Shader.cpp"
+          },
+          "roles": [
+            "analysisTarget",
+            "resultFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/resource.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/gamestate.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/textureassets.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/SaveLoad.cpp"
+          },
+          "roles": [
+            "analysisTarget",
+            "resultFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/saveload.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/tinyfiledialogs.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        }
+      ]
+    }
+  ]
+}

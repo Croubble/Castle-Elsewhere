@@ -13,7 +13,7 @@
       },
       "invocations": [
         {
-          "commandLine": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.28.29333\\bin\\HostX86\\x64\\c1xx.dll\" -ACf{1F7B090C-16DB-4822-966A-A93D26ED4681} -ACpmspft140.dll -Alint -D_PREFAST_ -D_AST_FE_ -Analyze -zm0x00C0B1D0 -il C:\\Users\\User\\AppData\\Local\\Temp\\_CL_eae00d27ast -typedil -f Parse.cpp -Ze -D_MSC_EXTENSIONS -Zp16 -pc \\:/ -D_MSC_VER=1928 -D_MSC_FULL_VER=192829335 -D_MSC_BUILD=0 -D_M_AMD64=100 -ZILP448 -D_M_X64=100 -D_WIN64 -D_WIN32 -GR -D_CPPRTTI -I D:\\SDL2\\include -nologo -W 3 -diagnostics:column -D_GUARDOVERFLOW_CRT_ALLOCATORS=1 -Ot -DCODE_ANALYSIS -D_DEBUG -D_CONSOLE -D_UNICODE -DUNICODE -EHs -D_CPPUNWIND -EHc -D__MSVC_RUNTIME_CHECKS -RTCs -RTCu -MDd -D_DEBUG -D_MT -D_DLL -GS -D_M_FP_PRECISE -permissive- -Zc:wchar_t -Zc:forScope -Fox64\\Debug\\Parse.obj -Fdx64\\Debug\\vc142.pdb -Gd -wd 26812 -analyze:projectdirectory C:\\Users\\User\\source\\repos\\ThroughTheLookingGlass\\ThroughTheLookingGlass -analyze:rulesetdirectory ;C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Team Tools\\Static Analysis Tools\\\\Rule Sets; -analyze:ruleset C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Team Tools\\Static Analysis Tools\\Rule Sets\\NativeRecommendedRules.ruleset -analyze:quiet -analyze:plugin C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.28.29333\\bin\\HostX86\\x86\\EspXEngine.dll -FC -errorreport:prompt -we 4390 -we 4715 -we 4244 -we 6246 -we 6244 -I D:\\OpenGL\\Include -I C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.28.29333\\include -I C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.28.29333\\atlmfc\\include -I C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\VS\\include -I C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\ucrt -I C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\um -I C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\shared -I C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\winrt -I C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\cppwinrt -I C:\\Program Files (x86)\\Windows Kits\\NETFXSDK\\4.8\\Include\\um",
+          "commandLine": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.28.29333\\bin\\HostX86\\x64\\c1xx.dll\" -ACf{1F7B090C-16DB-4822-966A-A93D26ED4681} -ACpmspft140.dll -Alint -D_PREFAST_ -D_AST_FE_ -Analyze -zm0x00C0B1D0 -il C:\\Users\\User\\AppData\\Local\\Temp\\_CL_cf33f736ast -typedil -f textureAssets.cpp -Ze -D_MSC_EXTENSIONS -Zp16 -pc \\:/ -D_MSC_VER=1928 -D_MSC_FULL_VER=192829335 -D_MSC_BUILD=0 -D_M_AMD64=100 -ZILP448 -D_M_X64=100 -D_WIN64 -D_WIN32 -GR -D_CPPRTTI -I D:\\SDL2\\include -nologo -W 3 -diagnostics:column -D_GUARDOVERFLOW_CRT_ALLOCATORS=1 -Ot -DCODE_ANALYSIS -D_DEBUG -D_CONSOLE -D_UNICODE -DUNICODE -EHs -D_CPPUNWIND -EHc -D__MSVC_RUNTIME_CHECKS -RTCs -RTCu -MDd -D_DEBUG -D_MT -D_DLL -GS -D_M_FP_PRECISE -permissive- -Zc:wchar_t -Zc:forScope -Fox64\\Debug\\textureAssets.obj -Fdx64\\Debug\\vc142.pdb -Gd -wd 26812 -analyze:projectdirectory C:\\Users\\User\\source\\repos\\ThroughTheLookingGlass\\ThroughTheLookingGlass -analyze:rulesetdirectory ;C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Team Tools\\Static Analysis Tools\\\\Rule Sets; -analyze:ruleset C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Team Tools\\Static Analysis Tools\\Rule Sets\\NativeRecommendedRules.ruleset -analyze:quiet -analyze:plugin C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.28.29333\\bin\\HostX86\\x86\\EspXEngine.dll -FC -errorreport:prompt -we 4390 -we 4715 -we 4244 -we 6246 -we 6244 -I D:\\OpenGL\\Include -I C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.28.29333\\include -I C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.28.29333\\atlmfc\\include -I C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\VS\\include -I C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\ucrt -I C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\um -I C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\shared -I C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\winrt -I C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\cppwinrt -I C:\\Program Files (x86)\\Windows Kits\\NETFXSDK\\4.8\\Include\\um",
           "executionSuccessful": true
         }
       ],
@@ -1695,6 +1695,673 @@
         {
           "location": {
             "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/parse.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/Memory.cpp"
+          },
+          "roles": [
+            "analysisTarget",
+            "resultFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/intpair.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/helpergl.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/grid.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/GameState.cpp"
+          },
+          "roles": [
+            "analysisTarget",
+            "resultFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/EditorTimeMachine.cpp"
+          },
+          "roles": [
+            "analysisTarget",
+            "resultFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/draw.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/draw.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/animation.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/click.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_main.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_stdinc.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_config.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_platform.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/begin_code.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/close_code.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_assert.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_atomic.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_audio.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_error.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_endian.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_mutex.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_thread.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_rwops.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_clipboard.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_cpuinfo.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_events.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_video.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_pixels.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_rect.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_surface.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_blendmode.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_keyboard.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_keycode.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_scancode.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_mouse.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_joystick.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_gamecontroller.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_quit.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_gesture.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_touch.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_filesystem.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_haptic.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_hints.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_loadso.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_log.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_messagebox.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_metal.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_power.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_render.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_sensor.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_shape.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_system.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_timer.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/sdl2/include/sdl_version.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/constants.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/click.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/camera.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/animation.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/aabb.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/world.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/world.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///C:/Users/User/source/repos/ThroughTheLookingGlass/ThroughTheLookingGlass/Benchmark.h"
+          },
+          "roles": [
+            "resultFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/win32_platform.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/mainhelpers.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/ft2build.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/freetype/config/ftheader.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/freetype/freetype.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/freetype/config/ftconfig.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/freetype/config/ftoption.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/freetype/config/ftstdlib.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/freetype/fttypes.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/freetype/ftsystem.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/freetype/ftimage.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/freetype/fterrors.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/freetype/ftmoderr.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/opengl/include/freetype/fterrdef.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/textscene.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/menuscene.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/editorscene.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/walk.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/user/source/repos/throughthelookingglass/throughthelookingglass/textureassets.cpp"
           },
           "roles": [
             "analysisTarget"

@@ -102,7 +102,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>D:\SDL2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>26812;</DisableSpecificWarnings>
-      <TreatSpecificWarningsAsErrors>4390;4715;4244;</TreatSpecificWarningsAsErrors>
+      <TreatSpecificWarningsAsErrors>4390;4715;4244;6246;6244;4456</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -121,7 +121,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>D:\SDL2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>26812;</DisableSpecificWarnings>
-      <TreatSpecificWarningsAsErrors>4390;4715;4244;</TreatSpecificWarningsAsErrors>
+      <TreatSpecificWarningsAsErrors>4390;4715;4244;6246;6244;4456</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,6 +141,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>D:\SDL2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatSpecificWarningsAsErrors>4390;4715;4244;6246;6244;4456</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -162,6 +163,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>D:\SDL2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatSpecificWarningsAsErrors>4390;4715;4244;6246;6244;4456</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

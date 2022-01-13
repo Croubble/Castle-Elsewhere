@@ -253,8 +253,8 @@ static void apply_merge_moves(PieceData* piece_data, bool* is_moving, int* layer
 							piece_data[next_1d].powers[CP_MERGE] = piece_data[next_1d].powers[CP_MERGE] || piece_data[z].powers[CP_MERGE];
 							piece_data[next_1d].powers[CP_PARALLEL] = piece_data[next_1d].powers[CP_PARALLEL] || piece_data[z].powers[CP_PARALLEL];
 							layer[z] = 0;
-							for(int i = 0; i < CP_COUNT;i++)
-								piece_data[z].powers[i] = false;
+							for(int q = 0; q < CP_COUNT;q++)
+								piece_data[z].powers[q] = false;
 							is_moving[z] = false;
 
 							//put that informataion into the animation.
@@ -1310,16 +1310,16 @@ void gamestate_startup(GameState* state)
 	gamestate_extrude_lurking_walls(state);
 
 	//decide what exit we are going to treat as our king exit. 
-	int exit = maybe_find_exit_or_return_neg1(state);
+	int exit_king_test = maybe_find_exit_or_return_neg1(state);
 	//if we can't find ANY exit, that's a huge wierd thing, we need an exit-like to even enter the level, so this means crash, crash now.
-	if (exit == -1)
+	if (exit_king_test == -1)
 	{
 		crash_err("a gamestate was started up, but an exit couldn't be found. Uh oh.");
 	}
 	//Delete any exit that isn't that exit.
 	for(int i = 0; i < state->w * state->h;i++)
 	{
-		if (i == exit)
+		if (i == exit_king_test)
 			continue;
 		if (state->floor[i] == F_EXIT || state->floor[i] == F_START || state->floor[i] == F_STAIRCASE_LEVELSTART)
 		{

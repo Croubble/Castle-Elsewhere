@@ -133,11 +133,6 @@ SDL_Window* window;
 //these functions are also embarassingly global, they are going into our big class later.
 void load_editor_level_stateful(std::string to_load)
 {
-	int bar = 3;
-	{
-		int bar = 4;
-		bar++;
-	}
 	memory_clear(editor_memory);
 	WorldState* res = parse_deserialize_timemachine(to_load, editor_memory, frame_memory);
 	editor_scene_state = editorscene_setup_with_start_state(editor_memory, camera_viewport, res);
@@ -649,7 +644,6 @@ void mainloopfunction()
 		{
 #pragma region handle_events
 			//now that we've polled all the events, we try and find out what we need to do.
-			bool mouse_moved_this_frame = ui_state.mousePos.x != ui_state.mouse_last_pos.x || ui_state.mousePos.y != ui_state.mouse_last_pos.y;
 			if (ui_state.backspace_key_down_this_frame)
 			{
 				scene = SCENE_TYPE::ST_MENU;
@@ -1077,7 +1071,7 @@ void mainloopfunction()
 			if (ui_state.type == ECS_BRUSH)
 			{
 				if (ui_state.mouse_left_click_down)
-					bool left_click_action_resolved = MaybeApplyBrushInPlayMode(play_memory, editor_scene_state->palete, editor_scene_state->currentBrush, &ui_state, play_scene_state.timeMachine_edit, play_scene_state.loc_edit, ui_state.mouseGamePos);
+					left_click_action_resolved = MaybeApplyBrushInPlayMode(play_memory, editor_scene_state->palete, editor_scene_state->currentBrush, &ui_state, play_scene_state.timeMachine_edit, play_scene_state.loc_edit, ui_state.mouseGamePos);
 				else
 					ui_state.type = ECS_NEUTRAL;
 			}
@@ -1092,7 +1086,7 @@ void mainloopfunction()
 				}
 				if (ui_state.mouse_left_click_down)
 				{
-					bool left_click_action_resolved = MaybeApplyBrushInPlayMode(play_memory, editor_scene_state->palete, editor_scene_state->currentBrush, &ui_state, play_scene_state.timeMachine_edit, play_scene_state.loc_edit, ui_state.mouseGamePos);
+					left_click_action_resolved = MaybeApplyBrushInPlayMode(play_memory, editor_scene_state->palete, editor_scene_state->currentBrush, &ui_state, play_scene_state.timeMachine_edit, play_scene_state.loc_edit, ui_state.mouseGamePos);
 					if (left_click_action_resolved)
 						ui_state.type = ECS_BRUSH;
 				}
@@ -1368,11 +1362,11 @@ void mainloopfunction()
 						{
 							const char* new_text = SDL_GetKeyName((SDL_KeyCode) game_action_to_keycode_map[i]);
 							keybinding_scene_state->menu.buttons[keybinding_scene_state->menu.current_highlighted_button].text = (char*) memory_alloc(keybinding_memory, strlen(new_text) + 1);
-							int i;
-							for (i = 0; i < 99999 && new_text[i] != '\0'; i++)
-								keybinding_scene_state->menu.buttons[keybinding_scene_state->menu.current_highlighted_button].text[i] = new_text[i];
-							keybinding_scene_state->menu.buttons[keybinding_scene_state->menu.current_highlighted_button].text[i] = '\0';
-							if (i >= 99999)
+							int q;
+							for (q = 0; q < 99999 && new_text[q] != '\0'; q++)
+								keybinding_scene_state->menu.buttons[keybinding_scene_state->menu.current_highlighted_button].text[q] = new_text[q];
+							keybinding_scene_state->menu.buttons[keybinding_scene_state->menu.current_highlighted_button].text[q] = '\0';
+							if (q >= 99999)
 								crash_err("oof, one of those horrible no null at the end of a big stomper string errors");
 						}
 						keybinding_scene_state->waiting_for_keybind = false;
@@ -2524,6 +2518,7 @@ bool MaybeApplyBrushInPlayMode(Memory* memory, GamestateBrush* palete,int curren
 		ui_state->type = ECS_BRUSH;
 		return true;
 	}
+
 	return false;
 }
 
