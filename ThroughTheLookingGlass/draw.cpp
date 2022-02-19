@@ -257,7 +257,7 @@ void draw_palette(IntPair palete_screen_start,
 	//parse palette piece_data to gpu form
 	{
 		//determine what the gamespace position is from the screen position BOTTOM LEFT.
-		glm::vec2 palete_true_start = math_screenspace_to_gamespace(palete_screen_start, camera_game, camera_viewport, ui_state->game_height_current);
+		glm::vec2 palete_true_start = math_convert_screenspace_to_gamespace(palete_screen_start, camera_game, camera_viewport, ui_state->game_height_current);
 		palete_true_start.y -= 1.0f; 
 		for (int i = 0; i < palete_length; i++)
 		{

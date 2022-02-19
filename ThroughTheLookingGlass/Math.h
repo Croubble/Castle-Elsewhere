@@ -59,9 +59,9 @@ GameSpaceCamera math_camera_trim_right(GameSpaceCamera old, float trim_percent);
 
 float math_pixelspace_to_gamespace_multiplier(ViewPortCamera view, float gameHeight);
 float math_gamespace_to_pixelspace_multiplier(ViewPortCamera view, float gameHeight);
-glm::vec2 math_screenspace_to_pixelspace(IntPair screenSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight);
-glm::vec2 math_pixelspace_to_screenspace(IntPair pixelSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight);
-glm::vec2 math_screenspace_to_gamespace(IntPair screenSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight);
+glm::vec2 math_convert_screenspace_to_pixelspace(IntPair screenSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight);
+glm::vec2 math_convert_pixelspace_to_screenspace(IntPair pixelSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight);
+glm::vec2 math_convert_screenspace_to_gamespace(IntPair screenSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight);
 
 
 

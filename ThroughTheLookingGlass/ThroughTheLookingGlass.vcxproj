@@ -178,6 +178,7 @@
     <ClCompile Include="..\..\..\..\Downloads\glad (4)\src\glad.c" />
     <ClCompile Include="AABB.cpp" />
     <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="Buttons.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Click.cpp" />
     <ClCompile Include="Constants.cpp" />
@@ -226,6 +227,7 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Benchmark.h" />
+    <ClInclude Include="Buttons.h" />
     <ClInclude Include="Click.h" />
     <ClInclude Include="Clock.h" />
     <ClInclude Include="Constants.h" />

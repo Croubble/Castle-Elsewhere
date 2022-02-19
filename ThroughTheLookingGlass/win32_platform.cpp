@@ -547,7 +547,7 @@ void mainloopfunction()
 					SDL_GetMouseState(&mouseX, &mouseY);
 					mouseY = camera_viewport.up - mouseY;
 					ui_state.mousePos = math_intpair_create(mouseX, mouseY);
-					ui_state.mouseGamePos = math_screenspace_to_gamespace(ui_state.mousePos, camera_game, camera_viewport, ui_state.game_height_current);
+					ui_state.mouseGamePos = math_convert_screenspace_to_gamespace(ui_state.mousePos, camera_game, camera_viewport, ui_state.game_height_current);
 				}
 
 				//grab whether mouse was held down this frame or not.
@@ -597,7 +597,7 @@ void mainloopfunction()
 			//HANDLE clicking on the palette.
 			if (ui_state.click_left_down_this_frame && !ui_state.shift_key_down && !left_click_action_resolved && scene == SCENE_TYPE::ST_EDITOR)
 			{
-				glm::vec2 palete_gamespace_start = math_screenspace_to_gamespace(editor_scene_state->palete_screen_start, camera_game, camera_viewport, ui_state.game_height_current);
+				glm::vec2 palete_gamespace_start = math_convert_screenspace_to_gamespace(editor_scene_state->palete_screen_start, camera_game, camera_viewport, ui_state.game_height_current);
 				palete_gamespace_start.y -= 1.0f;
 				bool clickedPalete = math_click_is_inside_AABB(
 					palete_gamespace_start.x,
@@ -1062,6 +1062,11 @@ void mainloopfunction()
 				}
 
 
+			}
+			if (ui_state.type == ECS_STAIRCASE_LINK)
+			{
+				//TODO: clicking on a staircase logs that staircase as the first relink. 
+				//Clicking on a staircase logs it as the second relink.
 			}
 #pragma endregion
 		}

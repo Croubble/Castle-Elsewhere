@@ -169,24 +169,24 @@ GameSpaceCamera math_camera_build(float camera_height, float screen_center_x, fl
 	result.farPoint = 20.0f;
 	return result;
 }
-glm::vec2 math_screenspace_to_pixelspace(IntPair screenSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight)
+glm::vec2 math_convert_screenspace_to_pixelspace(IntPair screenSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight)
 {
 	glm::vec2 result;
 	result.x = screenSpacePosition.x + camera.left * view.up / gameHeight;
 	result.y = screenSpacePosition.y + camera.down * view.up / gameHeight;
 	return result;
 }
-glm::vec2 math_pixelspace_to_screenspace(IntPair pixelSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight)
+glm::vec2 math_convert_pixelspace_to_screenspace(IntPair pixelSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight)
 {
 	glm::vec2 result;
 	result.x = pixelSpacePosition.x - camera.left * view.up / gameHeight;
 	result.y = pixelSpacePosition.y - camera.down * view.up / gameHeight;
 	return result;
 }
-glm::vec2 math_screenspace_to_gamespace(IntPair screenSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight)
+glm::vec2 math_convert_screenspace_to_gamespace(IntPair screenSpacePosition, GameSpaceCamera camera, ViewPortCamera view, float gameHeight)
 {
 	//convert screenspace to pixelspace.
-	glm::vec2 pixelspace = math_screenspace_to_pixelspace(screenSpacePosition, camera, view, gameHeight);
+	glm::vec2 pixelspace = math_convert_screenspace_to_pixelspace(screenSpacePosition, camera, view, gameHeight);
 	//convert pixelspace to gamespace.
 	glm::vec2 result;
 	float divide = math_gamespace_to_pixelspace_multiplier(view, gameHeight);

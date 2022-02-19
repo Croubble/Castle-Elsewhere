@@ -144,6 +144,9 @@
     <ClCompile Include="textureAssets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Buttons.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="gl_text.vs">
@@ -314,6 +317,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Tests.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Buttons.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
