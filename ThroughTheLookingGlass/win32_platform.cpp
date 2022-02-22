@@ -10,8 +10,9 @@
 #define BENCHMARK_IMPLEMENTATION
 #include "Benchmark.h"
 
-void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, glm::mat4* camera, bool mouse_moved_this_frame, SCENE_TYPE scene)
+void HandleSharedEvents(EditorUIState* ui_state, GameSpaceCamera* camera_game, glm::mat4* camera, SCENE_TYPE scene)
 {
+	bool mouse_moved_this_frame = ui_state->mousePos.x != ui_state->mouse_last_pos.x || ui_state->mousePos.y != ui_state->mouse_last_pos.y;
 	bool left_click_action_resolved = false;
 	if (ui_state->wheel_move != 0 && (scene == SCENE_TYPE::ST_EDITOR || scene == SCENE_TYPE::ST_EDIT_LEVEL))
 	{
@@ -590,10 +591,9 @@ void mainloopfunction()
 			}
 		}
 		//handle shared events.
-		bool mouse_moved_this_frame = ui_state.mousePos.x != ui_state.mouse_last_pos.x || ui_state.mousePos.y != ui_state.mouse_last_pos.y;
 		bool left_click_action_resolved = false;
 		{
-			HandleSharedEvents(&ui_state, &camera_game, &camera, mouse_moved_this_frame, scene);
+			HandleSharedEvents(&ui_state, &camera_game, &camera, scene);
 			//HANDLE clicking on the palette.
 			if (ui_state.click_left_down_this_frame && !ui_state.shift_key_down && !left_click_action_resolved && scene == SCENE_TYPE::ST_EDITOR)
 			{

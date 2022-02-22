@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
 #include "Memory.h"
+#include "Buttons.h"
 #include "TextDraw.h"
-typedef void (*ButtonCallback)(void* input);
 
 struct MenuLabel
 {
